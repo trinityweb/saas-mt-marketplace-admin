@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏪 Marketplace Admin Panel
 
-## Getting Started
+Panel de administración para el marketplace multi-tenant SaaS. Permite gestionar taxonomías globales, configuraciones de quickstart dinámico y analytics del marketplace.
 
-First, run the development server:
+## 🎯 Funcionalidades
+
+### ✅ Implementado
+- ✅ **Dashboard Principal**: Overview con métricas clave
+- ✅ **UI Base**: Componentes reutilizados del backoffice principal
+- ✅ **Estilos TiendaVecina**: Paleta de colores y temas consistentes
+
+### 🚧 En Desarrollo (Roadmap)
+- [ ] **Taxonomía Global**: Gestión de categorías y atributos marketplace
+- [ ] **Quickstart Dinámico**: Admin panel para tipos de negocio y templates
+- [ ] **Analytics Dashboard**: Métricas de uso, búsquedas y adopción
+- [ ] **Configuración**: Settings globales del marketplace
+
+## 🛠️ Tecnologías
+
+- **Framework**: Next.js 15 con App Router
+- **UI**: ShadCN UI + Radix UI primitives
+- **Estilos**: Tailwind CSS con variables CSS
+- **Iconos**: Lucide React
+- **Estado**: React Server Components + Client Components híbrido
+- **Puerto**: `3002` (para evitar conflictos con backoffice en 3001)
+
+## 🚀 Desarrollo
 
 ```bash
+# Instalar dependencias
+npm install
+
+# Desarrollo local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build para producción
+npm run build
+npm run start
+
+# Tests
+npm run test
+npm run test:watch
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎨 Estructura UI
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+src/
+├── app/
+│   ├── page.tsx              # Dashboard principal
+│   ├── layout.tsx            # Layout base
+│   └── globals.css           # Estilos globales TiendaVecina
+├── components/
+│   └── ui/                   # Componentes ShadCN copiados del backoffice
+└── lib/
+    └── utils.ts              # Utilidades compartidas
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔗 Integración con Servicios
 
-## Learn More
+El admin panel se conectará con:
 
-To learn more about Next.js, take a look at the following resources:
+- **PIM Service**: APIs de taxonomía y productos
+- **IAM Service**: Autenticación y autorización
+- **Kong Gateway**: Enrutamiento de APIs
+- **ElasticSearch**: Consultas de búsqueda y analytics
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🌈 Paleta de Colores TiendaVecina
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Primario**: `#9333EA` (Púrpura)
+- **Secundario**: `#06B6D4` (Cyan)
+- **Fondo**: `#F5F5F5` (Gris claro)
+- **Tarjetas**: `#FAFAFA` (Gris muy claro)
 
-## Deploy on Vercel
+## 📋 Próximos Pasos
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **FASE 1**: Implementar gestión de taxonomía global
+2. **FASE 2**: Crear admin panel para quickstart dinámico
+3. **FASE 3**: Dashboard de analytics y métricas
+4. **FASE 4**: Configuración avanzada del marketplace
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+**Parte del ecosistema**: [saas-mt](../../README.md) | **Puerto**: 3002 | **Estado**: �� Base Implementada

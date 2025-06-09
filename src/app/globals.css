@@ -1,26 +1,158 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Tema claro: Colores exactos de TiendaVecina con grises suaves */
+    --background: 0 0% 96%;                /* #F5F5F5 - Gris muy claro en lugar de blanco */
+    --foreground: 240 10% 15%;             /* #222431 - Texto principal oscuro */
+    --card: 0 0% 98%;                      /* #FAFAFA - Gris clarito en lugar de blanco puro */
+    --card-foreground: 240 10% 15%;        /* #222431 */
+    --popover: 0 0% 98%;                   /* #FAFAFA - Gris clarito */
+    --popover-foreground: 240 10% 15%;     /* #222431 */
+    --primary: 270 91% 56%;                /* #9333EA - Púrpura TiendaVecina */
+    --primary-foreground: 0 0% 100%;       /* #FFFFFF */
+    --secondary: 186 100% 43%;             /* #06B6D4 - Cyan TiendaVecina */
+    --secondary-foreground: 0 0% 100%;     /* #FFFFFF */
+    --muted: 270 20% 94%;                  /* #F0EDF6 - Púrpura gris claro */
+    --muted-foreground: 240 10% 45%;       /* #666B7A */
+    --accent: 186 30% 88%;                 /* #D9F0F3 - Cyan gris claro */
+    --accent-foreground: 240 10% 15%;      /* #222431 */
+    --destructive: 0 84% 60%;              /* #E74C3C - Rojo para destructivos */
+    --destructive-foreground: 0 0% 100%;   /* #FFFFFF */
+    --border: 270 15% 90%;                 /* #E6E1F0 - Bordes gris púrpura */
+    --input: 270 15% 90%;                  /* #E6E1F0 */
+    --ring: 270 91% 56%;                   /* #9333EA - Púrpura principal */
+    --radius: 0.75rem;
+    /* Sidebar con contraste usando los colores de TiendaVecina */
+    --sidebar-background: 240 15% 12%;     /* #1F2028 - Gris oscuro en lugar de negro */
+    --sidebar-foreground: 0 0% 96%;        /* #F5F5F5 */
+    --sidebar-primary: 270 91% 56%;        /* #9333EA - Púrpura */
+    --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
+    --sidebar-accent: 186 100% 43%;        /* #06B6D4 - Cyan */
+    --sidebar-accent-foreground: 0 0% 100%; /* #FFFFFF */
+    --sidebar-border: 240 15% 16%;         /* #292A33 */
+    --sidebar-ring: 270 91% 56%;           /* #9333EA */
+  }
+
+  .dark {
+    /* Tema oscuro: Complementario con grises oscuros suaves */
+    --background: 240 15% 12%;             /* #1F2028 - Gris oscuro en lugar de negro */
+    --foreground: 270 20% 88%;             /* #DDD9E8 - Texto gris claro */
+    --card: 240 15% 16%;                   /* #292A33 - Gris oscuro para tarjetas */
+    --card-foreground: 270 20% 88%;        /* #DDD9E8 */
+    --popover: 240 15% 16%;                /* #292A33 */
+    --popover-foreground: 270 20% 88%;     /* #DDD9E8 */
+    --primary: 270 91% 65%;                /* #A855F7 - Púrpura más brillante */
+    --primary-foreground: 240 15% 12%;     /* #1F2028 */
+    --secondary: 186 100% 50%;             /* #00BCD4 - Cyan más brillante */
+    --secondary-foreground: 240 15% 12%;   /* #1F2028 */
+    --muted: 240 15% 20%;                  /* #33344A - Gris medio */
+    --muted-foreground: 270 10% 65%;       /* #9B98AB */
+    --accent: 240 15% 22%;                 /* #3A3B4F - Gris para acentos */
+    --accent-foreground: 270 20% 88%;      /* #DDD9E8 */
+    --destructive: 0 62% 50%;              /* #D32F2F - Rojo para destructivos */
+    --destructive-foreground: 0 0% 98%;    /* #FAFAFA */
+    --border: 240 15% 22%;                 /* #3A3B4F */
+    --input: 240 15% 22%;                  /* #3A3B4F */
+    --ring: 270 91% 65%;                   /* #A855F7 */
+    /* Sidebar claro con acentos de TiendaVecina */
+    --sidebar-background: 270 20% 94%;     /* #F0EDF6 - Púrpura gris claro */
+    --sidebar-foreground: 240 10% 15%;     /* #222431 */
+    --sidebar-primary: 270 91% 50%;        /* #8B5CF6 */
+    --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
+    --sidebar-accent: 186 100% 40%;        /* #0891B2 */
+    --sidebar-accent-foreground: 0 0% 100%; /* #FFFFFF */
+    --sidebar-border: 270 15% 86%;         /* #D2C7DE */
+    --sidebar-ring: 270 91% 50%;           /* #8B5CF6 */
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Estilos de Swiper */
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  color: hsl(var(--primary)) !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: hsl(var(--primary)) !important;
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  font-size: 1.5rem !important;
+  font-weight: bold;
+}
+
+@layer components {
+  .card {
+    @apply rounded-lg border bg-card p-6 shadow-sm transition-all duration-200 hover:shadow-md;
+  }
+
+  .card-form {
+    @apply rounded-lg border bg-card shadow-sm transition-all duration-200 hover:shadow-md;
+  }
+
+  .button-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .input-field {
+    @apply flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .table-wrapper {
+    @apply w-full overflow-auto border bg-card shadow-sm;
+  }
+
+  .table-header {
+    @apply bg-muted/50 text-muted-foreground font-medium;
+  }
+
+  .table-cell {
+    @apply p-4 align-middle [&:has([role=checkbox])]:pr-0;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .animate-fade {
+    @apply transition-opacity duration-200;
+  }
+}
+
+/* Animaciones suaves */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-in-out;
 }

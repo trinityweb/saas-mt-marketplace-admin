@@ -1,103 +1,221 @@
-import Image from "next/image";
+import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { 
+  LayoutDashboard, 
+  Settings, 
+  Users, 
+  ShoppingCart, 
+  BarChart3,
+  Globe,
+  Layers,
+  Zap
+} from "lucide-react"
 
-export default function Home() {
+export default function MarketplaceAdminPage() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b bg-card">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Globe className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold">Marketplace Admin</h1>
+                <p className="text-sm text-muted-foreground">Panel de administración marketplace multi-tenant</p>
+              </div>
+            </div>
+            <Badge variant="secondary" className="gap-1">
+              <Zap className="w-3 h-3" />
+              v1.0.0
+            </Badge>
+          </div>
+        </div>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-8">
+        <div className="space-y-8">
+          {/* Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Layers className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Categorías Globales</p>
+                  <p className="text-2xl font-semibold">45</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                  <Users className="w-5 h-5 text-secondary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Tenants Activos</p>
+                  <p className="text-2xl font-semibold">12</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <ShoppingCart className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Productos Marketplace</p>
+                  <p className="text-2xl font-semibold">1,234</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-secondary" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Búsquedas/día</p>
+                  <p className="text-2xl font-semibold">5,678</p>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Main Sections */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Taxonomía Section */}
+            <Card className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Layers className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-semibold">Taxonomía Global</h2>
+                </div>
+                <p className="text-muted-foreground">
+                  Gestiona las categorías y atributos globales del marketplace
+                </p>
+                <div className="space-y-3">
+                  <Button className="w-full justify-start" variant="outline">
+                    <Layers className="w-4 h-4 mr-2" />
+                    Gestionar Categorías
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Configurar Atributos
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            {/* Quickstart Section */}
+            <Card className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Zap className="w-5 h-5 text-secondary" />
+                  <h2 className="text-lg font-semibold">Quickstart Dinámico</h2>
+                </div>
+                <p className="text-muted-foreground">
+                  Administra tipos de negocio y templates de configuración
+                </p>
+                <div className="space-y-3">
+                  <Button className="w-full justify-start" variant="outline">
+                    <Users className="w-4 h-4 mr-2" />
+                    Tipos de Negocio
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline">
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    Templates Quickstart
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            {/* Analytics Section */}
+            <Card className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <BarChart3 className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-semibold">Analytics</h2>
+                </div>
+                <p className="text-muted-foreground">
+                  Métricas y estadísticas del marketplace
+                </p>
+                <div className="space-y-3">
+                  <Button className="w-full justify-start" variant="outline">
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Dashboard Analytics
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline">
+                    <Users className="w-4 h-4 mr-2" />
+                    Reportes Tenants
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            {/* Configuration Section */}
+            <Card className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Settings className="w-5 h-5 text-secondary" />
+                  <h2 className="text-lg font-semibold">Configuración</h2>
+                </div>
+                <p className="text-muted-foreground">
+                  Configuración global del marketplace
+                </p>
+                <div className="space-y-3">
+                  <Button className="w-full justify-start" variant="outline">
+                    <Globe className="w-4 h-4 mr-2" />
+                    Configuración General
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Configuración Búsqueda
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Status Section */}
+          <Card className="p-6">
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Estado del Sistema</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm font-medium">API Gateway</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Funcionando correctamente</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm font-medium">ElasticSearch</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Índices actualizados</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span className="text-sm font-medium">Cache Redis</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Configuración pendiente</p>
+                </div>
+              </div>
+            </div>
+          </Card>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
-  );
+  )
 }
