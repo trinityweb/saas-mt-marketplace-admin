@@ -13,6 +13,7 @@ interface AdminHeaderProps {
   backUrl?: string
   backLabel?: string
   icon?: React.ReactNode
+  actions?: React.ReactNode
 }
 
 export function AdminHeader({ 
@@ -20,7 +21,8 @@ export function AdminHeader({
   subtitle, 
   backUrl, 
   backLabel = "Volver",
-  icon 
+  icon,
+  actions
 }: AdminHeaderProps = {}) {
   const showCustomHeader = title || backUrl
 
@@ -64,6 +66,13 @@ export function AdminHeader({
         </div>
         
         <div className="flex items-center space-x-4">
+          {/* Acciones personalizadas */}
+          {actions && (
+            <div className="flex items-center space-x-2">
+              {actions}
+            </div>
+          )}
+          
           {/* Theme Toggle */}
           <ThemeToggle />
         </div>

@@ -12,6 +12,7 @@ interface HeaderContextType {
     backUrl?: string
     backLabel?: string
     icon?: React.ReactNode
+    actions?: React.ReactNode
   }) => void
   clearHeaderProps: () => void
 }
@@ -37,6 +38,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     backUrl?: string
     backLabel?: string
     icon?: React.ReactNode
+    actions?: React.ReactNode
   }>({})
 
   const setHeaderProps = useCallback((props: typeof headerProps) => {

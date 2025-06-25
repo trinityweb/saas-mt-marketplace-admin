@@ -125,6 +125,47 @@ export function CriteriaDataTable<TData, TValue>({
     }
   }
 
+  // Función para generar números de página visibles
+  const generatePageNumbers = () => {
+    const pages = []
+    const maxVisiblePages = 7
+    
+    if (totalPages <= maxVisiblePages) {
+      // Si hay pocas páginas, mostrar todas
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      // Lógica más compleja para muchas páginas
+      if (currentPage <= 4) {
+        // Estamos cerca del inicio
+        for (let i = 1; i <= 5; i++) {
+          pages.push(i)
+        }
+        pages.push('ellipsis-end')
+        pages.push(totalPages)
+      } else if (currentPage >= totalPages - 3) {
+        // Estamos cerca del final
+        pages.push(1)
+        pages.push('ellipsis-start')
+        for (let i = totalPages - 4; i <= totalPages; i++) {
+          pages.push(i)
+        }
+      } else {
+        // Estamos en el medio
+        pages.push(1)
+        pages.push('ellipsis-start')
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i)
+        }
+        pages.push('ellipsis-end')
+        pages.push(totalPages)
+      }
+    }
+    
+    return pages
+  }
+
   return (
     <Card>
       <div>
@@ -205,12 +246,12 @@ export function CriteriaDataTable<TData, TValue>({
       </div>
 
       {/* Paginación */}
-      <div className="flex items-center justify-between space-x-2 py-4 px-6">
+      <div className="flex flex-col gap-4 py-4 px-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-muted-foreground">
           Mostrando {startItem} a {endItem} de {totalCount} resultados
         </div>
         
-        <div className="flex items-center space-x-6 lg:space-x-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Filas por página</p>
             <Select
@@ -230,45 +271,73 @@ export function CriteriaDataTable<TData, TValue>({
             </Select>
           </div>
           
-          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-            Página {currentPage} de {totalPages}
-          </div>
-          
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-1">
+            {/* Botón Primera Página */}
             <Button
               variant="outline"
-              className="hidden h-8 w-8 p-0 lg:flex"
+              size="sm"
               onClick={() => onPageChange(1)}
               disabled={currentPage === 1}
+              className="h-8 w-8 p-0"
             >
-              <span className="sr-only">Ir a la primera página</span>
               <ChevronsLeft className="h-4 w-4" />
             </Button>
+            
+            {/* Botón Anterior */}
             <Button
               variant="outline"
-              className="h-8 w-8 p-0"
+              size="sm"
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1}
+              className="h-8 w-8 p-0"
             >
-              <span className="sr-only">Ir a la página anterior</span>
               <ChevronLeft className="h-4 w-4" />
             </Button>
+            
+            {/* Números de Página */}
+            <div className="flex items-center gap-1">
+              {generatePageNumbers().map((page, index) => {
+                if (page === 'ellipsis-start' || page === 'ellipsis-end') {
+                  return (
+                    <div key={`ellipsis-${page}`} className="flex items-center justify-center h-8 w-8 text-sm text-muted-foreground">
+                      ...
+                    </div>
+                  )
+                }
+                
+                return (
+                  <Button
+                    key={`page-${page}`}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onPageChange(page as number)}
+                    className="h-8 w-8 p-0"
+                  >
+                    {page}
+                  </Button>
+                )
+              })}
+            </div>
+            
+            {/* Botón Siguiente */}
             <Button
               variant="outline"
-              className="h-8 w-8 p-0"
+              size="sm"
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
+              className="h-8 w-8 p-0"
             >
-              <span className="sr-only">Ir a la página siguiente</span>
               <ChevronRight className="h-4 w-4" />
             </Button>
+            
+            {/* Botón Última Página */}
             <Button
               variant="outline"
-              className="hidden h-8 w-8 p-0 lg:flex"
+              size="sm"
               onClick={() => onPageChange(totalPages)}
               disabled={currentPage === totalPages}
+              className="h-8 w-8 p-0"
             >
-              <span className="sr-only">Ir a la última página</span>
               <ChevronsRight className="h-4 w-4" />
             </Button>
           </div>

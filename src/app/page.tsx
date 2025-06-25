@@ -1,5 +1,10 @@
-import { Card } from "@/components/ui/card"
+"use client"
+
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { StatsCard } from "@/components/ui/stats-card"
+import { Badge } from "@/components/ui/badge"
 import { 
   LayoutDashboard, 
   Settings, 
@@ -11,194 +16,486 @@ import {
   Zap,
   Shield,
   UserCheck,
-  Crown
+  Crown,
+  Package,
+  Sliders,
+  TrendingUp,
+  Activity,
+  Award,
+  Plus,
+  Eye,
+  Edit,
+  Search,
+  Filter,
+  Database,
+  Sparkles
 } from "lucide-react"
 import Link from "next/link"
 
+interface DashboardStats {
+  totalProducts: number
+  totalCategories: number
+  totalBrands: number
+  totalTenants: number
+  loading: boolean
+}
+
 export default function MarketplaceAdminPage() {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalProducts: 0,
+    totalCategories: 0,
+    totalBrands: 0,
+    totalTenants: 12, // Este viene del IAM, por ahora hardcoded
+    loading: true
+  })
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        // Fetch datos del catálogo global
+        const productsResponse = await fetch('/api/pim/global-catalog?limit=100')
+        const productsData = await productsResponse.json()
+        
+        // Para categorías, podríamos usar la API de taxonomía cuando esté disponible
+        // Por ahora usamos un valor estimado basado en los productos
+        const estimatedCategories = Math.floor(productsData.count / 15) || 45
+
+        // Fetch datos de marcas del marketplace
+        const brandsResponse = await fetch('/api/pim/marketplace-brands?limit=1000')
+        let totalBrands = 192; // Fallback basado en nuestra refactorización
+        
+        if (brandsResponse.ok) {
+          try {
+            const brandsData = await brandsResponse.json()
+            totalBrands = brandsData.total || brandsData.data?.length || 192
+          } catch (e) {
+            // Usar fallback si hay error en el JSON
+          }
+        }
+
+        setStats({
+          totalProducts: productsData.count || 0,
+          totalCategories: estimatedCategories,
+          totalBrands: totalBrands,
+          totalTenants: 12, // IAM data
+          loading: false
+        })
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error)
+        // Fallback a datos por defecto
+        setStats({
+          totalProducts: 692,
+          totalCategories: 45,
+          totalBrands: 192,
+          totalTenants: 12,
+          loading: false
+        })
+      }
+    }
+
+    fetchDashboardStats()
+  }, [])
+
   return (
     <div className="space-y-8">
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center">
-              <Layers className="w-5 h-5 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Categorías Globales</p>
-              <p className="text-2xl font-semibold">45</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center">
-              <Users className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Tenants Activos</p>
-              <p className="text-2xl font-semibold">12</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center">
-              <ShoppingCart className="w-5 h-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Productos Marketplace</p>
-              <p className="text-2xl font-semibold">1,234</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/50 rounded-lg flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Búsquedas/día</p>
-              <p className="text-2xl font-semibold">5,678</p>
-            </div>
-          </div>
-        </Card>
+      {/* Header Section */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard Marketplace</h1>
+        <p className="text-muted-foreground">
+          Panel de administración global del marketplace multi-tenant
+        </p>
       </div>
 
+      {/* Main Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <StatsCard
+          title="Tenants Activos"
+          value={stats.totalTenants}
+          description="Clientes con suscripciones activas"
+          iconName="Users"
+          iconColor="text-blue-600"
+          trend={{
+            value: 20,
+            label: "Crecimiento mensual",
+            type: 'up'
+          }}
+          badge={{
+            text: "100% activos",
+            variant: 'default'
+          }}
+          href="/iam/tenants"
+          loading={stats.loading}
+        />
+
+        <StatsCard
+          title="Usuarios Totales"
+          value="2.4K"
+          description="Usuarios registrados en todos los tenants"
+          iconName="Users"
+          iconColor="text-indigo-600"
+          trend={{
+            value: 15,
+            label: "Nuevos usuarios este mes",
+            type: 'up'
+          }}
+          progress={{
+            value: 2400,
+            max: 5000,
+            color: 'blue'
+          }}
+          href="/iam/users"
+          loading={stats.loading}
+        />
+
+        <StatsCard
+          title="Marcas Globales"
+          value={stats.totalBrands}
+          description="Marcas verificadas en el marketplace"
+          iconName="Award"
+          iconColor="text-orange-600"
+          trend={{
+            value: 8,
+            label: "Nuevas marcas este mes",
+            type: 'up'
+          }}
+          progress={{
+            value: stats.totalBrands,
+            max: 500,
+            color: 'yellow'
+          }}
+          href="/marketplace-brands"
+          loading={stats.loading}
+        />
+
+        <StatsCard
+          title="Catálogo Global"
+          value={stats.totalProducts.toLocaleString()}
+          description="Productos disponibles en el marketplace"
+          iconName="Package"
+          iconColor="text-green-600"
+          trend={{
+            value: 15,
+            label: "Nuevos productos esta semana",
+            type: 'up'
+          }}
+          progress={{
+            value: stats.totalProducts,
+            max: 10000,
+            color: 'green'
+          }}
+          href="/global-catalog"
+          loading={stats.loading}
+        />
+
+        <StatsCard
+          title="Órdenes Procesadas"
+          value="18.7K"
+          description="Órdenes totales procesadas este mes"
+          iconName="BarChart3"
+          iconColor="text-emerald-600"
+          trend={{
+            value: 22,
+            label: "Incremento vs mes anterior",
+            type: 'up'
+          }}
+          badge={{
+            text: "Récord mensual",
+            variant: 'default'
+          }}
+          href="/orders"
+          loading={stats.loading}
+        />
+
+        <StatsCard
+          title="Categorías Globales"
+          value={stats.totalCategories}
+          description="Categorías principales del marketplace"
+          iconName="Layers"
+          iconColor="text-purple-600"
+          trend={{
+            value: 5,
+            label: "Nuevas categorías este mes",
+            type: 'up'
+          }}
+          progress={{
+            value: stats.totalCategories,
+            max: 100,
+            color: 'purple'
+          }}
+          href="/taxonomy"
+          loading={stats.loading}
+        />
+      </div>
+
+      {/* Quick Actions */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-yellow-500" />
+          <h2 className="text-xl font-semibold">Acciones Rápidas</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="group hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
+            <CardContent className="p-4">
+              <Link href="/marketplace-brands/create" className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Nueva Marca</p>
+                  <p className="text-sm text-muted-foreground">Agregar marca al marketplace</p>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="group hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
+            <CardContent className="p-4">
+              <Link href="/iam/tenants/create" className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Nuevo Tenant</p>
+                  <p className="text-sm text-muted-foreground">Registrar nuevo cliente</p>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="group hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
+            <CardContent className="p-4">
+              <Link href="/global-catalog" className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                  <Search className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Buscar Productos</p>
+                  <p className="text-sm text-muted-foreground">Explorar catálogo global</p>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="group hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
+            <CardContent className="p-4">
+              <Link href="/taxonomy" className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
+                  <Filter className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Gestionar Taxonomía</p>
+                  <p className="text-sm text-muted-foreground">Categorías y atributos</p>
+                </div>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+
+
       {/* Main Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* IAM Section */}
-        <Card className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-emerald-600" />
-              <h2 className="text-lg font-semibold">Identity & Access Management</h2>
-            </div>
-            <p className="text-muted-foreground">
-              Gestiona tenants, roles, permisos y planes de suscripción
-            </p>
-            <div className="space-y-3">
+      <div className="space-y-6">
+        <div className="flex items-center gap-2">
+          <Database className="w-5 h-5 text-blue-500" />
+          <h2 className="text-xl font-semibold">Módulos del Sistema</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* IAM Section */}
+          <Card className="group hover:shadow-lg transition-all duration-300">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Identity & Access Management</CardTitle>
+                  <CardDescription>Gestiona tenants, roles y permisos</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
               <Link href="/iam/tenants">
-                <Button className="w-full justify-start" variant="outline">
+                <Button className="w-full justify-start" variant="outline" size="sm">
                   <Users className="w-4 h-4 mr-2" />
                   Tenants
+                  <Badge variant="secondary" className="ml-auto">
+                    {stats.totalTenants}
+                  </Badge>
                 </Button>
               </Link>
               <Link href="/iam/roles">
-                <Button className="w-full justify-start" variant="outline">
+                <Button className="w-full justify-start" variant="outline" size="sm">
                   <UserCheck className="w-4 h-4 mr-2" />
                   Roles y Permisos
                 </Button>
               </Link>
               <Link href="/iam/plans">
-                <Button className="w-full justify-start" variant="outline">
+                <Button className="w-full justify-start" variant="outline" size="sm">
                   <Crown className="w-4 h-4 mr-2" />
                   Planes y Suscripciones
                 </Button>
               </Link>
-            </div>
-          </div>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Taxonomía Section */}
-        <Card className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Layers className="w-5 h-5 text-purple-600" />
-              <h2 className="text-lg font-semibold">Taxonomía Global</h2>
-            </div>
-            <p className="text-muted-foreground">
-              Gestiona las categorías y atributos globales del marketplace
-            </p>
-            <div className="space-y-3">
+          {/* Taxonomía Section */}
+          <Card className="group hover:shadow-lg transition-all duration-300">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
+                  <Layers className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Taxonomía Global</CardTitle>
+                  <CardDescription>Categorías y atributos del marketplace</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
               <Link href="/taxonomy">
-                <Button className="w-full justify-start" variant="outline">
+                <Button className="w-full justify-start" variant="outline" size="sm">
                   <Layers className="w-4 h-4 mr-2" />
                   Gestionar Categorías
+                  <Badge variant="secondary" className="ml-auto">
+                    {stats.totalCategories}
+                  </Badge>
                 </Button>
               </Link>
-              <Button className="w-full justify-start" variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
-                Configurar Atributos
-              </Button>
-            </div>
-          </div>
-        </Card>
+              <Link href="/attributes">
+                <Button className="w-full justify-start" variant="outline" size="sm">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Configurar Atributos
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
 
-        {/* Quickstart Section */}
-        <Card className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Zap className="w-5 h-5 text-yellow-600" />
-              <h2 className="text-lg font-semibold">Quickstart Dinámico</h2>
-            </div>
-            <p className="text-muted-foreground">
-              Administra tipos de negocio y templates de configuración
-            </p>
-            <div className="space-y-3">
+          {/* Catálogo Global Section */}
+          <Card className="group hover:shadow-lg transition-all duration-300">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
+                  <Package className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Catálogo Global</CardTitle>
+                  <CardDescription>Productos y marcas del marketplace</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Link href="/global-catalog">
+                <Button className="w-full justify-start" variant="outline" size="sm">
+                  <Package className="w-4 h-4 mr-2" />
+                  Productos Globales
+                  <Badge variant="secondary" className="ml-auto">
+                    {stats.totalProducts}
+                  </Badge>
+                </Button>
+              </Link>
+              <Link href="/marketplace-brands">
+                <Button className="w-full justify-start" variant="outline" size="sm">
+                  <Award className="w-4 h-4 mr-2" />
+                  Marcas Marketplace
+                  <Badge variant="secondary" className="ml-auto">
+                    {stats.totalBrands}
+                  </Badge>
+                </Button>
+              </Link>
+              <Link href="/marketplace-attributes">
+                <Button className="w-full justify-start" variant="outline" size="sm">
+                  <Sliders className="w-4 h-4 mr-2" />
+                  Atributos Marketplace
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Quickstart Section */}
+          <Card className="group hover:shadow-lg transition-all duration-300">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-yellow-100 dark:bg-yellow-900/20 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-yellow-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Quickstart Dinámico</CardTitle>
+                  <CardDescription>Templates de configuración rápida</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
               <Link href="/business-types">
-                <Button className="w-full justify-start" variant="outline">
+                <Button className="w-full justify-start" variant="outline" size="sm">
                   <Users className="w-4 h-4 mr-2" />
                   Tipos de Negocio
                 </Button>
               </Link>
-              <Button className="w-full justify-start" variant="outline">
-                <LayoutDashboard className="w-4 h-4 mr-2" />
-                Templates Quickstart
-              </Button>
-            </div>
-          </div>
-        </Card>
+              <Link href="/business-type-templates">
+                <Button className="w-full justify-start" variant="outline" size="sm">
+                  <LayoutDashboard className="w-4 h-4 mr-2" />
+                  Templates Quickstart
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
 
-        {/* Analytics Section */}
-        <Card className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <BarChart3 className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold">Analytics</h2>
-            </div>
-            <p className="text-muted-foreground">
-              Métricas y estadísticas del marketplace
-            </p>
-            <div className="space-y-3">
-              <Button className="w-full justify-start" variant="outline">
+          {/* Analytics Section */}
+          <Card className="group hover:shadow-lg transition-all duration-300">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Analytics</CardTitle>
+                  <CardDescription>Métricas y estadísticas del marketplace</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button className="w-full justify-start" variant="outline" size="sm">
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Dashboard Analytics
+                <Badge variant="outline" className="ml-auto">
+                  Próximamente
+                </Badge>
               </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <Users className="w-4 h-4 mr-2" />
+              <Button className="w-full justify-start" variant="outline" size="sm">
+                <TrendingUp className="w-4 h-4 mr-2" />
                 Reportes Tenants
               </Button>
-            </div>
-          </div>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Configuration Section */}
-        <Card className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Settings className="w-5 h-5 text-gray-600" />
-              <h2 className="text-lg font-semibold">Configuración</h2>
-            </div>
-            <p className="text-muted-foreground">
-              Configuración global del marketplace
-            </p>
-            <div className="space-y-3">
-              <Button className="w-full justify-start" variant="outline">
+          {/* Configuration Section */}
+          <Card className="group hover:shadow-lg transition-all duration-300">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <Settings className="w-5 h-5 text-gray-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Configuración</CardTitle>
+                  <CardDescription>Configuración global del marketplace</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button className="w-full justify-start" variant="outline" size="sm">
                 <Globe className="w-4 h-4 mr-2" />
                 Configuración General
               </Button>
-              <Button className="w-full justify-start" variant="outline">
-                <Settings className="w-4 h-4 mr-2" />
+              <Button className="w-full justify-start" variant="outline" size="sm">
+                <Search className="w-4 h-4 mr-2" />
                 Configuración Búsqueda
               </Button>
-            </div>
-          </div>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

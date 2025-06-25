@@ -23,7 +23,12 @@ import {
   ShoppingCart,
   Shield,
   UserCheck,
-  Crown
+  Crown,
+  Package,
+  Sliders,
+  Award,
+  BookOpen,
+  FileText
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { 
@@ -57,12 +62,14 @@ const initialMenuItems: MenuItem[] = [
     ]
   },
   {
-    icon: Layers,
-    label: "Taxonomía Global",
+    icon: Package,
+    label: "Marketplace PIM",
     isOpen: false,
     children: [
       { icon: Layers, label: "Gestionar Categorías", href: "/taxonomy" },
-      { icon: Settings, label: "Configurar Atributos", href: "/attributes" },
+      { icon: Award, label: "Marcas Marketplace", href: "/marketplace-brands" },
+      { icon: Package, label: "Productos Globales", href: "/global-catalog" },
+      { icon: Sliders, label: "Atributos Marketplace", href: "/marketplace-attributes" },
     ]
   },
   {
@@ -71,7 +78,8 @@ const initialMenuItems: MenuItem[] = [
     isOpen: false,
     children: [
       { icon: Users, label: "Tipos de Negocio", href: "/business-types" },
-      { icon: Layout, label: "Templates Quickstart", href: "/templates" },
+      { icon: Settings, label: "Plantillas de Configuración", href: "/business-type-templates" },
+      { icon: Layout, label: "Templates Legacy", href: "/templates" },
     ]
   },
   {
@@ -91,7 +99,8 @@ const initialMenuItems: MenuItem[] = [
       { icon: Globe, label: "Configuración General", href: "/config/general" },
       { icon: Settings, label: "Configuración Búsqueda", href: "/config/search" },
     ]
-  }
+  },
+  { icon: BookOpen, label: "Documentación", href: "/documentation" }
 ]
 
 export function AdminSidebar() {
