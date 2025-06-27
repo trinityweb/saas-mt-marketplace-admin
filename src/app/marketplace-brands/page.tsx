@@ -33,6 +33,14 @@ import { type MarketplaceBrand } from '@/lib/api';
 import { CriteriaDataTable } from '@/components/ui/criteria-data-table';
 import { Filter as FilterType } from '@/components/ui/table-toolbar';
 import { ColumnDef } from '@tanstack/react-table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const verificationStatusLabels = {
   verified: 'Verificada',
@@ -72,12 +80,6 @@ export default function MarketplaceBrandsPage() {
     updateBrand,
     deleteBrand
   } = useMarketplaceBrands({ adminToken: token });
-
-  // Estados locales para filtros
-  const [searchTerm, setSearchTerm] = useState('');
-  const [verificationFilter, setVerificationFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [countryFilter, setCountryFilter] = useState<string>('all');
 
   // Icono memoizado
   const headerIcon = useMemo(() => <Award className="w-5 h-5 text-white" />, []);
@@ -198,55 +200,115 @@ export default function MarketplaceBrandsPage() {
       header: 'Acciones',
       cell: ({ row }) => {
         const brand = row.original;
+        
+        const handleVerify = async () => {
+          try {
+            await verifyBrand(brand.id);
+          } catch (error) {
+            console.error('Error verifying brand:', error);
+          }
+        };
+
+        const handleUnverify = async () => {
+          try {
+            await unverifyBrand(brand.id);
+          } catch (error) {
+            console.error('Error unverifying brand:', error);
+          }
+        };
+
+        const handleDelete = async () => {
+          const confirmed = confirm(`¿Estás seguro de que quieres eliminar la marca "${brand.name}"? Esta acción no se puede deshacer.`);
+          if (!confirmed) return;
+
+          try {
+            await deleteBrand(brand.id);
+          } catch (error) {
+            console.error('Error deleting brand:', error);
+            alert('Error al eliminar la marca. Por favor, inténtalo de nuevo.');
+          }
+        };
+
+        const handleToggleStatus = async () => {
+          try {
+            await updateBrand(brand.id, {
+              is_active: !brand.is_active
+            });
+          } catch (error) {
+            console.error('Error toggling status:', error);
+          }
+        };
+
         return (
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push(`/marketplace-brands/${brand.id}`)}
-              title="Ver detalles"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push(`/marketplace-brands/${brand.id}/edit`)}
-              title="Editar marca"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleDelete(brand.id)}
-              title="Eliminar marca"
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Abrir menú</span>
+                <Eye className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => router.push(`/marketplace-brands/${brand.id}`)}>
+                <Eye className="mr-2 h-4 w-4" />
+                Ver detalles
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push(`/marketplace-brands/${brand.id}/edit`)}>
+                <Edit className="mr-2 h-4 w-4" />
+                Editar
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {brand.verification_status !== 'verified' ? (
+                <DropdownMenuItem onClick={handleVerify}>
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  Verificar
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={handleUnverify}>
+                  <Shield className="mr-2 h-4 w-4" />
+                  Quitar verificación
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={handleToggleStatus}>
+                {brand.is_active ? (
+                  <>
+                    <X className="mr-2 h-4 w-4" />
+                    Desactivar
+                  </>
+                ) : (
+                  <>
+                    <Check className="mr-2 h-4 w-4" />
+                    Activar
+                  </>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleDelete} className="text-red-600 dark:text-red-400">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Eliminar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         );
       },
     },
-  ], [router]);
+  ], [verifyBrand, unverifyBrand, updateBrand, deleteBrand, router]);
 
-  // Obtener países únicos para el filtro
+  // Obtener países únicos para filtro
   const countries = useMemo(() => {
-    if (!brands) return [];
-    const uniqueCountries = [...new Set(brands.map(brand => brand.country_code).filter(Boolean))];
-    return uniqueCountries.sort();
+    if (!brands || brands.length === 0) return [];
+    return [...new Set(brands.map(brand => brand.country_code).filter(Boolean))];
   }, [brands]);
 
-  // Configurar filtros para CriteriaDataTable
-  const filters: FilterType[] = useMemo(() => {
-    const baseFilters: FilterType[] = [
+  // Configuración de filtros
+  const brandFilters: FilterType[] = useMemo(() => {
+    const baseFilters = [
       {
-        type: 'select',
+        type: 'select' as const,
         key: 'verification',
         placeholder: 'Estado de verificación',
-        value: verificationFilter,
-        onChange: setVerificationFilter,
+        value: 'all',
+        onChange: () => {},
         options: [
           { value: 'all', label: 'Todas' },
           { value: 'verified', label: 'Verificadas' },
@@ -256,11 +318,11 @@ export default function MarketplaceBrandsPage() {
         ]
       },
       {
-        type: 'select',
+        type: 'select' as const,
         key: 'status',
         placeholder: 'Estado',
-        value: statusFilter,
-        onChange: setStatusFilter,
+        value: 'all',
+        onChange: () => {},
         options: [
           { value: 'all', label: 'Todos' },
           { value: 'active', label: 'Activas' },
@@ -272,11 +334,11 @@ export default function MarketplaceBrandsPage() {
     // Agregar filtro de país solo si hay países disponibles
     if (countries.length > 0) {
       baseFilters.push({
-        type: 'select',
+        type: 'select' as const,
         key: 'country',
         placeholder: 'Filtrar por país',
-        value: countryFilter,
-        onChange: setCountryFilter,
+        value: 'all',
+        onChange: () => {},
         options: [
           { value: 'all', label: 'Todos los países' },
           ...countries.map(country => ({ value: country, label: country }))
@@ -285,77 +347,15 @@ export default function MarketplaceBrandsPage() {
     }
 
     return baseFilters;
-  }, [verificationFilter, statusFilter, countryFilter, countries]);
+  }, [countries]);
 
-  // Filtrar marcas localmente
-  const filteredBrands = useMemo(() => {
-    if (!brands || brands.length === 0) return [];
-    
-    return brands.filter(brand => {
-      const matchesSearch = brand.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           brand.normalized_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           (brand.aliases && brand.aliases.some(alias => alias.toLowerCase().includes(searchTerm.toLowerCase())));
-                           
-      const matchesVerification = verificationFilter === 'all' || brand.verification_status === verificationFilter;
-      const matchesStatus = statusFilter === 'all' || (statusFilter === 'active' ? brand.is_active : !brand.is_active);
-      const matchesCountry = countryFilter === 'all' || brand.country_code === countryFilter;
-
-      return matchesSearch && matchesVerification && matchesStatus && matchesCountry;
-    });
-  }, [brands, searchTerm, verificationFilter, statusFilter, countryFilter]);
-
-  const handleVerify = async (brandId: string) => {
-    try {
-      await verifyBrand(brandId);
-    } catch (error) {
-      console.error('Error verifying brand:', error);
-    }
-  };
-
-  const handleUnverify = async (brandId: string) => {
-    try {
-      await unverifyBrand(brandId);
-    } catch (error) {
-      console.error('Error unverifying brand:', error);
-    }
-  };
-
-  const handleDelete = async (brandId: string) => {
-    const brand = brands.find(b => b.id === brandId);
-    if (!brand) return;
-
-    const confirmed = confirm(`¿Estás seguro de que quieres eliminar la marca "${brand.name}"? Esta acción no se puede deshacer.`);
-    if (!confirmed) return;
-
-    try {
-      await deleteBrand(brandId);
-    } catch (error) {
-      console.error('Error deleting brand:', error);
-      alert('Error al eliminar la marca. Por favor, inténtalo de nuevo.');
-    }
-  };
-
-  const handleToggleStatus = async (brandId: string) => {
-    try {
-      const brand = brands.find(b => b.id === brandId);
-      if (brand) {
-        await updateBrand(brandId, {
-          is_active: !brand.is_active
-        });
-      }
-    } catch (error) {
-      console.error('Error toggling status:', error);
-    }
-  };
-
-  // Calcular valores de paginación seguros para CriteriaDataTable
+  // Calcular valores de paginación para CriteriaDataTable
   const safeTotal = pagination?.total || 0;
   const safeLimit = pagination?.limit || 20;
   const safeOffset = pagination?.offset || 0;
   const currentPage = safeLimit > 0 ? Math.floor(safeOffset / safeLimit) + 1 : 1;
 
   const handlePageChange = (page: number) => {
-    // page es 1-based, enviamos directamente al backend
     loadBrands({ page: page, page_size: safeLimit });
   };
 
@@ -364,7 +364,7 @@ export default function MarketplaceBrandsPage() {
   };
 
   const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
+    loadBrands({ search: value, page: 1 });
   };
 
   return (
@@ -422,26 +422,23 @@ export default function MarketplaceBrandsPage() {
         </Card>
       </div>
 
-      {/* Tabla con CriteriaDataTable integrada */}
+      {/* Tabla con CriteriaDataTable */}
       <CriteriaDataTable
-        data={filteredBrands}
+        data={brands || []}
         columns={columns}
         totalCount={safeTotal}
         currentPage={currentPage}
         pageSize={safeLimit}
         loading={loading}
-        searchValue={searchTerm}
+        searchValue=""
         searchPlaceholder="Buscar por nombre o alias de marca..."
         buttonText="Nueva Marca"
-        filters={filters}
+        filters={brandFilters}
         onCreateClick={() => router.push('/marketplace-brands/create')}
         onSearchChange={handleSearchChange}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
-        onSortChange={(sort) => {
-          console.log('🔀 Sort changed:', sort);
-          // TODO: implementar ordenamiento
-        }}
+        onSortChange={() => {}} // TODO: Implementar sorting en el hook
       />
     </div>
   );

@@ -3,15 +3,38 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { marketplaceApi, MarketplaceCategory, CreateMarketplaceCategoryRequest } from '@/lib/api';
 
+interface MarketplaceCategoryFilters {
+  search?: string;
+  is_active?: boolean;
+  parent_id?: string;
+  page?: number;
+  page_size?: number;
+  sort_by?: string;
+  sort_dir?: 'asc' | 'desc';
+}
+
+interface PaginationInfo {
+  total: number;
+  offset: number;
+  limit: number;
+  has_next: boolean;
+  has_prev: boolean;
+  total_pages: number;
+}
+
 interface UseMarketplaceCategoriesOptions {
   autoLoad?: boolean;
   adminToken?: string;
+  initialFilters?: MarketplaceCategoryFilters;
 }
 
 interface UseMarketplaceCategoriesReturn {
   categories: MarketplaceCategory[];
   loading: boolean;
   error: string | null;
+  pagination: PaginationInfo;
+  filters: MarketplaceCategoryFilters;
+  setFilters: (newFilters: Partial<MarketplaceCategoryFilters>) => void;
   createCategory: (category: CreateMarketplaceCategoryRequest) => Promise<boolean>;
   updateCategory: (id: string, category: Partial<MarketplaceCategory>) => Promise<boolean>;
   deleteCategory: (id: string) => Promise<boolean>;
@@ -22,85 +45,37 @@ interface UseMarketplaceCategoriesReturn {
 export function useMarketplaceCategories(
   options: UseMarketplaceCategoriesOptions = {}
 ): UseMarketplaceCategoriesReturn {
-  const { autoLoad = true, adminToken = '' } = options;
+  const { autoLoad = true, adminToken = '', initialFilters = {} } = options;
   
   const [categories, setCategories] = useState<MarketplaceCategory[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFiltersState] = useState<MarketplaceCategoryFilters>(initialFilters);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    total: 0,
+    offset: 0,
+    limit: 20,
+    has_next: false,
+    has_prev: false,
+    total_pages: 0,
+  });
 
-  // Mover mockCategories fuera del useCallback para evitar dependencias cambiantes
-  const mockCategories = useMemo(() => [
-    {
-      id: '1',
-      name: 'Electrónicos',
-      slug: 'electronicos',
-      description: 'Dispositivos electrónicos, gadgets y accesorios tecnológicos',
-      parent_id: null,
-      level: 0,
-      is_active: true,
-      sort_order: 1,
-      created_at: '2024-01-15T10:00:00Z',
-      updated_at: '2024-01-15T10:00:00Z',
-    },
-    {
-      id: '2',
-      name: 'Ropa y Accesorios',
-      slug: 'ropa-accesorios',
-      description: 'Vestimenta, calzado y accesorios de moda',
-      parent_id: null,
-      level: 0,
-      is_active: true,
-      sort_order: 2,
-      created_at: '2024-01-15T10:05:00Z',
-      updated_at: '2024-01-15T10:05:00Z',
-    },
-    {
-      id: '3',
-      name: 'Vestidos',
-      slug: 'vestidos',
-      description: 'Vestidos formales y casuales',
-      parent_id: '2',
-      level: 2,
-      is_active: true,
-      sort_order: 1,
-      created_at: '2024-01-15T10:10:00Z',
-      updated_at: '2024-01-15T10:10:00Z',
-    },
-    {
-      id: '4',
-      name: 'Tecnología',
-      slug: 'tecnologia',
-      description: 'Electrónicos, computadoras y accesorios tecnológicos',
-      parent_id: null,
-      level: 0,
-      is_active: true,
-      sort_order: 2,
-      created_at: '2024-01-15T10:15:00Z',
-      updated_at: '2024-01-15T10:15:00Z',
-    },
-    {
-      id: '5',
-      name: 'Smartphones',
-      slug: 'smartphones',
-      description: 'Teléfonos inteligentes y accesorios',
-      parent_id: '4',
-      level: 1,
-      is_active: true,
-      sort_order: 1,
-      created_at: '2024-01-15T10:20:00Z',
-      updated_at: '2024-01-15T10:20:00Z',
-    },
-  ], []);
+  const setFilters = useCallback((newFilters: Partial<MarketplaceCategoryFilters>) => {
+    setFiltersState(prevFilters => ({
+      ...prevFilters,
+      ...newFilters,
+      ...(Object.keys(newFilters).some(key => !['page', 'page_size', 'sort_by', 'sort_dir'].includes(key)) ? { page: 1 } : {}),
+    }));
+  }, []);
 
   const refreshCategories = useCallback(async () => {
-    // Intentar obtener el token del parámetro, localStorage, o usar token de desarrollo
     const token = adminToken || 
       (typeof window !== 'undefined' ? localStorage.getItem('iam_access_token') : null) ||
-      'dev-marketplace-admin'; // Token de desarrollo como fallback
+      'dev-marketplace-admin';
     
     if (!token) {
-      console.warn('No admin token available, using mock data');
-      setCategories(mockCategories);
+      console.warn('No admin token available');
+      setError('No authentication token available.');
       return;
     }
 
@@ -108,30 +83,55 @@ export function useMarketplaceCategories(
     setError(null);
 
     try {
-      // Intentar cargar desde API real
-      const response = await marketplaceApi.getAllMarketplaceCategories(token);
+      const response = await marketplaceApi.getAllMarketplaceCategories({
+        page: filters.page,
+        page_size: filters.page_size,
+        sort_by: filters.sort_by,
+        sort_dir: filters.sort_dir,
+        search: filters.search,
+        is_active: filters.is_active,
+        parent_id: filters.parent_id,
+      }, token);
       
       if (response.error) {
-        console.warn('API not available, using mock data:', response.error);
-        // Fallback a mock data si la API no está disponible
-        setCategories(mockCategories);
-      } else {
-        setCategories(response.data || []);
+        setError(response.error);
+        setCategories([]);
+        setPagination({
+          total: 0,
+          offset: 0,
+          limit: filters.page_size || 20,
+          has_next: false,
+          has_prev: false,
+          total_pages: 0,
+        });
+        return;
       }
-    } catch (err) {
-      console.warn('API error, using mock data:', err);
-      // Fallback a mock data en caso de error
-      setCategories(mockCategories);
+
+      if (response.data) {
+        setCategories(response.data.categories || []);
+        setPagination(response.data.pagination);
+      }
+    } catch (err: any) {
+      console.error('Error fetching categories:', err);
+      setError(err.message || 'Error al cargar categorías');
+      setCategories([]);
+      setPagination({
+        total: 0,
+        offset: 0,
+        limit: filters.page_size || 20,
+        has_next: false,
+        has_prev: false,
+        total_pages: 0,
+      });
     } finally {
       setLoading(false);
     }
-  }, [adminToken, mockCategories]);
+  }, [adminToken, filters]);
 
   const createCategory = useCallback(async (category: CreateMarketplaceCategoryRequest): Promise<boolean> => {
-    // Intentar obtener el token del parámetro, localStorage, o usar token de desarrollo
     const token = adminToken || 
       (typeof window !== 'undefined' ? localStorage.getItem('iam_access_token') : null) ||
-      'dev-marketplace-admin'; // Token de desarrollo como fallback
+      'dev-marketplace-admin';
     
     if (!token) {
       console.warn('No admin token available');
@@ -145,41 +145,24 @@ export function useMarketplaceCategories(
       const response = await marketplaceApi.createMarketplaceCategory(category, token);
       
       if (response.error) {
-        console.warn('API not available, simulating creation:', response.error);
-        // Simular creación exitosa
-        const newCategory: MarketplaceCategory = {
-          id: Date.now().toString(),
-          name: category.name,
-          slug: category.slug || category.name.toLowerCase().replace(/\s+/g, '-'),
-          description: category.description,
-          parent_id: category.parent_id,
-          level: category.parent_id ? 1 : 0, // Simplificado para mock
-          is_active: true,
-          sort_order: categories.length + 1,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        
-        setCategories(prev => [...prev, newCategory]);
-        return true;
+        throw new Error(response.error);
       } else {
         await refreshCategories();
         return true;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error creating category:', err);
-      setError('Error al crear la categoría');
+      setError(err.message || 'Error al crear la categoría');
       return false;
     } finally {
       setLoading(false);
     }
-  }, [adminToken, categories.length, refreshCategories]);
+  }, [adminToken, refreshCategories]);
 
   const updateCategory = useCallback(async (id: string, updates: Partial<MarketplaceCategory>): Promise<boolean> => {
-    // Intentar obtener el token del parámetro, localStorage, o usar token de desarrollo
     const token = adminToken || 
       (typeof window !== 'undefined' ? localStorage.getItem('iam_access_token') : null) ||
-      'dev-marketplace-admin'; // Token de desarrollo como fallback
+      'dev-marketplace-admin';
     
     if (!token) {
       console.warn('No admin token available');
@@ -190,39 +173,27 @@ export function useMarketplaceCategories(
     setError(null);
 
     try {
-      // Llamar a la API real para actualizar la categoría
       const response = await marketplaceApi.updateMarketplaceCategory(id, updates, token);
       
       if (response.error) {
-        console.warn('API update failed, simulating update:', response.error);
-        // Fallback: simular actualización exitosa si la API falla
-        setCategories(prev => 
-          prev.map(cat => 
-            cat.id === id 
-              ? { ...cat, ...updates, updated_at: new Date().toISOString() }
-              : cat
-          )
-        );
-        return true;
+        throw new Error(response.error);
       } else {
-        // Actualización exitosa: refrescar datos desde la API
         await refreshCategories();
         return true;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error updating category:', err);
-      setError('Error al actualizar la categoría');
+      setError(err.message || 'Error al actualizar la categoría');
       return false;
     } finally {
       setLoading(false);
     }
-  }, [adminToken]);
+  }, [adminToken, refreshCategories]);
 
   const deleteCategory = useCallback(async (id: string): Promise<boolean> => {
-    // Intentar obtener el token del parámetro, localStorage, o usar token de desarrollo
     const token = adminToken || 
       (typeof window !== 'undefined' ? localStorage.getItem('iam_access_token') : null) ||
-      'dev-marketplace-admin'; // Token de desarrollo como fallback
+      'dev-marketplace-admin';
     
     if (!token) {
       console.warn('No admin token available');
@@ -233,27 +204,25 @@ export function useMarketplaceCategories(
     setError(null);
 
     try {
-      // TODO: Implementar endpoint de eliminación en el backend
-      // const response = await marketplaceApi.deleteMarketplaceCategory(id, token);
-      
-      // Simular eliminación exitosa por ahora
-      setCategories(prev => prev.filter(cat => cat.id !== id));
-      
+      const response = await marketplaceApi.deleteMarketplaceCategory(id, token);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      await refreshCategories();
       return true;
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting category:', err);
-      setError('Error al eliminar la categoría');
+      setError(err.message || 'Error al eliminar la categoría');
       return false;
     } finally {
       setLoading(false);
     }
-  }, [adminToken]);
+  }, [adminToken, refreshCategories]);
 
   const syncChanges = useCallback(async (): Promise<boolean> => {
-    // Intentar obtener el token del parámetro, localStorage, o usar token de desarrollo
     const token = adminToken || 
       (typeof window !== 'undefined' ? localStorage.getItem('iam_access_token') : null) ||
-      'dev-marketplace-admin'; // Token de desarrollo como fallback
+      'dev-marketplace-admin';
     
     if (!token) {
       console.warn('No admin token available');
@@ -267,13 +236,11 @@ export function useMarketplaceCategories(
       const response = await marketplaceApi.syncMarketplaceChanges(token);
       
       if (response.error) {
-        console.warn('Sync API not available:', response.error);
-        // Simular sincronización exitosa
-        return true;
+        throw new Error(response.error);
       } else {
         return true;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error syncing changes:', err);
       setError('Error al sincronizar cambios');
       return false;
@@ -283,16 +250,18 @@ export function useMarketplaceCategories(
   }, [adminToken]);
 
   useEffect(() => {
-    // Solo ejecutar en el cliente y si tenemos autoLoad habilitado
     if (typeof window !== 'undefined' && autoLoad) {
       refreshCategories();
     }
-  }, [autoLoad, refreshCategories]);
+  }, [autoLoad, refreshCategories, filters]);
 
   return {
     categories,
     loading,
     error,
+    pagination,
+    filters,
+    setFilters,
     createCategory,
     updateCategory,
     deleteCategory,

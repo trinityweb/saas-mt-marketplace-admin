@@ -9,9 +9,20 @@ export async function GET(request: NextRequest) {
     // Construir URL del backend a través de Kong - RUTA CORREGIDA
     const backendUrl = new URL(`${API_GATEWAY_URL}/pim/api/v1/marketplace/categories`);
     
-    // Copiar todos los parámetros de consulta
+    // Convertir parámetros de paginación page/page_size a offset/limit
+    const page = parseInt(searchParams.get('page') || '1');
+    const pageSize = parseInt(searchParams.get('page_size') || '20');
+    const offset = (page - 1) * pageSize;
+    
+    // Agregar parámetros convertidos
+    backendUrl.searchParams.set('offset', offset.toString());
+    backendUrl.searchParams.set('limit', pageSize.toString());
+    
+    // Copiar otros parámetros (excluyendo page y page_size)
     searchParams.forEach((value, key) => {
-      backendUrl.searchParams.append(key, value);
+      if (key !== 'page' && key !== 'page_size') {
+        backendUrl.searchParams.append(key, value);
+      }
     });
 
     console.log('🔗 Proxy API GET Request (via Kong):', backendUrl.toString());

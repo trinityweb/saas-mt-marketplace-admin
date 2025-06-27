@@ -3,6 +3,7 @@ import { marketplaceApi, type MarketplaceBrand, type MarketplaceBrandFilters } f
 
 interface UseMarketplaceBrandsOptions {
   adminToken?: string;
+  initialFilters?: MarketplaceBrandFilters;
 }
 
 interface PaginationInfo {
@@ -12,9 +13,36 @@ interface PaginationInfo {
   total_pages: number;
   has_next: boolean;
   has_prev: boolean;
+  page: number;
 }
 
-export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) => {
+interface UseMarketplaceBrandsReturn {
+  brands: MarketplaceBrand[];
+  loading: boolean;
+  error: string | null;
+  pagination: PaginationInfo;
+  stats: {
+    total: number;
+    verified: number;
+    unverified: number;
+    active: number;
+    inactive: number;
+  };
+  filters: MarketplaceBrandFilters;
+  setFilters: (filters: Partial<MarketplaceBrandFilters>) => void;
+  loadBrands: (filters?: MarketplaceBrandFilters) => Promise<void>;
+  loadPage: (pageNumber: number, pageSize?: number) => Promise<void>;
+  loadStatistics: () => Promise<void>;
+  verifyBrand: (brandId: string) => Promise<any>;
+  unverifyBrand: (brandId: string) => Promise<any>;
+  updateBrand: (brandId: string, updates: Partial<MarketplaceBrand>) => Promise<any>;
+  deleteBrand: (brandId: string) => Promise<any>;
+  createBrand: (brandData: Partial<MarketplaceBrand>) => Promise<any>;
+}
+
+export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}): UseMarketplaceBrandsReturn => {
+  const { adminToken, initialFilters = {} } = options;
+  const [filters, setFiltersState] = useState<MarketplaceBrandFilters>(initialFilters);
   const [brands, setBrands] = useState<MarketplaceBrand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +52,8 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
     total: 0,
     total_pages: 0,
     has_next: false,
-    has_prev: false
+    has_prev: false,
+    page: 1
   });
   const [stats, setStats] = useState({
     total: 0,
@@ -34,16 +63,27 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
     inactive: 0
   });
 
-  const loadBrands = useCallback(async (filters: MarketplaceBrandFilters = {}) => {
+  const setFilters = useCallback((newFilters: Partial<MarketplaceBrandFilters>) => {
+    setFiltersState(prev => ({
+      ...prev,
+      ...newFilters,
+      // Reset page to 1 if any filter other than page/page_size changes
+      ...(Object.keys(newFilters).some(key => !['page', 'page_size'].includes(key)) ? { page: 1 } : {}),
+    }));
+  }, []);
+
+  const loadBrands = useCallback(async (filterOverrides: MarketplaceBrandFilters = {}) => {
     try {
       setLoading(true);
       setError(null);
       
+      const currentFilters = { ...filters, ...filterOverrides };
+      
       const response = await marketplaceApi.getAllMarketplaceBrands({
         page_size: 20,
         page: 1,
-        ...filters
-      }, options.adminToken);
+        ...currentFilters
+      }, adminToken);
       
       if (response.error) {
         setError(response.error);
@@ -55,7 +95,11 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
         
         // Actualizar información de paginación desde la respuesta de la API
         if (response.data.pagination) {
-          setPagination(response.data.pagination);
+          const paginationData = response.data.pagination;
+          setPagination({
+            ...paginationData,
+            page: Math.floor(paginationData.offset / paginationData.limit) + 1
+          });
         }
       }
     } catch (err) {
@@ -63,7 +107,7 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
     } finally {
       setLoading(false);
     }
-  }, [options.adminToken]);
+  }, [filters, adminToken]);
 
   const loadStatistics = useCallback(async () => {
     try {
@@ -71,7 +115,7 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
       const response = await marketplaceApi.getAllMarketplaceBrands({
         page_size: 1000,
         page: 1
-      }, options.adminToken);
+      }, adminToken);
       
       if (response.data && response.data.brands) {
         const brands = response.data.brands;
@@ -89,16 +133,15 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
     } catch (err) {
       console.error('Error loading statistics:', err);
     }
-  }, [options.adminToken]);
+  }, [adminToken]);
 
   const loadPage = useCallback(async (pageNumber: number, pageSize: number = 20) => {
-    // pageNumber es 1-based, enviamos directamente al backend
     await loadBrands({ page: pageNumber, page_size: pageSize });
   }, [loadBrands]);
 
   const verifyBrand = useCallback(async (brandId: string) => {
     try {
-      const response = await marketplaceApi.verifyMarketplaceBrand(brandId, options.adminToken);
+      const response = await marketplaceApi.verifyMarketplaceBrand(brandId, adminToken);
       if (response.error) {
         throw new Error(response.error);
       }
@@ -109,11 +152,11 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
     } catch (err) {
       throw err;
     }
-  }, [options.adminToken, loadBrands, loadStatistics]);
+  }, [adminToken, loadBrands, loadStatistics]);
 
   const unverifyBrand = useCallback(async (brandId: string) => {
     try {
-      const response = await marketplaceApi.unverifyMarketplaceBrand(brandId, options.adminToken);
+      const response = await marketplaceApi.unverifyMarketplaceBrand(brandId, adminToken);
       if (response.error) {
         throw new Error(response.error);
       }
@@ -124,11 +167,11 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
     } catch (err) {
       throw err;
     }
-  }, [options.adminToken, loadBrands, loadStatistics]);
+  }, [adminToken, loadBrands, loadStatistics]);
 
   const updateBrand = useCallback(async (brandId: string, updates: Partial<MarketplaceBrand>) => {
     try {
-      const response = await marketplaceApi.updateMarketplaceBrand(brandId, updates, options.adminToken);
+      const response = await marketplaceApi.updateMarketplaceBrand(brandId, updates, adminToken);
       if (response.error) {
         throw new Error(response.error);
       }
@@ -139,11 +182,11 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
     } catch (err) {
       throw err;
     }
-  }, [options.adminToken, loadBrands, loadStatistics]);
+  }, [adminToken, loadBrands, loadStatistics]);
 
   const deleteBrand = useCallback(async (brandId: string) => {
     try {
-      const response = await marketplaceApi.deleteMarketplaceBrand(brandId, options.adminToken);
+      const response = await marketplaceApi.deleteMarketplaceBrand(brandId, adminToken);
       if (response.error) {
         throw new Error(response.error);
       }
@@ -154,11 +197,11 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
     } catch (err) {
       throw err;
     }
-  }, [options.adminToken, loadBrands, loadStatistics]);
+  }, [adminToken, loadBrands, loadStatistics]);
 
   const createBrand = useCallback(async (brandData: Partial<MarketplaceBrand>) => {
     try {
-      const response = await marketplaceApi.createMarketplaceBrand(brandData, options.adminToken);
+      const response = await marketplaceApi.createMarketplaceBrand(brandData, adminToken);
       if (response.error) {
         throw new Error(response.error);
       }
@@ -169,13 +212,19 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
     } catch (err) {
       throw err;
     }
-  }, [options.adminToken, loadBrands, loadStatistics]);
+  }, [adminToken, loadBrands, loadStatistics]);
 
-  // Cargar datos iniciales
+  // Cargar datos iniciales y cuando cambien los filtros
   useEffect(() => {
     loadBrands();
     loadStatistics();
-  }, [loadBrands, loadStatistics]);
+  }, [filters]);
+
+  // Cargar datos iniciales solo una vez
+  useEffect(() => {
+    loadBrands();
+    loadStatistics();
+  }, []);
 
   return {
     brands,
@@ -183,6 +232,8 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
     error,
     pagination,
     stats,
+    filters,
+    setFilters,
     loadBrands,
     loadPage,
     loadStatistics,
@@ -191,6 +242,5 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}) 
     updateBrand,
     deleteBrand,
     createBrand,
-    refetch: () => Promise.all([loadBrands(), loadStatistics()])
   };
 }; 

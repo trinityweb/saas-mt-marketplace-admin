@@ -481,9 +481,58 @@ class MarketplaceApiClient {
   }
 
   // Utility methods for category management
-  async getAllMarketplaceCategories(adminToken: string): Promise<ApiResponse<MarketplaceCategory[]>> {
-    // Usar el endpoint correcto para categorías del marketplace
-    const response = await this.request<MarketplaceCategory[]>('/categories', {
+  async getAllMarketplaceCategories(
+    filters: {
+      page?: number;
+      page_size?: number;
+      sort_by?: string;
+      sort_dir?: 'asc' | 'desc';
+      search?: string;
+      is_active?: boolean;
+      parent_id?: string;
+    } = {},
+    adminToken: string
+  ): Promise<ApiResponse<{
+    categories: MarketplaceCategory[];
+    pagination: {
+      total: number;
+      offset: number;
+      limit: number;
+      has_next: boolean;
+      has_prev: boolean;
+      total_pages: number;
+    };
+  }>> {
+    const searchParams = new URLSearchParams();
+    
+    // Convertir page/page_size a offset/limit para el backend
+    if (filters.page && filters.page_size) {
+      const offset = (filters.page - 1) * filters.page_size;
+      searchParams.set('offset', offset.toString());
+      searchParams.set('limit', filters.page_size.toString());
+    } else {
+      if (filters.page_size) searchParams.set('limit', filters.page_size.toString());
+    }
+    
+    if (filters.sort_by) searchParams.set('sort_by', filters.sort_by);
+    if (filters.sort_dir) searchParams.set('sort_dir', filters.sort_dir);
+    if (filters.search) searchParams.set('search', filters.search);
+    if (filters.is_active !== undefined) searchParams.set('is_active', filters.is_active.toString());
+    if (filters.parent_id) searchParams.set('parent_id', filters.parent_id);
+
+    const endpoint = `/api/pim/marketplace-categories${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+
+    const response = await this.request<{
+      categories: MarketplaceCategory[];
+      pagination: {
+        total: number;
+        offset: number;
+        limit: number;
+        has_next: boolean;
+        has_prev: boolean;
+        total_pages: number;
+      };
+    }>(endpoint, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${adminToken}`,
@@ -495,7 +544,7 @@ class MarketplaceApiClient {
       return { error: response.error };
     }
 
-    return { data: response.data || [] };
+    return { data: response.data };
   }
 
   // Build category tree from flat list

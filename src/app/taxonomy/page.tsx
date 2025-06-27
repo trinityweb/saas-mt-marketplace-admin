@@ -327,13 +327,12 @@ export default function TaxonomyPage() {
       
       // Para vista de árbol, obtener todas las categorías
       if (activeView === 'tree') {
-        params.append('limit', '1000'); // Obtener todas para el árbol
-        params.append('offset', '0');
+        params.append('page', '1');
+        params.append('page_size', '1000'); // Obtener todas para el árbol
       } else {
-        // Paginación normal para tabla
-        const offset = (page - 1) * size;
-        params.append('offset', offset.toString());
-        params.append('limit', size.toString());
+        // Paginación normal para tabla - enviar page y page_size
+        params.append('page', page.toString());
+        params.append('page_size', size.toString());
       }
       
       // Filtros
@@ -344,20 +343,39 @@ export default function TaxonomyPage() {
         params.append('is_active', activeFilter);
       }
 
+      // Agregar timestamp para evitar cache
+      params.append('_t', Date.now().toString());
+      
       const apiUrl = `/api/pim/marketplace-categories?${params.toString()}`;
       console.log('🌐 API URL:', apiUrl);
 
-      const response = await fetch(apiUrl);
+      const response = await fetch(apiUrl, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
       
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
       
       const data = await response.json();
-      console.log('📦 API Response:', data);
+      console.log('📦 API Response:', {
+        categories_count: data.categories?.length || 0,
+        pagination: data.pagination,
+        first_category: data.categories?.[0]?.name,
+        first_3_categories: data.categories?.slice(0, 3)?.map((c: any) => c.name),
+        full_response: data
+      });
       
       // Usar la estructura correcta: categories en lugar de data
       const categoriesData = data.categories || [];
+      console.log('🎯 Setting categories to state:', {
+        count: categoriesData.length,
+        first_3_names: categoriesData.slice(0, 3).map((c: any) => c.name),
+        page: page
+      });
       setCategories(categoriesData);
       
       // Calcular estadísticas desde los datos reales
@@ -398,21 +416,18 @@ export default function TaxonomyPage() {
     fetchCategories(1, 20, '', 'all');
   }, []); // Sin dependencias
 
-  // Recargar cuando cambia la vista activa
+  // Recargar cuando cambia la vista activa (SOLO cuando cambia la vista)
   useEffect(() => {
     if (activeView === 'tree') {
       console.log('🌳 Switching to tree view - loading all categories');
       fetchCategories(1, 1000, searchValue, isActiveFilter);
     } else {
       console.log('📋 Switching to table view - loading paginated');
-      fetchCategories(currentPage, pageSize, searchValue, isActiveFilter);
+      // Al cambiar a vista tabla, usar página 1 para evitar conflictos
+      setCurrentPage(1);
+      fetchCategories(1, pageSize, searchValue, isActiveFilter);
     }
-  }, [activeView]);
-
-  // Refrescar datos cuando cambia la vista
-  useEffect(() => {
-    fetchCategories(currentPage, pageSize, searchValue, isActiveFilter);
-  }, [activeView]);
+  }, [activeView]); // SOLO cuando cambia activeView
 
   // Función con debounce para búsqueda
   const debouncedSearch = (newSearchValue: string) => {
@@ -435,9 +450,12 @@ export default function TaxonomyPage() {
   };
 
   const handlePageChange = (page: number) => {
-    console.log('📄 Page changed:', page);
+    console.log('📄 Page changed:', page, 'Current activeView:', activeView);
     setCurrentPage(page);
-    fetchCategories(page, pageSize, searchValue, isActiveFilter);
+    // Solo hacer fetch si estamos en vista tabla
+    if (activeView === 'table') {
+      fetchCategories(page, pageSize, searchValue, isActiveFilter);
+    }
   };
 
   const handlePageSizeChange = (size: number) => {
@@ -673,6 +691,11 @@ export default function TaxonomyPage() {
 
         {/* Vista de Tabla */}
         <TabsContent value="table" className="space-y-6">
+          {console.log('🎯 About to render table with categories:', {
+            count: categories.length,
+            first_3_names: categories.slice(0, 3).map(c => c.name),
+            currentPage: currentPage
+          })}
           <CriteriaDataTable
             columns={columns}
             data={categories}
