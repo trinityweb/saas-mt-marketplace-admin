@@ -134,7 +134,16 @@ export default function RolesPage() {
     },
     {
       accessorKey: "description",
-      header: "Descripción",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Descripción
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const description = row.getValue("description") as string;
         return (
@@ -146,7 +155,16 @@ export default function RolesPage() {
     },
     {
       accessorKey: "saas",
-      header: "SaaS",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          SaaS
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const saas = row.getValue("saas") as string;
         return (
@@ -158,7 +176,16 @@ export default function RolesPage() {
     },
     {
       accessorKey: "created_at",
-      header: "Creado",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Creado
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const createdAt = row.getValue("created_at") as string;
         return (
@@ -214,6 +241,7 @@ export default function RolesPage() {
         buttonText="Crear Rol"
         loading={loading}
         filters={roleFilters}
+        fullWidth={true}
         onSearchChange={criteriaState.handleSearchChange}
         onCreateClick={() => {
           setEditingRole(null);

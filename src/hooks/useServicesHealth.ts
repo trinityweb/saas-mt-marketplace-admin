@@ -140,7 +140,7 @@ export function useServicesHealth(refreshInterval: number = 30000) {
     const interval = setInterval(checkAllServices, refreshInterval)
 
     return () => clearInterval(interval)
-  }, [refreshInterval])
+  }, [refreshInterval, checkAllServices])
 
   return {
     ...healthData,

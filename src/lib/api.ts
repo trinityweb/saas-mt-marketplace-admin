@@ -2,6 +2,80 @@
 // Manages communication with PIM service marketplace endpoints
 
 // Types
+export interface BusinessTypeTemplate {
+  id: string;
+  business_type_id: string;
+  name: string;
+  description: string;
+  version: string;
+  region: string;
+  is_active: boolean;
+  is_default: boolean;
+  categories: CategoryTemplate[];
+  attributes: AttributeTemplate[];
+  products: ProductTemplate[];
+  brands: MarketplaceBrand[] | string[]; // Support both for backwards compatibility
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CategoryTemplate {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  parent_id?: string;
+  level: number;
+}
+
+export interface AttributeTemplate {
+  id: string;
+  code: string;
+  name: string;
+  type: string;
+  is_required: boolean;
+  default_value?: string;
+  options?: string[];
+}
+
+export interface ProductTemplate {
+  id?: string;
+  name: string;
+  description?: string;
+  category_id: string;
+  category_name?: string;
+  brand_id?: string;
+  brand_name?: string;
+  sku: string;
+  price: number;
+  attributes?: Record<string, any>;
+}
+
+export interface CriteriaResponse<T> {
+  items: T[];
+  total_count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface CreateBusinessTypeTemplateRequest {
+  business_type_id: string;
+  name: string;
+  description: string;
+  version?: string;
+  region: string;
+  categories: CategoryTemplate[];
+  attributes: AttributeTemplate[];
+  products: ProductTemplate[];
+  brands?: MarketplaceBrand[] | string[]; // Support both for backwards compatibility
+  metadata?: Record<string, any>;
+}
+
+export interface UpdateBusinessTypeTemplateRequest extends Partial<CreateBusinessTypeTemplateRequest> {
+  id: string;
+}
 export interface MarketplaceCategory {
   id: string;
   name: string;
@@ -188,6 +262,61 @@ export interface MarketplaceAttributesResponse {
 }
 
 // ====================================
+// MARKETPLACE ATTRIBUTE VALUES INTERFACES
+// ====================================
+
+export interface MarketplaceAttributeValue {
+  id: string;
+  attribute_id: string;
+  value: string;
+  display_name?: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateMarketplaceAttributeValueRequest {
+  attribute_id: string;
+  value: string;
+  display_name?: string;
+  sort_order?: number;
+  is_active?: boolean;
+}
+
+export interface UpdateMarketplaceAttributeValueRequest {
+  value?: string;
+  display_name?: string;
+  sort_order?: number;
+  is_active?: boolean;
+}
+
+export interface MarketplaceAttributeValuesResponse {
+  attribute_values: MarketplaceAttributeValue[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface MarketplaceAttributeFilters {
+  search?: string;
+  type?: string;
+  is_active?: boolean;
+  is_filterable?: boolean;
+  is_required?: boolean;
+  group_name?: string;
+  page_size?: number;
+  page?: number;
+  sort_by?: string;
+  sort_dir?: 'asc' | 'desc';
+}
+
+export interface MarketplaceAttributeWithValues extends MarketplaceAttribute {
+  attribute_values?: MarketplaceAttributeValue[];
+  values_count?: number;
+}
+
+// ====================================
 // MARKETPLACE BRANDS INTERFACES
 // ====================================
 
@@ -251,6 +380,8 @@ export interface MarketplaceBrandFilters {
   country_code?: string;
   page_size?: number;
   page?: number;
+  sort_by?: string;
+  sort_dir?: 'asc' | 'desc';
 }
 
 // ====================================
@@ -520,7 +651,7 @@ class MarketplaceApiClient {
     if (filters.is_active !== undefined) searchParams.set('is_active', filters.is_active.toString());
     if (filters.parent_id) searchParams.set('parent_id', filters.parent_id);
 
-    const endpoint = `/api/pim/marketplace-categories${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const endpoint = `/marketplace-categories${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
 
     const response = await this.request<{
       categories: MarketplaceCategory[];
@@ -538,7 +669,7 @@ class MarketplaceApiClient {
         'Authorization': `Bearer ${adminToken}`,
         'X-User-Role': 'marketplace_admin',
       },
-    });
+    }, 'pim');
 
     if (response.error) {
       return { error: response.error };
@@ -756,6 +887,8 @@ class MarketplaceApiClient {
       is_active?: boolean;
       is_filterable?: boolean;
       group_name?: string;
+      sort_by?: string;
+      sort_dir?: 'asc' | 'desc';
     } = {},
     _adminToken?: string
   ): Promise<ApiResponse<MarketplaceAttributesResponse>> {
@@ -766,8 +899,10 @@ class MarketplaceApiClient {
     if (options.is_active !== undefined) searchParams.set('is_active', options.is_active.toString());
     if (options.is_filterable !== undefined) searchParams.set('is_filterable', options.is_filterable.toString());
     if (options.group_name) searchParams.set('group_name', options.group_name);
+    if (options.sort_by) searchParams.set('sort_by', options.sort_by);
+    if (options.sort_dir) searchParams.set('sort_dir', options.sort_dir);
 
-    const endpoint = `/marketplace/attributes${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const endpoint = `/marketplace-attributes${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
 
     return this.request<MarketplaceAttributesResponse>(endpoint, {
       method: 'GET',
@@ -782,7 +917,7 @@ class MarketplaceApiClient {
     attribute: CreateMarketplaceAttributeRequest,
     _adminToken?: string
   ): Promise<ApiResponse<MarketplaceAttribute>> {
-    return this.request<MarketplaceAttribute>('/marketplace/attributes', {
+    return this.request<MarketplaceAttribute>('/marketplace-attributes', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -796,7 +931,7 @@ class MarketplaceApiClient {
     attributeId: string,
     _adminToken?: string
   ): Promise<ApiResponse<MarketplaceAttribute>> {
-    return this.request<MarketplaceAttribute>(`/marketplace/attributes/${attributeId}`, {
+    return this.request<MarketplaceAttribute>(`/marketplace-attributes/${attributeId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -810,7 +945,7 @@ class MarketplaceApiClient {
     updates: UpdateMarketplaceAttributeRequest,
     _adminToken?: string
   ): Promise<ApiResponse<MarketplaceAttribute>> {
-    return this.request<MarketplaceAttribute>(`/marketplace/attributes/${attributeId}`, {
+    return this.request<MarketplaceAttribute>(`/marketplace-attributes/${attributeId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -824,7 +959,7 @@ class MarketplaceApiClient {
     attributeId: string,
     _adminToken?: string
   ): Promise<ApiResponse<void>> {
-    return this.request<void>(`/marketplace/attributes/${attributeId}`, {
+    return this.request<void>(`/marketplace-attributes/${attributeId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -971,6 +1106,8 @@ class MarketplaceApiClient {
     if (filters.country_code) searchParams.set('country_code', filters.country_code);
     if (filters.page_size) searchParams.set('page_size', filters.page_size.toString());
     if (filters.page) searchParams.set('page', filters.page.toString());
+    if (filters.sort_by) searchParams.set('sort_by', filters.sort_by);
+    if (filters.sort_dir) searchParams.set('sort_dir', filters.sort_dir);
 
     const endpoint = `/marketplace-brands${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
     
@@ -1067,6 +1204,219 @@ class MarketplaceApiClient {
     };
 
     return { data: stats };
+  }
+
+  // ====================================
+  // MARKETPLACE ATTRIBUTE VALUES MANAGEMENT
+  // ====================================
+
+  async getAllMarketplaceAttributeValues(
+    attributeId: string,
+    options: {
+      page?: number;
+      page_size?: number;
+      search?: string;
+      is_active?: boolean;
+    } = {},
+    _adminToken?: string
+  ): Promise<ApiResponse<MarketplaceAttributeValuesResponse>> {
+    const searchParams = new URLSearchParams();
+    
+    if (options.page) searchParams.set('page', options.page.toString());
+    if (options.page_size) searchParams.set('page_size', options.page_size.toString());
+    if (options.search) searchParams.set('search', options.search);
+    if (options.is_active !== undefined) searchParams.set('is_active', options.is_active.toString());
+
+    const endpoint = `/marketplace-attributes/${attributeId}/values${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    
+    return this.request<MarketplaceAttributeValuesResponse>(endpoint, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+    }, 'pim');
+  }
+
+  async createMarketplaceAttributeValue(
+    value: CreateMarketplaceAttributeValueRequest,
+    _adminToken?: string
+  ): Promise<ApiResponse<MarketplaceAttributeValue>> {
+    return this.request<MarketplaceAttributeValue>(`/marketplace-attributes/${value.attribute_id}/values`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+      body: JSON.stringify(value),
+    }, 'pim');
+  }
+
+  async getMarketplaceAttributeValue(
+    attributeId: string,
+    valueId: string,
+    _adminToken?: string
+  ): Promise<ApiResponse<MarketplaceAttributeValue>> {
+    return this.request<MarketplaceAttributeValue>(`/marketplace-attributes/${attributeId}/values/${valueId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+    }, 'pim');
+  }
+
+  async updateMarketplaceAttributeValue(
+    attributeId: string,
+    valueId: string,
+    updates: UpdateMarketplaceAttributeValueRequest,
+    _adminToken?: string
+  ): Promise<ApiResponse<MarketplaceAttributeValue>> {
+    return this.request<MarketplaceAttributeValue>(`/marketplace-attributes/${attributeId}/values/${valueId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+      body: JSON.stringify(updates),
+    }, 'pim');
+  }
+
+  async deleteMarketplaceAttributeValue(
+    attributeId: string,
+    valueId: string,
+    _adminToken?: string
+  ): Promise<ApiResponse<void>> {
+    return this.request<void>(`/marketplace-attributes/${attributeId}/values/${valueId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+    }, 'pim');
+  }
+
+  async getMarketplaceAttributeWithValues(
+    attributeId: string,
+    _adminToken?: string
+  ): Promise<ApiResponse<MarketplaceAttributeWithValues>> {
+    // Obtener el atributo y sus valores en paralelo
+    const [attributeResponse, valuesResponse] = await Promise.all([
+      this.getMarketplaceAttribute(attributeId, _adminToken),
+      this.getAllMarketplaceAttributeValues(attributeId, { page_size: 1000 }, _adminToken)
+    ]);
+
+    if (attributeResponse.error) {
+      return { error: attributeResponse.error };
+    }
+
+    if (valuesResponse.error) {
+      return { error: valuesResponse.error };
+    }
+
+    const attributeWithValues: MarketplaceAttributeWithValues = {
+      ...attributeResponse.data!,
+      attribute_values: valuesResponse.data?.attribute_values || [],
+      values_count: valuesResponse.data?.total || 0
+    };
+
+    return { data: attributeWithValues };
+  }
+
+  // =================================
+  // BUSINESS TYPE TEMPLATES METHODS
+  // =================================
+
+  async getBusinessTypeTemplates(
+    params?: {
+      page?: number;
+      page_size?: number;
+      search?: string;
+      business_type_id?: string;
+      region?: string;
+      is_active?: boolean;
+      is_default?: boolean;
+      sort_by?: string;
+      sort_dir?: 'asc' | 'desc';
+    },
+    _adminToken?: string
+  ): Promise<ApiResponse<CriteriaResponse<BusinessTypeTemplate>>> {
+    const searchParams = new URLSearchParams();
+    
+    if (params?.page) searchParams.append('page', params.page.toString());
+    if (params?.page_size) searchParams.append('page_size', params.page_size.toString());
+    if (params?.search) searchParams.append('search', params.search);
+    if (params?.business_type_id) searchParams.append('business_type_id', params.business_type_id);
+    if (params?.region) searchParams.append('region', params.region);
+    if (params?.is_active !== undefined) searchParams.append('is_active', params.is_active.toString());
+    if (params?.is_default !== undefined) searchParams.append('is_default', params.is_default.toString());
+    if (params?.sort_by) searchParams.append('sort_by', params.sort_by);
+    if (params?.sort_dir) searchParams.append('sort_dir', params.sort_dir);
+
+    const url = `/business-type-templates${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    
+    return this.request<CriteriaResponse<BusinessTypeTemplate>>(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+    }, 'pim');
+  }
+
+  async getBusinessTypeTemplate(
+    templateId: string,
+    _adminToken?: string
+  ): Promise<ApiResponse<{ template: BusinessTypeTemplate }>> {
+    return this.request<{ template: BusinessTypeTemplate }>(`/business-type-templates/${templateId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+    }, 'pim');
+  }
+
+  async createBusinessTypeTemplate(
+    template: CreateBusinessTypeTemplateRequest,
+    _adminToken?: string
+  ): Promise<ApiResponse<{ template: BusinessTypeTemplate }>> {
+    return this.request<{ template: BusinessTypeTemplate }>(`/business-type-templates`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+      body: JSON.stringify(template),
+    }, 'pim');
+  }
+
+  async updateBusinessTypeTemplate(
+    templateId: string,
+    template: Partial<CreateBusinessTypeTemplateRequest>,
+    _adminToken?: string
+  ): Promise<ApiResponse<{ template: BusinessTypeTemplate }>> {
+    return this.request<{ template: BusinessTypeTemplate }>(`/business-type-templates/${templateId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+      body: JSON.stringify(template),
+    }, 'pim');
+  }
+
+  async deleteBusinessTypeTemplate(
+    templateId: string,
+    _adminToken?: string
+  ): Promise<ApiResponse<{ message: string }>> {
+    return this.request<{ message: string }>(`/business-type-templates/${templateId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+    }, 'pim');
   }
 }
 

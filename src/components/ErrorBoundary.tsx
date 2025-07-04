@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Card } from "@/components/shared-ui/molecules/card"
+import { Button } from "@/components/shared-ui/atoms/button"
+import { Alert, AlertDescription } from "@/components/shared-ui/atoms/alert"
 import { 
   AlertTriangle,
   RefreshCw,

@@ -13,39 +13,15 @@
 - 📊 [Análisis Servicios Kong](../api-gateway/kong.yml)
 - 🔗 [Especificaciones OpenAPI](../combined-services-postman-collection.json)
 
-## 🎉 **ESTADO ACTUAL: FASE 1 COMPLETADA**
-
-### ✅ **MIGRACIÓN MONGODB COMPLETADA (100%)**
-- **Base de datos**: PostgreSQL → MongoDB migración completa
-- **Repositorios**: Todos los repositorios MongoDB implementados y funcionando
-- **API Endpoints**: Todos los endpoints marketplace operativos
-- **Tests**: 10/10 tests de integración pasando
-- **Kong Gateway**: Configuración completa y funcional
-
-### ✅ **INFRAESTRUCTURA DE TESTS REORGANIZADA**
-- **Directorio**: `test-integration/` con todos los tests organizados
-- **Script maestro**: `run_integration_tests.sh` con múltiples opciones
-- **Cobertura**: Tests de MongoDB, CRUD y Marketplace completos
-- **CI/CD Ready**: Preparado para integración continua
+## 🎉 **ESTADO ACTUAL: FASE 1**
 
 ### ✅ **FUNCIONALIDADES IMPLEMENTADAS**
 - ✅ **Categorías Marketplace**: Creación y validación de jerarquías
-- ✅ **Mapeos de Categorías**: Tenant categories → Marketplace categories
-- ✅ **Atributos Personalizados**: CRUD completo con validaciones
-- ✅ **Taxonomía Tenant**: Obtención de estructura personalizada
-- ✅ **Sincronización**: Sistema de cambios marketplace
+- [ ] **Mapeos de Categorías**: Tenant categories → Marketplace categories
+- [ ] **Atributos Personalizados**: CRUD completo con validaciones
+- [ ] **Taxonomía Tenant**: Obtención de estructura personalizada
 - ✅ **Validaciones**: Autorización y tenant ID
 
-## ⚠️ CORRECCIÓN IMPORTANTE: ATRIBUTOS EN VARIANTES
-
-**❌ Error de diseño inicial corregido**: Inicialmente se propuso `product_marketplace_attributes` conectando atributos directamente a productos.
-
-**✅ Diseño correcto**: Los atributos van en `variant_marketplace_attributes` conectando a `product_variants`, porque:
-- En nuestro sistema actual, atributos como talle, color van en variantes
-- Las búsquedas son por variantes específicas (con stock real)
-- Los filtros deben mostrar solo opciones disponibles
-
-**Ver**: [DATABASE_SCHEMA_EXPLAINED.md](./DATABASE_SCHEMA_EXPLAINED.md) para detalles completos.
 
 ## 🎯 OBJETIVOS Y JUSTIFICACIÓN
 
@@ -54,13 +30,13 @@
 **Caso Real**: María tiene una tienda de ropa en Bahía Blanca
 - En **MercadoLibre**: Debe elegir entre 500+ subcategorías predefinidas
 - Sus productos se pierden en categorías genéricas como "Remera > Mujer > Manga Corta"
-- No puede agregar "Talle Local" o "Calce Bahiense" que sus clientas entienden
+- No puede agregar "Talle Único" o "XXXL" que sus clientas entienden
 - **Resultado**: Productos mal categorizados = menos ventas
 
 **Con Nuestro Sistema**:
 - Empieza con categorías marketplace simples: "Remeras"
-- Agrega sus propias variaciones: "Remeras Playeras", "Remeras de Abrigo"
-- Define talles locales: "S", "M", "L", "Talle Único"
+- Agrega sus propias variaciones: "Remeras Playeras", "Remeras Estampadas"
+- Define sus talles: "XXXL" o "Talle Único"
 - **Resultado**: Catálogo que habla como María y sus clientes
 
 ### 💡 Principios de Diseño
@@ -128,10 +104,9 @@ tenant_category_mappings: {tenant_id, marketplace_category_id, custom_name}
 
 ---
 
-## ✅ FASE 1: FUNDACIÓN MARKETPLACE (COMPLETADA)
+## ✅ FASE 1: INTEGRACION PIM - MARKETPLACE ADMIN
 
 ### ✅ 1.1 Migración a MongoDB 
-**Responsable**: Backend Developer | **Completado**: 2024-12-16
 
 #### ✅ 1.1.1 Migración Base de Datos
 - ✅ **MongoDB configurado**: Conexión y cliente implementado

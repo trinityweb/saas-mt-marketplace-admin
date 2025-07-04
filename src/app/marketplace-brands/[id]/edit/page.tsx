@@ -348,7 +348,7 @@ export default function BrandEditPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="space-y-6">
       {/* Error de guardado */}
       {error && (
         <Card className="border-destructive">
@@ -356,6 +356,39 @@ export default function BrandEditPage() {
             <div className="flex items-center space-x-2 text-destructive">
               <AlertTriangle className="h-4 w-4" />
               <span className="text-sm">{error}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Info Card - Marca que se está editando */}
+      {originalBrand && (
+        <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                  <Award className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-blue-900 dark:text-blue-100">
+                    {originalBrand.name}
+                  </h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    {originalBrand.country_code ? `Marca de ${originalBrand.country_code}` : 'Marca del marketplace'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant={originalBrand.is_active ? "default" : "secondary"}>
+                  {originalBrand.is_active ? "Activa" : "Inactiva"}
+                </Badge>
+                <Badge variant={originalBrand.verification_status === 'verified' ? "default" : "outline"} className="text-blue-600 border-blue-300">
+                  {originalBrand.verification_status === 'verified' ? 'Verificada' : 
+                   originalBrand.verification_status === 'pending' ? 'Pendiente' : 
+                   originalBrand.verification_status === 'disputed' ? 'Disputada' : 'No verificada'}
+                </Badge>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -580,7 +613,7 @@ export default function BrandEditPage() {
       </Card>
 
       {/* Acciones */}
-      <div className="flex justify-between">
+      <div className="flex justify-end gap-2">
         <Button 
           variant="outline" 
           onClick={() => router.push(`/marketplace-brands/${brandId}`)}
@@ -588,27 +621,17 @@ export default function BrandEditPage() {
           Cancelar
         </Button>
         
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline"
-            onClick={() => router.push(`/marketplace-brands/${brandId}`)}
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            Ver Detalles
-          </Button>
-          
-          <Button 
-            onClick={handleSave}
-            disabled={!hasChanges || saving}
-          >
-            {saving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
-            Guardar Cambios
-          </Button>
-        </div>
+        <Button 
+          onClick={handleSave}
+          disabled={!hasChanges || saving}
+        >
+          {saving ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4 mr-2" />
+          )}
+          Guardar Cambios
+        </Button>
       </div>
     </div>
   );

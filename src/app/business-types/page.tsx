@@ -342,7 +342,7 @@ export default function BusinessTypesPage() {
   }
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="space-y-6">
       <CriteriaDataTable
         columns={columns}
         data={criteriaResponse.data}
@@ -360,6 +360,7 @@ export default function BusinessTypesPage() {
         onPageSizeChange={criteriaState.handlePageSizeChange}
         onSortChange={criteriaState.handleSortChange}
         showSearch={true}
+        fullWidth={true}
       />
 
       {/* Modal de detalles */}

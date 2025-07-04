@@ -1,10 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { StatsCard } from "@/components/ui/stats-card"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect, memo } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shared-ui/molecules/card"
+import { Button } from "@/components/shared-ui/atoms/button"
+import { Badge } from "@/components/shared-ui/atoms/badge"
+import dynamic from 'next/dynamic'
+
+// Lazy load StatsCard
+const StatsCard = dynamic(() => import("@/components/ui/stats-card").then(mod => ({ default: mod.StatsCard })), {
+  loading: () => <Card className="animate-pulse"><CardContent className="h-32" /></Card>
+})
 import { 
   LayoutDashboard, 
   Settings, 
@@ -236,7 +241,7 @@ export default function MarketplaceAdminPage() {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="group hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
-            <CardContent className="p-4">
+            <CardContent>
               <Link href="/marketplace-brands/create" className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
                   <Plus className="w-5 h-5 text-orange-600" />
@@ -250,7 +255,7 @@ export default function MarketplaceAdminPage() {
           </Card>
 
           <Card className="group hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
-            <CardContent className="p-4">
+            <CardContent>
               <Link href="/iam/tenants/create" className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
                   <Plus className="w-5 h-5 text-blue-600" />
@@ -264,7 +269,7 @@ export default function MarketplaceAdminPage() {
           </Card>
 
           <Card className="group hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
-            <CardContent className="p-4">
+            <CardContent>
               <Link href="/global-catalog" className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
                   <Search className="w-5 h-5 text-green-600" />
@@ -278,7 +283,7 @@ export default function MarketplaceAdminPage() {
           </Card>
 
           <Card className="group hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
-            <CardContent className="p-4">
+            <CardContent>
               <Link href="/taxonomy" className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
                   <Filter className="w-5 h-5 text-purple-600" />

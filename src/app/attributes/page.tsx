@@ -12,16 +12,16 @@ import {
   Eye
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { Button } from '@/components/shared-ui/atoms/button';
+import { Badge } from '@/components/shared-ui/atoms/badge';
+import { Card } from '@/components/shared-ui/molecules/card';
 import { 
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/shared-ui/organisms/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +29,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/shared-ui/molecules/dropdown-menu';
 
 import { marketplaceApi, TenantCustomAttribute } from '@/lib/api';
 import Link from 'next/link';

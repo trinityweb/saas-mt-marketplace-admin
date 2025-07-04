@@ -1,0 +1,88 @@
+import { Meta } from '@storybook/blocks'
+
+<Meta title="Shared UI/Introduction" />
+
+# Shared UI Component Library
+
+Welcome to the Shared UI component library! This library provides a comprehensive set of reusable components built with React, TypeScript, and Tailwind CSS, following the Atomic Design methodology.
+
+## 🎯 Philosophy
+
+Our component library is built on these core principles:
+
+- **Atomic Design**: Components are organized into atoms, molecules, and organisms
+- **Accessibility First**: All components follow WCAG guidelines
+- **Type Safety**: Full TypeScript support with comprehensive types
+- **Customizable**: Easy to extend and customize with Tailwind classes
+- **Performance**: Optimized for minimal bundle size and fast rendering
+
+## 🏗️ Structure
+
+### Atoms
+Basic building blocks that can't be broken down further:
+- Button, Input, Label, Badge
+- Checkbox, Switch, Separator
+- Alert, Loading, Textarea, Tabs
+
+### Molecules
+Combinations of atoms that form functional units:
+- Card (with Header, Content, Footer)
+- Select (with dropdown functionality)
+- Form (with validation support)
+- DropdownMenu (contextual menus)
+
+### Organisms
+Complex components that combine molecules and atoms:
+- AdminSidebar (configurable navigation)
+- ThemeSelector (theme switching)
+- Dialog (modal windows)
+- Table (data display)
+
+## 🚀 Getting Started
+
+```tsx
+// Import components from shared-ui
+import { Button, Card, Dialog } from '@/shared-ui'
+
+// Use them in your components
+function MyComponent() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Welcome!</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Button>Get Started</Button>
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+## 🎨 Theming
+
+All components support dark mode out of the box and can be customized using CSS variables:
+
+```css
+:root {
+  --primary: 259 80% 60%;
+  --secondary: 240 5% 96%;
+  --accent: 240 5% 96%;
+  /* ... more variables */
+}
+```
+
+## 📦 Bundle Size
+
+We prioritize performance and minimal bundle size. Components are tree-shakeable, so you only import what you use.
+
+## 🤝 Contributing
+
+When adding new components:
+1. Follow the Atomic Design principles
+2. Include TypeScript types
+3. Add Storybook stories
+4. Ensure accessibility
+5. Write tests
+
+Happy coding! 🎉

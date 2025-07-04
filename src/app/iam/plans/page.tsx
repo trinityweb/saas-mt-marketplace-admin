@@ -136,7 +136,16 @@ export default function PlansPage() {
     },
     {
       accessorKey: "monthly_price",
-      header: "Precio Mensual",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Precio Mensual
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const price = parseFloat(row.getValue("monthly_price"));
         const formatted = new Intl.NumberFormat("es-ES", {
@@ -148,7 +157,16 @@ export default function PlansPage() {
     },
     {
       accessorKey: "yearly_price",
-      header: "Precio Anual",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Precio Anual
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const price = parseFloat(row.getValue("yearly_price"));
         const formatted = new Intl.NumberFormat("es-ES", {
@@ -160,7 +178,16 @@ export default function PlansPage() {
     },
     {
       accessorKey: "saas",
-      header: "SaaS",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          SaaS
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const saas = row.getValue("saas") as string;
         return (
@@ -172,7 +199,12 @@ export default function PlansPage() {
     },
     {
       accessorKey: "features",
-      header: "Características",
+      header: () => (
+        <div className="font-semibold">
+          Características
+        </div>
+      ),
+      enableSorting: false,
       cell: ({ row }) => {
         const features = row.getValue("features") as string[];
         return (
@@ -237,6 +269,7 @@ export default function PlansPage() {
         buttonText="Crear Plan"
         loading={loading}
         filters={planFilters}
+        fullWidth={true}
         onSearchChange={criteriaState.handleSearchChange}
         onCreateClick={() => {
           setEditingPlan(null);

@@ -263,6 +263,8 @@ export interface BusinessTypeTemplateFilters {
   is_active?: boolean;
   is_default?: boolean;
   version?: string;
+  sort_by?: string;
+  sort_dir?: 'asc' | 'desc';
 }
 
 export interface MarketplaceCategoryFilters {

@@ -146,7 +146,16 @@ export default function TenantsPage() {
     },
     {
       accessorKey: "type",
-      header: "Tipo",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Tipo
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const type = row.getValue("type") as string;
         return (
@@ -158,7 +167,16 @@ export default function TenantsPage() {
     },
     {
       accessorKey: "status",
-      header: "Estado",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Estado
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const status = row.getValue("status") as string;
         const variant = status === 'active' ? 'default' : 'secondary';
@@ -171,7 +189,12 @@ export default function TenantsPage() {
     },
     {
       accessorKey: "user_count",
-      header: "Usuarios",
+      header: () => (
+        <div className="font-semibold">
+          Usuarios
+        </div>
+      ),
+      enableSorting: false,
       cell: ({ row }) => {
         const tenant = row.original;
         return (
@@ -183,7 +206,16 @@ export default function TenantsPage() {
     },
     {
       accessorKey: "plan_id",
-      header: "Plan",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Plan
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const tenant = row.original;
         return (
@@ -239,6 +271,7 @@ export default function TenantsPage() {
         buttonText="Crear Tenant"
         loading={loading}
         filters={tenantFilters}
+        fullWidth={true}
         onSearchChange={criteriaState.handleSearchChange}
         onCreateClick={() => {
           setEditingTenant(null);

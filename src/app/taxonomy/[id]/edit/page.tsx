@@ -256,7 +256,7 @@ export default function CategoryEditPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="space-y-6">
       {/* Error de guardado */}
       {error && (
         <Card className="border-destructive">
@@ -264,6 +264,37 @@ export default function CategoryEditPage() {
             <div className="flex items-center space-x-2 text-destructive">
               <AlertTriangle className="h-4 w-4" />
               <span className="text-sm">{error}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Info Card - Categoría que se está editando */}
+      {originalCategory && (
+        <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
+                  <TreePine className="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-green-900 dark:text-green-100">
+                    {originalCategory.name}
+                  </h3>
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    {originalCategory.parent_id ? `Subcategoría - Nivel ${originalCategory.level}` : 'Categoría Principal'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant={originalCategory.is_active ? "default" : "secondary"}>
+                  {originalCategory.is_active ? "Activa" : "Inactiva"}
+                </Badge>
+                <Badge variant="outline" className="text-green-600 border-green-300">
+                  Nivel {originalCategory.level}
+                </Badge>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -399,7 +430,7 @@ export default function CategoryEditPage() {
       )}
 
       {/* Acciones */}
-      <div className="flex justify-between">
+      <div className="flex justify-end gap-2">
         <Button 
           variant="outline" 
           onClick={() => router.push(`/taxonomy/${categoryId}`)}
@@ -407,27 +438,17 @@ export default function CategoryEditPage() {
           Cancelar
         </Button>
         
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline"
-            onClick={() => router.push(`/taxonomy/${categoryId}`)}
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            Ver Detalles
-          </Button>
-          
-          <Button 
-            onClick={handleSave}
-            disabled={!hasChanges || saving}
-          >
-            {saving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
-            Guardar Cambios
-          </Button>
-        </div>
+        <Button 
+          onClick={handleSave}
+          disabled={!hasChanges || saving}
+        >
+          {saving ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4 mr-2" />
+          )}
+          Guardar Cambios
+        </Button>
       </div>
     </div>
   );

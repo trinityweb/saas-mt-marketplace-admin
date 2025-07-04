@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { 
   Plus, 
   Settings,
@@ -13,7 +13,8 @@ import {
   Copy,
   Download,
   Globe,
-  MapPin
+  MapPin,
+  ArrowUpDown
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -41,22 +42,14 @@ import { CriteriaDataTable, CriteriaResponse, SearchCriteria } from '@/component
 import { useTableCriteria } from '@/hooks/use-table-criteria';
 import { Filter as FilterType } from '@/components/ui/table-toolbar';
 import { ColumnDef } from '@tanstack/react-table';
+import { marketplaceApi, BusinessTypeTemplate as ApiBusinessTypeTemplate } from '@/lib/api';
 
-// Definir tipos para Business Type Templates
-interface BusinessTypeTemplate {
-  id: string;
-  business_type_id: string;
-  name: string;
-  description: string;
-  version: string;
-  region: string;
-  is_active: boolean;
-  is_default: boolean;
+// Extender el tipo de la API con campos calculados para la UI
+interface BusinessTypeTemplate extends ApiBusinessTypeTemplate {
   categories_count: number;
   attributes_count: number;
   products_count: number;
-  created_at: string;
-  updated_at: string;
+  brands_count: number;
   business_type?: {
     id: string;
     name: string;
@@ -68,17 +61,108 @@ export default function BusinessTypeTemplatesPage() {
   const { token } = useAuth();
   const { setHeaderProps, clearHeaderProps } = useHeader();
   
-  const [templates, setTemplates] = useState<BusinessTypeTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedTemplate, setSelectedTemplate] = useState<BusinessTypeTemplate | null>(null);
 
-  // Estado para paginación simulada
+  // Hook para manejar criterios de búsqueda - MOVIDO ANTES de otros estados
+  const criteriaState = useTableCriteria({
+    defaultPageSize: 20,
+    onSearch: (criteria: SearchCriteria) => {
+      // La búsqueda será manejada por loadTemplates
+      console.log('Search criteria:', criteria);
+    }
+  });
+
+  // Estado para datos de la tabla
+  const [templates, setTemplates] = useState<BusinessTypeTemplate[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [criteriaResponse, setCriteriaResponse] = useState<CriteriaResponse<BusinessTypeTemplate>>({
     data: [],
     total_count: 0,
     page: 1,
     page_size: 20
   });
+
+  // Función para cargar datos directamente
+  const loadTemplates = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const params = {
+        page: criteriaState.criteria.page,
+        page_size: criteriaState.criteria.page_size,
+        sort_by: criteriaState.criteria.sort_by,
+        sort_dir: criteriaState.criteria.sort_dir,
+        search: criteriaState.criteria.search,
+        region: criteriaState.criteria.region !== 'all' ? criteriaState.criteria.region : undefined,
+        is_active: criteriaState.criteria.is_active === 'true' ? true : criteriaState.criteria.is_active === 'false' ? false : undefined,
+        is_default: criteriaState.criteria.is_default === 'true' ? true : criteriaState.criteria.is_default === 'false' ? false : undefined,
+      };
+
+      console.log('🔄 Loading templates with criteria:', criteriaState.criteria);
+      const response = await marketplaceApi.getBusinessTypeTemplates(params, token);
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      if (response.data) {
+        // Manear items null como array vacío
+        const items = response.data.items || [];
+        // Mapear los datos de la API agregando campos calculados
+        const templatesWithCounts: BusinessTypeTemplate[] = items.map(template => ({
+          ...template,
+          categories_count: template.categories?.length || 0,
+          attributes_count: template.attributes?.length || 0,
+          products_count: template.products?.length || 0,
+          brands_count: template.brands?.length || 0,
+          // Agregar datos simulados del business type por ahora
+          business_type: {
+            id: template.business_type_id,
+            name: template.name.split(' - ')[0] || template.name,
+            code: template.business_type_id.split('-')[0] || 'unknown'
+          }
+        }));
+
+        console.log('📦 Received response:', {
+          items_count: templatesWithCounts.length,
+          total_count: response.data.total_count,
+          page: response.data.page,
+          first_item: templatesWithCounts[0]?.name
+        });
+
+        setTemplates(templatesWithCounts);
+        setCriteriaResponse({
+          data: templatesWithCounts,
+          total_count: response.data.total_count,
+          page: response.data.page,
+          page_size: response.data.page_size
+        });
+      } else {
+        // Si no hay data, establecer estado vacío
+        setTemplates([]);
+        setCriteriaResponse({
+          data: [],
+          total_count: 0,
+          page: 1,
+          page_size: 20
+        });
+      }
+    } catch (err: any) {
+      console.error('Error loading templates:', err);
+      setError(err.message || 'Error al cargar plantillas de tipos de negocio');
+      setTemplates([]);
+      setCriteriaResponse({
+        data: [],
+        total_count: 0,
+        page: criteriaState.criteria.page,
+        page_size: criteriaState.criteria.page_size
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [criteriaState.criteria, token]);
 
   // Icono memoizado para evitar recrear JSX
   const headerIcon = useMemo(() => <Settings className="w-5 h-5 text-white" />, []);
@@ -98,167 +182,14 @@ export default function BusinessTypeTemplatesPage() {
     };
   }, [setHeaderProps, clearHeaderProps, headerIcon]);
 
-  // Simulación de carga de datos (reemplazar con API real)
+  // Cargar datos cuando cambien los criterios
   useEffect(() => {
-    const fetchTemplates = async () => {
-      setLoading(true);
-      try {
-        // Simular API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Datos de ejemplo
-        const mockTemplates: BusinessTypeTemplate[] = [
-          {
-            id: '1',
-            business_type_id: 'retail-001',
-            name: 'Tienda Retail Básica - Argentina',
-            description: 'Configuración inicial para tiendas retail con productos básicos argentinos',
-            version: '1.0.0',
-            region: 'AR',
-            is_active: true,
-            is_default: true,
-            categories_count: 15,
-            attributes_count: 8,
-            products_count: 150,
-            business_type: {
-              id: 'retail-001',
-              name: 'Tienda Minorista',
-              code: 'retail'
-            },
-            created_at: '2024-01-15T10:00:00Z',
-            updated_at: '2024-01-20T15:30:00Z'
-          },
-          {
-            id: '2',
-            business_type_id: 'restaurant-001',
-            name: 'Restaurante Típico Argentino',
-            description: 'Plantilla para restaurantes con menú argentino tradicional',
-            version: '1.2.0',
-            region: 'AR',
-            is_active: true,
-            is_default: false,
-            categories_count: 8,
-            attributes_count: 12,
-            products_count: 80,
-            business_type: {
-              id: 'restaurant-001',
-              name: 'Restaurante',
-              code: 'restaurant'
-            },
-            created_at: '2024-01-10T09:00:00Z',
-            updated_at: '2024-01-25T11:15:00Z'
-          },
-          {
-            id: '3',
-            business_type_id: 'fashion-001',
-            name: 'Moda y Textiles Premium',
-            description: 'Configuración avanzada para tiendas de moda con atributos detallados',
-            version: '2.0.0',
-            region: 'GLOBAL',
-            is_active: true,
-            is_default: false,
-            categories_count: 25,
-            attributes_count: 20,
-            products_count: 300,
-            business_type: {
-              id: 'fashion-001',
-              name: 'Moda y Textiles',
-              code: 'fashion'
-            },
-            created_at: '2024-01-05T14:00:00Z',
-            updated_at: '2024-01-22T16:45:00Z'
-          }
-        ];
-        
-        setTemplates(mockTemplates);
-      } catch (error) {
-        console.error('Error loading templates:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const timeoutId = setTimeout(() => {
+      loadTemplates();
+    }, 100); // Pequeño debounce para evitar múltiples llamadas
 
-    fetchTemplates();
-  }, []);
-
-  // Función para aplicar filtros y paginación a los datos
-  const applyFiltersAndPagination = useCallback((criteria: SearchCriteria) => {
-    if (!templates) {
-      setCriteriaResponse({
-        data: [],
-        total_count: 0,
-        page: 1,
-        page_size: 20
-      });
-      return;
-    }
-    
-    let filtered = [...templates];
-
-    // Aplicar filtro de búsqueda
-    if (criteria.search) {
-      const searchTerm = criteria.search.toLowerCase();
-      filtered = filtered.filter(template =>
-        template.name.toLowerCase().includes(searchTerm) ||
-        template.description.toLowerCase().includes(searchTerm) ||
-        template.region.toLowerCase().includes(searchTerm) ||
-        template.business_type?.name.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    // Aplicar filtro de estado activo
-    if (criteria.is_active && criteria.is_active !== 'all') {
-      const isActive = criteria.is_active === 'true';
-      filtered = filtered.filter(template => template.is_active === isActive);
-    }
-
-    // Aplicar filtro de región
-    if (criteria.region && criteria.region !== 'all') {
-      filtered = filtered.filter(template => template.region === criteria.region);
-    }
-
-    // Aplicar filtro de plantilla por defecto
-    if (criteria.is_default && criteria.is_default !== 'all') {
-      const isDefault = criteria.is_default === 'true';
-      filtered = filtered.filter(template => template.is_default === isDefault);
-    }
-
-    // Aplicar ordenamiento
-    if (criteria.sort_by) {
-      filtered.sort((a, b) => {
-        const aValue = a[criteria.sort_by as keyof BusinessTypeTemplate];
-        const bValue = b[criteria.sort_by as keyof BusinessTypeTemplate];
-        
-        if (aValue === null || aValue === undefined) return 1;
-        if (bValue === null || bValue === undefined) return -1;
-        
-        const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-        return criteria.sort_dir === 'desc' ? -comparison : comparison;
-      });
-    }
-
-    // Aplicar paginación
-    const page = criteria.page || 1;
-    const pageSize = criteria.page_size || 20;
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginatedData = filtered.slice(startIndex, endIndex);
-
-    setCriteriaResponse({
-      data: paginatedData,
-      total_count: filtered.length,
-      page,
-      page_size: pageSize
-    });
-  }, [templates]);
-
-  // Hook para manejar criterios de búsqueda
-  const criteriaState = useTableCriteria({
-    defaultPageSize: 20,
-    onSearch: (criteria: SearchCriteria) => {
-      applyFiltersAndPagination(criteria);
-    }
-  });
+    return () => clearTimeout(timeoutId);
+  }, [loadTemplates]);
 
   // Filtros configurables para plantillas
   const templateFilters: FilterType[] = useMemo(() => [
@@ -326,60 +257,94 @@ export default function BusinessTypeTemplatesPage() {
   const columns: ColumnDef<BusinessTypeTemplate>[] = useMemo(() => [
     {
       accessorKey: 'name',
-      header: 'Nombre de la Plantilla',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Nombre de la Plantilla
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const template = row.original;
         return (
-          <div className="space-y-1">
-            <div className="font-medium">{template.name}</div>
-            <div className="text-sm text-muted-foreground">
-              {template.business_type?.name}
-            </div>
-            {template.is_default && (
-              <Badge variant="outline" className="text-xs">
-                Por Defecto
-              </Badge>
-            )}
+          <div className="font-medium">{template.name}</div>
+        );
+      },
+    },
+    {
+      accessorKey: 'categories_count',
+      header: () => (
+        <div className="text-right font-semibold">
+          Categorías
+        </div>
+      ),
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="text-sm font-medium text-right">
+          {row.original.categories_count}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'brands_count',
+      header: () => (
+        <div className="text-right font-semibold">
+          Marcas
+        </div>
+      ),
+      enableSorting: false,
+      cell: ({ row }) => {
+        const brands_count = row.original.brands?.length || 0;
+        return (
+          <div className="text-sm font-medium text-right">
+            {brands_count}
           </div>
         );
       },
     },
     {
-      accessorKey: 'version',
-      header: 'Versión',
+      accessorKey: 'products_count',
+      header: () => (
+        <div className="text-right font-semibold">
+          Productos
+        </div>
+      ),
+      enableSorting: false,
       cell: ({ row }) => (
-        <Badge variant="secondary">
-          v{row.original.version}
-        </Badge>
+        <div className="text-sm font-medium text-right">
+          {row.original.products_count}
+        </div>
       ),
     },
     {
-      accessorKey: 'region',
-      header: 'Región',
-      cell: ({ row }) => (
-        <Badge className={getRegionBadgeColor(row.original.region)}>
-          <Globe className="w-3 h-3 mr-1" />
-          {row.original.region}
-        </Badge>
+      accessorKey: 'attributes_count',
+      header: () => (
+        <div className="text-right font-semibold">
+          Atributos
+        </div>
       ),
-    },
-    {
-      accessorKey: 'content_stats',
-      header: 'Contenido',
-      cell: ({ row }) => {
-        const template = row.original;
-        return (
-          <div className="text-sm space-y-1">
-            <div>{template.categories_count} categorías</div>
-            <div>{template.attributes_count} atributos</div>
-            <div>{template.products_count} productos</div>
-          </div>
-        );
-      },
+      enableSorting: false,
+      cell: ({ row }) => (
+        <div className="text-sm font-medium text-right">
+          {row.original.attributes_count}
+        </div>
+      ),
     },
     {
       accessorKey: 'is_active',
-      header: 'Estado',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Estado
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <Badge className={getStatusBadgeColor(row.original.is_active)}>
           {row.original.is_active ? (
@@ -398,7 +363,16 @@ export default function BusinessTypeTemplatesPage() {
     },
     {
       accessorKey: 'updated_at',
-      header: 'Última Actualización',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Última Actualización
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const date = new Date(row.original.updated_at);
         return (
@@ -464,46 +438,38 @@ export default function BusinessTypeTemplatesPage() {
     },
   ], []);
 
-  // Aplicar filtros iniciales cuando se carguen los datos
-  useEffect(() => {
-    if (templates.length > 0) {
-      applyFiltersAndPagination(criteriaState.criteria);
-    }
-  }, [templates, applyFiltersAndPagination, criteriaState.criteria]);
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold">Error al cargar plantillas</h3>
+          <p className="text-muted-foreground">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Plantillas de Tipos de Negocio</h1>
-          <p className="text-muted-foreground">
-            Gestiona las plantillas de configuración quickstart para el onboarding de tenants
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/business-type-templates/create">
-            <Plus className="h-4 w-4 mr-2" />
-            Nueva Plantilla
-          </Link>
-        </Button>
-      </div>
-
+    <div className="space-y-6">
       <CriteriaDataTable
         columns={columns}
         data={criteriaResponse.data}
-        loading={loading}
         totalCount={criteriaResponse.total_count}
-        page={criteriaResponse.page}
+        currentPage={criteriaResponse.page}
         pageSize={criteriaResponse.page_size}
+        loading={loading}
+        searchValue={criteriaState.criteria.search || ''}
+        searchPlaceholder="Buscar plantillas por nombre, descripción o región..."
+        buttonText="Nueva Plantilla"
+        filters={templateFilters}
+        fullWidth={true}
+        onCreateClick={() => console.log('Create template clicked')}
+        onSearchChange={criteriaState.handleSearchChange}
         onPageChange={criteriaState.handlePageChange}
         onPageSizeChange={criteriaState.handlePageSizeChange}
         onSortChange={criteriaState.handleSortChange}
-        filters={templateFilters}
-        searchPlaceholder="Buscar plantillas por nombre, descripción o región..."
-        searchValue={criteriaState.criteria.search || ''}
-        onSearchChange={criteriaState.handleSearchChange}
-        emptyStateTitle="No hay plantillas"
-        emptyStateDescription="No se encontraron plantillas de tipos de negocio con los filtros aplicados."
+        showSearch={true}
       />
 
       {/* Modal de detalles */}

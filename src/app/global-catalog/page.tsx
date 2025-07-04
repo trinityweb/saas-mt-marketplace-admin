@@ -17,7 +17,8 @@ import {
   ImageIcon,
   TrendingUp,
   Award,
-  BarChart3
+  BarChart3,
+  ArrowUpDown
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -187,7 +188,7 @@ const ProductCard = ({ product, onView, onEdit, onVerify, onDelete }: ProductCar
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-200 border-gray-200 hover:border-gray-300">
-      <CardContent className="p-4">
+      <CardContent>
         {/* Imagen del producto */}
         <div className="relative mb-4 bg-gray-50 rounded-lg overflow-hidden" style={{ aspectRatio: '1/1', height: '180px' }}>
           {product.image_url ? (
@@ -325,7 +326,7 @@ const ProductCardsView = ({ products, loading, onView, onEdit, onVerify, onDelet
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {[...Array(8)].map((_, i) => (
           <Card key={i} className="animate-pulse">
-            <CardContent className="p-4">
+            <CardContent>
               <div className="bg-gray-200 rounded-lg h-48 mb-4"></div>
               <div className="space-y-2">
                 <div className="h-4 bg-gray-200 rounded w-3/4"></div>
@@ -605,7 +606,16 @@ export default function GlobalCatalogPage() {
   const columns: ColumnDef<GlobalCatalogProduct>[] = useMemo(() => [
     {
       accessorKey: 'ean',
-      header: 'EAN',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          EAN
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <div className="font-mono text-sm">
           {row.getValue('ean') || 'N/A'}
@@ -614,7 +624,16 @@ export default function GlobalCatalogPage() {
     },
     {
       accessorKey: 'name',
-      header: 'Nombre',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Nombre
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <div className="max-w-[200px] truncate">
           {row.getValue('name')}
@@ -623,7 +642,16 @@ export default function GlobalCatalogPage() {
     },
     {
       accessorKey: 'brand',
-      header: 'Marca',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Marca
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <Badge variant="outline">
           {row.getValue('brand') || 'Sin marca'}
@@ -632,7 +660,16 @@ export default function GlobalCatalogPage() {
     },
     {
       accessorKey: 'category',
-      header: 'Categoría',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Categoría
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <div className="text-sm text-muted-foreground">
           {row.getValue('category') || 'Sin categoría'}
@@ -641,7 +678,16 @@ export default function GlobalCatalogPage() {
     },
     {
       accessorKey: 'price',
-      header: 'Precio',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Precio
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const price = row.getValue('price') as number;
         return price ? (
@@ -655,7 +701,16 @@ export default function GlobalCatalogPage() {
     },
     {
       accessorKey: 'quality_score',
-      header: 'Calidad',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Calidad
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const score = row.getValue('quality_score') as number;
         const getQualityColor = (score: number) => {
@@ -673,7 +728,16 @@ export default function GlobalCatalogPage() {
     },
     {
       accessorKey: 'is_verified',
-      header: 'Verificado',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Verificado
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const isVerified = row.getValue('is_verified') as boolean;
         return (
@@ -685,7 +749,16 @@ export default function GlobalCatalogPage() {
     },
     {
       accessorKey: 'source',
-      header: 'Fuente',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Fuente
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <Badge variant="outline">
           {row.getValue('source')}
@@ -847,6 +920,7 @@ export default function GlobalCatalogPage() {
             searchPlaceholder="Buscar productos por EAN, nombre, marca..."
             buttonText="Nuevo Producto"
             filters={globalCatalogFilters}
+            fullWidth={true}
             onCreateClick={() => router.push('/global-catalog/create')}
             onSearchChange={criteriaState.handleSearchChange}
             onPageChange={criteriaState.handlePageChange}

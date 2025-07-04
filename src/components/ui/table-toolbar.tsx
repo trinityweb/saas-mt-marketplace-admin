@@ -1,8 +1,8 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/shared-ui/atoms/button';
+import { Input } from '@/components/shared-ui/atoms/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/shared-ui/molecules/select';
 import { Plus, Search } from 'lucide-react';
 
 // Tipos de filtros disponibles

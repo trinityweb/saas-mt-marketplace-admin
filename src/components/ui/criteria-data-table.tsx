@@ -17,12 +17,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+} from "@/components/shared-ui/organisms/table"
+import { Button } from "@/components/shared-ui/atoms/button"
+import { Card } from "@/components/shared-ui/molecules/card"
 import { TableToolbar, Filter } from "@/components/ui/table-toolbar"
 import { Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/shared-ui/molecules/select"
 
 // Interface para los datos de paginación del patrón Criteria
 export interface CriteriaResponse<T> {
@@ -60,6 +60,7 @@ interface CriteriaDataTableProps<TData, TValue> {
   onPageSizeChange: (pageSize: number) => void
   onSortChange?: (sortBy: string, sortDir: 'asc' | 'desc') => void
   showSearch?: boolean
+  fullWidth?: boolean // Nueva prop para controlar si se muestra al 100% del ancho
 }
 
 export function CriteriaDataTable<TData, TValue>({
@@ -80,6 +81,7 @@ export function CriteriaDataTable<TData, TValue>({
   onPageSizeChange,
   onSortChange,
   showSearch = true,
+  fullWidth = false,
 }: CriteriaDataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
 
@@ -166,9 +168,9 @@ export function CriteriaDataTable<TData, TValue>({
     return pages
   }
 
-  return (
-    <Card>
-      <div>
+  const tableContent = (
+    <>
+      <div className={fullWidth ? "mb-6" : ""}>
         <TableToolbar
           searchValue={searchValue}
           searchPlaceholder={searchPlaceholder}
@@ -182,7 +184,7 @@ export function CriteriaDataTable<TData, TValue>({
         />
       </div>
       
-      <div>
+      <div className={fullWidth ? "border rounded-lg" : ""}>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -246,7 +248,7 @@ export function CriteriaDataTable<TData, TValue>({
       </div>
 
       {/* Paginación */}
-      <div className="flex flex-col gap-4 py-4 px-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className={`flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between ${fullWidth ? 'px-0 mt-6' : 'px-6'}`}>
         <div className="text-sm text-muted-foreground">
           Mostrando {startItem} a {endItem} de {totalCount} resultados
         </div>
@@ -343,6 +345,16 @@ export function CriteriaDataTable<TData, TValue>({
           </div>
         </div>
       </div>
+    </>
+  )
+
+  return fullWidth ? (
+    <div className="w-full">
+      {tableContent}
+    </div>
+  ) : (
+    <Card>
+      {tableContent}
     </Card>
   )
 } 

@@ -356,6 +356,78 @@ business_types (BD) -> quickstart_templates (BD) -> tenant_configurations (runti
 
 ---
 
+### 📝 [2025-01-08] - Restructuración del Proyecto: Plan Core Features → POS → Marketplace
+
+#### ✅ Lo que se hizo:
+- **Análisis completo del estado real** de microservicios IAM (85%), PIM (90%), Stock (30%)
+- **Reevaluación estratégica**: De marketplace-first a core features → POS → Marketplace
+- **Creación PROJECT_ROADMAP_2025.md**: Plan estructurado de 11 semanas con 5 pasos
+- **Identificación del gap crítico**: Stock service sin funcionalidad real de inventario
+- **Enfoque en templates**: Sistema de onboarding como ventaja competitiva
+
+#### 🧠 Decisiones tomadas:
+- **PASO 0 prioritario**: Completar sistema de templates/quickstart antes que marketplace
+- **Estrategia POS-first**: Cada funcionalidad core sirve para POS y luego marketplace
+- **Documentación centralizada**: En marketplace-admin/public/docs para visualización
+- **Metodología por tarea**: Análisis inicial → implementación → documentación actualizada
+
+#### 🎯 Plan actualizado:
+- **PASO 0**: Quickstart Completo (3 semanas) ← INICIO
+- **PASO 1**: Stock Service Real (2 semanas)
+- **PASO 2**: Sistema de Órdenes (2 semanas)
+- **PASO 3**: POS Web MVP (2 semanas)
+- **PASO 4**: Features Marketplace (2 semanas)
+
+#### 📊 Progreso: PROYECTO REPLANIFICADO - 0% completado del nuevo plan
+
+#### 💡 Insights importantes:
+- El sistema de templates del PIM es excepcional y debe ser el foco inicial
+- Stock service está solo al 30% útil para POS real
+- Documentación debe mantenerse actualizada en cada tarea
+- Trello resulta ineficiente, mejor markdown + GitHub Projects
+
+---
+
+### 📝 [2025-01-08] - PASO 0.1 Completado: Análisis Estado Quickstart
+
+#### ✅ Lo que se hizo:
+- **Auditoría completa del sistema quickstart** en PIM service
+- **Identificación de arquitectura fragmentada**: Módulo YAML obsoleto + Módulo BD funcional
+- **Descubrimiento de BD sólida**: 35 tipos de negocio argentinos reales ya implementados
+- **Análisis de endpoints**: 3 módulos diferentes con funcionalidades solapadas
+- **Documentación de problemas**: Identificación precisa de código y docs obsoletos
+
+#### 🧠 Decisiones tomadas:
+- **Migración necesaria**: Del módulo principal YAML al sistema BD existente
+- **Consolidación de arquitectura**: Unificar en un solo módulo basado en BD
+- **Priorizar funcionalidad existente**: Product/quickstart ya funciona bien
+- **Documentación crítica**: Actualizar completamente para reflejar realidad
+
+#### 🔍 Hallazgos importantes:
+- **35 tipos de negocio argentinos** ya cargados en BD (vs 14 documentados)
+- **Templates funcionales** conectando business_types → marketplace_categories
+- **Módulo product/quickstart operativo** con casos de uso completamente implementados
+- **YamlDataLoader obsoleto** leyendo archivos que no coinciden con BD real
+
+#### 📊 Estado real del quickstart:
+- **Base de datos**: 95% completa (business_types + templates + tracking)
+- **Funcionalidad**: 60% (product/quickstart funciona, principal obsoleto)
+- **Documentación**: 20% actualizada (mayoría obsoleta)
+- **Arquitectura**: Fragmentada pero base sólida
+
+#### 🎯 Próximo paso: PASO 0.2 - Consolidación de arquitectura
+- Migrar módulo principal a usar BD
+- Eliminar dependencias YAML
+- Unificar endpoints de quickstart
+- Actualizar documentación completa
+
+#### 📄 Entregables:
+- **QUICKSTART_ANALYSIS_REPORT.md**: Análisis completo del estado actual
+- **Lista de archivos obsoletos**: Identificados para limpieza
+- **Plan de migración**: Roadmap para consolidación
+
+---
+
 ### 📝 [2025-06-09] - Implementación FASE 1: Fundación Marketplace 
 
 #### ✅ Lo que se hizo:

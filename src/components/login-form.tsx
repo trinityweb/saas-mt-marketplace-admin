@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+// Usando las nuevas importaciones desde shared-ui
+import { Button } from "@/components/shared-ui/atoms/button";
+import { Input } from "@/components/shared-ui/atoms/input";
+import { Label } from "@/components/shared-ui/atoms/label";
 import { useAuth } from '@/hooks/use-auth';
 
 export function LoginForm() {

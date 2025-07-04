@@ -13,18 +13,20 @@ import {
   ExternalLink,
   Shield,
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  ArrowUpDown,
+  MoreHorizontal
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/shared-ui/atoms/button';
+import { Badge } from '@/components/shared-ui/atoms/badge';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/components/shared-ui/molecules/card';
 
 import { useAuth } from '@/hooks/use-auth';
 import { useHeader } from '@/components/layout/admin-layout';
@@ -40,7 +42,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/shared-ui/molecules/dropdown-menu';
 
 const verificationStatusLabels = {
   verified: 'Verificada',
@@ -109,7 +111,16 @@ export default function MarketplaceBrandsPage() {
   const columns: ColumnDef<MarketplaceBrand>[] = useMemo(() => [
     {
       accessorKey: 'name',
-      header: 'Marca',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Marca
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const brand = row.original;
         return (
@@ -139,7 +150,16 @@ export default function MarketplaceBrandsPage() {
     },
     {
       accessorKey: 'verification_status',
-      header: 'Verificación',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Verificación
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const brand = row.original;
         const StatusIcon = verificationStatusIcons[brand.verification_status];
@@ -153,7 +173,16 @@ export default function MarketplaceBrandsPage() {
     },
     {
       accessorKey: 'quality_score',
-      header: 'Calidad',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Calidad
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const brand = row.original;
         // Ajustar el score - si es mayor a 1, dividirlo por 10 para normalizarlo
@@ -174,21 +203,44 @@ export default function MarketplaceBrandsPage() {
     },
     {
       accessorKey: 'product_count',
-      header: 'Productos',
+      header: () => (
+        <div className="font-semibold">
+          Productos
+        </div>
+      ),
+      enableSorting: false,
       cell: ({ row }) => (
         <span className="text-sm font-medium">{row.original.product_count || 0}</span>
       ),
     },
     {
       accessorKey: 'country_code',
-      header: 'País',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          País
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <span className="text-sm">{row.original.country_code || 'N/A'}</span>
       ),
     },
     {
       accessorKey: 'is_active',
-      header: 'Estado',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Estado
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <Badge variant={row.original.is_active ? "default" : "secondary"}>
           {row.original.is_active ? 'Activa' : 'Inactiva'}
@@ -244,7 +296,7 @@ export default function MarketplaceBrandsPage() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Abrir menú</span>
-                <Eye className="h-4 w-4" />
+                <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -368,7 +420,7 @@ export default function MarketplaceBrandsPage() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="space-y-6">
       {/* Estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
@@ -434,11 +486,14 @@ export default function MarketplaceBrandsPage() {
         searchPlaceholder="Buscar por nombre o alias de marca..."
         buttonText="Nueva Marca"
         filters={brandFilters}
+        fullWidth={true}
         onCreateClick={() => router.push('/marketplace-brands/create')}
         onSearchChange={handleSearchChange}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
-        onSortChange={() => {}} // TODO: Implementar sorting en el hook
+        onSortChange={(sortBy: string, sortDir: 'asc' | 'desc') => {
+          loadBrands({ sort_by: sortBy, sort_dir: sortDir, page: 1 });
+        }}
       />
     </div>
   );

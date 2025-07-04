@@ -17,14 +17,15 @@ import {
   Network,
   ChevronDown,
   ChevronRight,
-  ChevronUp
+  ChevronUp,
+  ArrowUpDown
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/shared-ui/atoms/button';
+import { Badge } from '@/components/shared-ui/atoms/badge';
+import { Card } from '@/components/shared-ui/molecules/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/shared-ui/atoms/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +33,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/shared-ui/molecules/dropdown-menu';
 
 import { categoriesApi, Category } from '@/lib/api/categories';
 import { useAuth } from '@/hooks/use-auth';
@@ -527,7 +528,16 @@ export default function TaxonomyPage() {
   const columns: ColumnDef<Category>[] = useMemo(() => [
     {
       accessorKey: 'name',
-      header: 'Nombre',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Nombre
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const category = row.original;
         return (
@@ -540,7 +550,16 @@ export default function TaxonomyPage() {
     },
     {
       accessorKey: 'description',
-      header: 'Descripción',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Descripción
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
           {row.getValue('description') || 'Sin descripción'}
@@ -549,7 +568,16 @@ export default function TaxonomyPage() {
     },
     {
       accessorKey: 'level',
-      header: 'Nivel',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Nivel
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const category = row.original;
         return (
@@ -561,7 +589,16 @@ export default function TaxonomyPage() {
     },
     {
       accessorKey: 'is_active',
-      header: 'Estado',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Estado
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => {
         const category = row.original;
         return (
@@ -642,7 +679,7 @@ export default function TaxonomyPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6">
@@ -711,10 +748,13 @@ export default function TaxonomyPage() {
             onSearchChange={handleSearchChange}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
-            onSortChange={(sort) => {
-              console.log('🔀 Sort changed:', sort);
-              // TODO: implementar ordenamiento
+            onSortChange={(sortBy, sortDir) => {
+              console.log('🔀 Sort changed:', { sortBy, sortDir });
+              setCurrentPage(1);
+              // Agregar los parámetros de ordenamiento a fetchCategories cuando el backend lo soporte
+              fetchCategories(1, pageSize, searchValue, isActiveFilter);
             }}
+            fullWidth={true}
           />
         </TabsContent>
 

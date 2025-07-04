@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
@@ -171,6 +172,42 @@ export default function EditBusinessTypePage() {
         </Alert>
       )}
 
+      {/* Info Card - Tipo de negocio que se está editando */}
+      {currentBusinessType && (
+        <Card className="bg-indigo-50 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-800">
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-medium"
+                  style={{ backgroundColor: currentBusinessType.color }}
+                >
+                  {currentBusinessType.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="font-medium text-indigo-900 dark:text-indigo-100">
+                    {currentBusinessType.name}
+                  </h3>
+                  <p className="text-sm text-indigo-700 dark:text-indigo-300">
+                    Modificando configuración del tipo de negocio
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant={currentBusinessType.is_active ? "default" : "secondary"}>
+                  {currentBusinessType.is_active ? "Activo" : "Inactivo"}
+                </Badge>
+                {currentBusinessType.icon && (
+                  <Badge variant="outline" className="text-indigo-600 border-indigo-300">
+                    {currentBusinessType.icon}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Información del Tipo de Negocio</CardTitle>
@@ -256,7 +293,7 @@ export default function EditBusinessTypePage() {
 
             <Separator />
 
-            <div className="flex items-center justify-between">
+            <div className="flex justify-end gap-2">
               <Button 
                 type="button" 
                 variant="outline" 

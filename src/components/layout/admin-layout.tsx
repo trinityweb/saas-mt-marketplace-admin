@@ -1,9 +1,14 @@
 "use client"
 
-import { createContext, useContext, useState, ReactNode, useCallback } from "react"
+import { createContext, useContext, useState, ReactNode, useCallback, Suspense } from "react"
+import dynamic from 'next/dynamic'
 import { AdminSidebar } from "./admin-sidebar"
 import { AdminHeader } from "./admin-header"
-import { ServicesHealthSidebar } from "@/components/ServicesHealthSidebar"
+import { Loading } from "@/components/shared-ui/atoms/loading"
+
+// Usar temporalmente la versión simple para evitar problemas
+import { ServicesHealthSidebar } from "@/components/ServicesHealthSidebarSimple"
+import { PreloadManager } from "@/components/PreloadManager"
 
 interface HeaderContextType {
   setHeaderProps: (props: {
@@ -51,7 +56,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <HeaderContext.Provider value={{ setHeaderProps, clearHeaderProps }}>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex">
+      <PreloadManager />
+      <div className="h-screen bg-slate-50 dark:bg-slate-900 flex overflow-hidden">
         {/* Navigation Sidebar - Left */}
         <AdminSidebar />
         
@@ -60,17 +66,19 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           {/* Header */}
           <AdminHeader {...headerProps} />
           
-          {/* Page Content */}
-          <main className="flex-1 p-6 overflow-auto">
-            {children}
+          {/* Page Content - Wrapped in Suspense */}
+          <main className="flex-1 p-4 overflow-y-auto">
+            <Suspense fallback={<Loading />}>
+              {children}
+            </Suspense>
           </main>
         </div>
         
-        {/* Services Health Sidebar - Right (Full Height) */}
-        <div className="hidden xl:block w-80 border-l border-slate-200 dark:border-slate-700">
+        {/* Services Health Sidebar - Right */}
+        <div className="hidden xl:block w-80 border-l border-slate-200 dark:border-slate-700 overflow-y-auto">
           <ServicesHealthSidebar />
         </div>
       </div>
     </HeaderContext.Provider>
   )
-} 
+}

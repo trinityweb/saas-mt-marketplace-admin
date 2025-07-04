@@ -218,13 +218,7 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}):
   useEffect(() => {
     loadBrands();
     loadStatistics();
-  }, [filters]);
-
-  // Cargar datos iniciales solo una vez
-  useEffect(() => {
-    loadBrands();
-    loadStatistics();
-  }, []);
+  }, [filters, loadBrands, loadStatistics]);
 
   return {
     brands,

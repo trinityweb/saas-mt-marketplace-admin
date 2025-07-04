@@ -5,6 +5,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ConditionalLayout } from "@/components/layout/conditional-layout";
 import "./globals.css";
 
+// Se importará el preload desde el cliente
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {

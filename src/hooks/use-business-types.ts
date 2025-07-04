@@ -171,18 +171,12 @@ export function useBusinessTypes(
     }
   }, [adminToken, refreshBusinessTypes]);
 
+  // Efecto para cargar datos iniciales y cuando cambien los filtros
   useEffect(() => {
     if (typeof window !== 'undefined' && autoLoad) {
       refreshBusinessTypes();
     }
-  }, [autoLoad, refreshBusinessTypes]);
-
-  // Efecto para refrescar cuando cambien los filtros
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      refreshBusinessTypes();
-    }
-  }, [filters, refreshBusinessTypes]);
+  }, [autoLoad, filters, refreshBusinessTypes]);
 
   return {
     businessTypes,

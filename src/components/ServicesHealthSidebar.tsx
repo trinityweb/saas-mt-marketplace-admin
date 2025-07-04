@@ -27,7 +27,7 @@ import {
   ChevronDown,
   ChevronRight
 } from "lucide-react"
-import { useServicesHealth, ServiceHealth } from "@/hooks/useServicesHealth"
+import { useServicesHealthOptimized as useServicesHealth, ServiceHealth } from "@/hooks/useServicesHealthOptimized"
 import { cn } from "@/lib/utils"
 
 const getServiceIcon = (serviceName: string) => {
