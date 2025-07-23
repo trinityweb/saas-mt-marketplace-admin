@@ -1,21 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, Shield, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Shield, ShieldCheck, AlertTriangle } from 'lucide-react';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect, type SearchableSelectOption } from '@/components/shared-ui/molecules/searchable-select';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 
-import { useMarketplaceBrands } from '@/hooks/use-marketplace-brands';
-import { MarketplaceBrand } from '@/lib/api';
+import { MarketplaceBrand, marketplaceApi } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
 
 interface MarketplaceBrandSelectProps {
@@ -65,41 +57,49 @@ export function MarketplaceBrandSelect({
   className
 }: MarketplaceBrandSelectProps) {
   const { token } = useAuth();
+  const [brands, setBrands] = useState<MarketplaceBrand[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Usar el hook existente con filtros apropiados
-  const { brands, loading, loadBrands } = useMarketplaceBrands({
-    adminToken: token || '',
-    initialFilters: {
-      ...(showActiveOnly && { is_active: true }),
-      ...(showVerifiedOnly && { verification_status: 'verified' }),
-      page_size: 200 // Cargar más marcas para tener opciones
-    }
-  });
-
-  // Cargar marcas al montar el componente
+  // Cargar TODAS las marcas usando la función completa
   useEffect(() => {
-    const loadInitialBrands = async () => {
+    const loadAllBrands = async () => {
       try {
+        setLoading(true);
         setError(null);
-        await loadBrands({
-          ...(showActiveOnly && { is_active: true }),
-          ...(showVerifiedOnly && { verification_status: 'verified' }),
-          page_size: 200
-        });
-      } catch (err: any) {
-        console.error('Error loading marketplace brands:', err);
-        setError(err.message || 'Error al cargar marcas');
+        
+        console.log('🔄 Cargando todas las marcas...');
+        
+        const response = await marketplaceApi.getAllMarketplaceBrandsComplete({
+          is_active: showActiveOnly ? true : undefined,
+          verification_status: showVerifiedOnly ? 'verified' : undefined,
+          sort_by: 'name',
+          sort_dir: 'asc'
+        }, token || undefined);
+
+        if (response.error) {
+          setError(response.error);
+          console.error('❌ Error cargando marcas:', response.error);
+        } else if (response.data) {
+          setBrands(response.data.brands);
+          console.log(`✅ Marcas cargadas: ${response.data.brands.length} marcas`);
+        }
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Error cargando marcas';
+        setError(errorMsg);
+        console.error('❌ Error inesperado:', err);
+      } finally {
+        setLoading(false);
       }
     };
 
     if (token) {
-      loadInitialBrands();
+      loadAllBrands();
     }
-  }, [token, showActiveOnly, showVerifiedOnly, loadBrands]);
+  }, [token, showActiveOnly, showVerifiedOnly]);
 
-  // Filtrar y ordenar marcas
-  const filteredBrands = brands
+  // Convertir marcas a opciones de SearchableSelect
+  const brandOptions: SearchableSelectOption[] = brands
     .filter(brand => {
       if (showActiveOnly && !brand.is_active) return false;
       if (showVerifiedOnly && brand.verification_status !== 'verified') return false;
@@ -111,11 +111,25 @@ export function MarketplaceBrandSelect({
       if (b.verification_status === 'verified' && a.verification_status !== 'verified') return 1;
       // Luego ordenar por nombre
       return a.name.localeCompare(b.name);
+    })
+    .map((brand) => {
+      const StatusIcon = verificationStatusIcons[brand.verification_status];
+      
+      return {
+        value: brand.name,
+        label: brand.name,
+        description: brand.description || `${brand.product_count || 0} productos`,
+        icon: <StatusIcon className={`w-4 h-4 ${verificationStatusColors[brand.verification_status]}`} />,
+        badge: {
+          text: verificationStatusLabels[brand.verification_status],
+          variant: brand.verification_status === 'verified' ? 'default' : 'secondary'
+        }
+      };
     });
 
   // Manejar la selección
   const handleSelect = (brandValue: string) => {
-    const brand = filteredBrands.find(b => b.name === brandValue || b.id === brandValue);
+    const brand = brands.find(b => b.name === brandValue || b.id === brandValue);
     onValueChange(brandValue, brand);
   };
 
@@ -140,70 +154,18 @@ export function MarketplaceBrandSelect({
         </Alert>
       )}
 
-      <Select
+      <SearchableSelect
+        options={brandOptions}
         value={value}
         onValueChange={handleSelect}
+        placeholder={placeholder}
+        searchPlaceholder="Buscar marcas..."
         disabled={disabled || loading}
-      >
-        <SelectTrigger className="w-full">
-          {loading ? (
-            <div className="flex items-center">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Cargando marcas...
-            </div>
-          ) : (
-            <SelectValue placeholder={placeholder} />
-          )}
-        </SelectTrigger>
-        <SelectContent>
-          {filteredBrands.map((brand) => {
-            const StatusIcon = verificationStatusIcons[brand.verification_status];
-            
-            return (
-              <SelectItem key={brand.id} value={brand.name} className="py-3">
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0">
-                      <StatusIcon className={`w-4 h-4 ${verificationStatusColors[brand.verification_status]}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate">{brand.name}</div>
-                      {brand.description && (
-                        <div className="text-xs text-muted-foreground truncate">
-                          {brand.description}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge 
-                          variant={brand.verification_status === 'verified' ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {verificationStatusLabels[brand.verification_status]}
-                        </Badge>
-                        {brand.country_code && (
-                          <Badge variant="outline" className="text-xs">
-                            {brand.country_code}
-                          </Badge>
-                        )}
-                        {brand.product_count > 0 && (
-                          <span className="text-xs text-muted-foreground">
-                            {brand.product_count} productos
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </SelectItem>
-            );
-          })}
-          {filteredBrands.length === 0 && !loading && (
-            <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-              No hay marcas disponibles
-            </div>
-          )}
-        </SelectContent>
-      </Select>
+        loading={loading}
+        allowClear={true}
+        emptyMessage="No hay marcas disponibles"
+        className="w-full"
+      />
     </div>
   );
 }
@@ -214,14 +176,39 @@ export function useMarketplaceBrandsSelect(
   showVerifiedOnly: boolean = false
 ) {
   const { token } = useAuth();
-  const { brands, loading, error, loadBrands } = useMarketplaceBrands({
-    adminToken: token || '',
-    initialFilters: {
-      ...(showActiveOnly && { is_active: true }),
-      ...(showVerifiedOnly && { verification_status: 'verified' }),
-      page_size: 200
+  const [brands, setBrands] = useState<MarketplaceBrand[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadAllBrands = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await marketplaceApi.getAllMarketplaceBrandsComplete({
+        is_active: showActiveOnly ? true : undefined,
+        verification_status: showVerifiedOnly ? 'verified' : undefined,
+        sort_by: 'name',
+        sort_dir: 'asc'
+      }, token || undefined);
+
+      if (response.error) {
+        setError(response.error);
+      } else if (response.data) {
+        setBrands(response.data.brands);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error cargando marcas');
+    } finally {
+      setLoading(false);
     }
-  });
+  };
+
+  useEffect(() => {
+    if (token) {
+      loadAllBrands();
+    }
+  }, [token, showActiveOnly, showVerifiedOnly]);
 
   const filteredBrands = brands.filter(brand => {
     if (showActiveOnly && !brand.is_active) return false;
@@ -233,10 +220,6 @@ export function useMarketplaceBrandsSelect(
     brands: filteredBrands,
     loading,
     error,
-    refetch: () => loadBrands({
-      ...(showActiveOnly && { is_active: true }),
-      ...(showVerifiedOnly && { verification_status: 'verified' }),
-      page_size: 200
-    })
+    refetch: loadAllBrands
   };
 }

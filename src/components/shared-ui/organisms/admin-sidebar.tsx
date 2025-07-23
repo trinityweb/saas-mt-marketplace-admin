@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
   ChevronLeft, 
-  ChevronRight, 
   ChevronDown,
-  ExternalLink
+  ExternalLink,
+  Menu
 } from 'lucide-react'
 import { cn } from '../utils/cn'
 import { Button } from '../atoms/button'
@@ -72,17 +72,19 @@ export function AdminSidebar({ config, isCollapsed: externalCollapsed, onToggle 
       return (
         <div key={item.id}>
           <button
-            onClick={() => toggleMenu(item.id)}
+            onClick={() => !isCollapsed && toggleMenu(item.id)}
             className={cn(
               "w-full flex items-center justify-between px-2 py-1.5 text-sm font-medium rounded-md transition-all duration-200",
               openMenus[item.id] 
-                ? "bg-gray-100/50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100" 
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800/30",
-              depth > 0 && "ml-6 text-xs"
+                ? "bg-sidebar-accent text-sidebar-accent-foreground" 
+                : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              depth > 0 && "ml-6 text-xs",
+              isCollapsed && "justify-center cursor-default"
             )}
+            title={isCollapsed ? item.label : undefined}
           >
             <div className="flex items-center">
-              {item.icon && <item.icon className="mr-2 h-4 w-4 flex-shrink-0" />}
+              {item.icon && <item.icon className={cn("h-4 w-4 flex-shrink-0", !isCollapsed && "mr-2")} />}
               {!isCollapsed && <span>{item.label}</span>}
             </div>
             {!isCollapsed && (
@@ -94,7 +96,7 @@ export function AdminSidebar({ config, isCollapsed: externalCollapsed, onToggle 
               />
             )}
           </button>
-          {openMenus[item.id] && !isCollapsed && (
+          {openMenus[item.id] && !isCollapsed && item.submenu && (
             <div className="mt-1 space-y-1">
               {item.submenu.map(child => renderMenuItem(child, depth + 1))}
             </div>
@@ -103,24 +105,26 @@ export function AdminSidebar({ config, isCollapsed: externalCollapsed, onToggle 
       )
     }
     
-    return (
+    const linkContent = (
       <Link
         key={item.id}
         href={item.href || '#'}
         className={cn(
           "flex items-center px-2 py-1.5 text-sm font-medium rounded-md transition-all duration-200",
           active 
-            ? "bg-gray-100/50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100" 
-            : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800/30",
-          depth > 0 && "ml-6 text-xs"
+            ? "bg-sidebar-primary text-sidebar-primary-foreground" 
+            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+          depth > 0 && "ml-6 text-xs",
+          isCollapsed && "justify-center"
         )}
+        title={isCollapsed ? item.label : undefined}
       >
-        {item.icon && <item.icon className="mr-2 h-4 w-4 flex-shrink-0" />}
+        {item.icon && <item.icon className={cn("h-4 w-4 flex-shrink-0", !isCollapsed && "mr-2")} />}
         {!isCollapsed && (
           <>
             <span className="flex-1">{item.label}</span>
             {item.badge && (
-              <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+              <span className="ml-2 text-xs text-sidebar-foreground/60">
                 {item.badge}
               </span>
             )}
@@ -129,41 +133,45 @@ export function AdminSidebar({ config, isCollapsed: externalCollapsed, onToggle 
         )}
       </Link>
     )
+    
+    return linkContent
   }
 
   return (
     <div className={cn(
-      "flex flex-col h-full bg-gray-50/50 dark:bg-gray-900/50 border-r border-gray-200/50 dark:border-gray-800/50 transition-all duration-300",
+      "flex flex-col h-full bg-sidebar border-r border-sidebar-border transition-all duration-300",
       isCollapsed ? "w-16" : "w-64"
     )}>
       {/* Header */}
       <div className="p-4">
         <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2">
-            <div className={cn(
-              "flex items-center justify-center w-8 h-8 rounded-lg text-white",
-              colors.primary
-            )}>
-              {config.theme.logoIcon || (
-                <span className="text-lg font-bold">
-                  {config.theme.logoText || config.theme.title.charAt(0)}
-                </span>
-              )}
-            </div>
-            {!isCollapsed && (
-              <span className="text-xl font-bold">{config.theme.title}</span>
-            )}
-          </Link>
+          {!isCollapsed && (
+            <Link href="/" className="flex items-center space-x-2">
+              <div className={cn(
+                "flex items-center justify-center w-8 h-8 rounded-lg text-sidebar-primary-foreground bg-sidebar-primary",
+              )}>
+                {config.theme.logoIcon || (
+                  <span className="text-lg font-bold">
+                    {config.theme.logoText || config.theme.title.charAt(0)}
+                  </span>
+                )}
+              </div>
+              <span className="text-xl font-bold text-sidebar-foreground">{config.theme.title}</span>
+            </Link>
+          )}
           
           {config.behavior.collapsible && (
             <Button
               variant="ghost"
               size="icon"
               onClick={handleToggle}
-              className="h-8 w-8"
+              className={cn(
+                "h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                isCollapsed && "mx-auto"
+              )}
             >
               {isCollapsed ? 
-                <ChevronRight className="h-4 w-4" /> : 
+                <Menu className="h-4 w-4" /> : 
                 <ChevronLeft className="h-4 w-4" />
               }
             </Button>
@@ -171,7 +179,7 @@ export function AdminSidebar({ config, isCollapsed: externalCollapsed, onToggle 
         </div>
       </div>
 
-      <Separator />
+      <Separator className="bg-sidebar-border" />
 
       {/* Navigation */}
       <nav className="flex-1 min-h-0 p-4 space-y-1 overflow-y-auto">
@@ -180,7 +188,7 @@ export function AdminSidebar({ config, isCollapsed: externalCollapsed, onToggle 
 
       {/* Footer */}
       {config.footerContent && (
-        <div className="flex-shrink-0 p-4 border-t border-gray-200/50 dark:border-gray-800/50">
+        <div className="flex-shrink-0 p-4 border-t border-sidebar-border">
           {config.footerContent}
         </div>
       )}

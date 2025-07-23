@@ -4,10 +4,10 @@ const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'http://localhost:8001';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Usar el endpoint individual del backend
     const response = await fetch(`${API_GATEWAY_URL}/pim/api/v1/marketplace-brands/${id}`, {
@@ -44,10 +44,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     
     console.log('🔄 Actualizando marca ID:', id, 'con datos:', body);
@@ -88,10 +88,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Por ahora, como el endpoint de eliminación individual no existe,
     // retornamos un mensaje simulando el éxito

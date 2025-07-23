@@ -4,10 +4,10 @@ const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'http://localhost:8001';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     
     // Construir URL del backend a través de Kong
     const url = `${API_GATEWAY_URL}/pim/api/v1/business-types/${id}`;
@@ -53,10 +53,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     const body = await request.json();
     
     // Construir URL del backend a través de Kong
@@ -105,10 +105,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     
     // Construir URL del backend a través de Kong
     const url = `${API_GATEWAY_URL}/pim/api/v1/business-types/${id}`;

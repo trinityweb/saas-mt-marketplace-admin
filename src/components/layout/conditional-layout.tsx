@@ -17,7 +17,7 @@ export function ConditionalLayout({ children }: ConditionalLayoutProps) {
   // Si es una ruta de auth, usar layout sin header/sidebar
   if (isAuthRoute) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
         <div className="w-full max-w-md px-6">
           {children}
         </div>

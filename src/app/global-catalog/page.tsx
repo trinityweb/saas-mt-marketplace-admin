@@ -2,6 +2,12 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { ModernProductCard } from '@/components/shared/product-components/modern-product-card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { StatsCard } from '@/components/ui/stats-card';
+import { Input } from '@/components/ui/input';
 import { 
   Package, 
   CheckCircle, 
@@ -18,14 +24,16 @@ import {
   TrendingUp,
   Award,
   BarChart3,
-  ArrowUpDown
+  ArrowUpDown,
+  ChevronDown,
+  ChevronUp,
+  X,
+  Check,
+  Filter,
+  Plus,
+  Download,
+  Upload
 } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { StatsCard } from '@/components/ui/stats-card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -199,13 +207,13 @@ const ProductCard = ({ product, onView, onEdit, onVerify, onDelete }: ProductCar
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                 onError={handleImageError}
               />
-              <div className="hidden absolute inset-0 flex items-center justify-center bg-gray-100">
-                <ImageIcon className="h-12 w-12 text-gray-400" />
+              <div className="hidden absolute inset-0 flex items-center justify-center bg-muted">
+                <ImageIcon className="h-12 w-12 text-muted-foreground" />
               </div>
             </>
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-              <ImageIcon className="h-12 w-12 text-gray-400" />
+            <div className="absolute inset-0 flex items-center justify-center bg-muted">
+              <ImageIcon className="h-12 w-12 text-muted-foreground" />
             </div>
           )}
           
@@ -327,13 +335,13 @@ const ProductCardsView = ({ products, loading, onView, onEdit, onVerify, onDelet
         {[...Array(8)].map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardContent>
-              <div className="bg-gray-200 rounded-lg h-48 mb-4"></div>
+              <div className="bg-muted rounded-lg h-48 mb-4"></div>
               <div className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
                 <div className="flex space-x-2">
-                  <div className="h-5 bg-gray-200 rounded w-16"></div>
-                  <div className="h-5 bg-gray-200 rounded w-20"></div>
+                  <div className="h-5 bg-muted rounded w-16"></div>
+                  <div className="h-5 bg-muted rounded w-20"></div>
                 </div>
               </div>
             </CardContent>
@@ -368,6 +376,208 @@ const ProductCardsView = ({ products, loading, onView, onEdit, onVerify, onDelet
   );
 };
 
+// Componente de filtro múltiple mejorado
+interface MultiSelectFilterProps {
+  label: string;
+  placeholder: string;
+  options: string[];
+  selectedValues: string[];
+  onChange: (values: string[]) => void;
+  maxHeight?: string;
+}
+
+const MultiSelectFilter = ({ 
+  label, 
+  placeholder, 
+  options, 
+  selectedValues, 
+  onChange, 
+  maxHeight = "200px" 
+}: MultiSelectFilterProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [visibleCount, setVisibleCount] = useState(50); // Mostrar 50 elementos inicialmente
+
+  const filteredOptions = useMemo(() => {
+    if (!searchTerm) return options;
+    return options.filter(option => 
+      option.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [options, searchTerm]);
+
+  const visibleOptions = useMemo(() => {
+    return filteredOptions.slice(0, visibleCount);
+  }, [filteredOptions, visibleCount]);
+
+  const handleToggleOption = (option: string) => {
+    const newValues = selectedValues.includes(option)
+      ? selectedValues.filter(v => v !== option)
+      : [...selectedValues, option];
+    onChange(newValues);
+  };
+
+  const handleClearAll = () => {
+    onChange([]);
+  };
+
+  const handleSelectAll = () => {
+    onChange(filteredOptions);
+  };
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 20;
+    
+    if (isNearBottom && visibleCount < filteredOptions.length) {
+      setVisibleCount(prev => Math.min(prev + 50, filteredOptions.length));
+    }
+  }, [visibleCount, filteredOptions.length]);
+
+  // Reset visible count when search term changes
+  useEffect(() => {
+    setVisibleCount(50);
+  }, [searchTerm]);
+
+  return (
+    <div className="relative">
+      <label className="block text-sm font-medium text-foreground mb-2">
+        {label}
+      </label>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="relative w-full min-w-[200px] cursor-pointer rounded-md border border-input bg-background py-2.5 pl-3 pr-10 text-left text-sm shadow-sm transition-colors hover:bg-accent focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-20 force-card-visibility"
+        >
+          <span className="block truncate text-foreground">
+            {selectedValues.length === 0 
+              ? <span className="text-muted-foreground">{placeholder}</span>
+              : <span className="text-foreground font-medium">
+                  {selectedValues.length} seleccionado{selectedValues.length > 1 ? 's' : ''}
+                </span>
+            }
+          </span>
+          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+          </span>
+        </button>
+
+        {isOpen && (
+          <div className="absolute z-50 mt-1 w-full rounded-md bg-popover border border-border shadow-lg force-card-visibility multi-select-filter">
+            {/* Header con búsqueda y acciones */}
+            <div className="p-3 border-b border-border bg-muted/30">
+              <div className="relative mb-3">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Buscar..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-20 focus:border-primary"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  className="flex-1 px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium"
+                >
+                  Seleccionar todos
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClearAll}
+                  className="flex-1 px-3 py-1.5 text-xs bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors font-medium"
+                >
+                  Limpiar
+                </button>
+              </div>
+            </div>
+
+            {/* Lista de opciones con scroll infinito */}
+            <div 
+              className="overflow-auto bg-popover" 
+              style={{ maxHeight }}
+              onScroll={handleScroll}
+            >
+              {filteredOptions.length === 0 ? (
+                <div className="px-4 py-3 text-sm text-muted-foreground text-center">
+                  No se encontraron opciones
+                </div>
+              ) : (
+                <>
+                  {visibleOptions.map((option) => (
+                    <div
+                      key={option}
+                      onClick={() => handleToggleOption(option)}
+                      className="relative cursor-pointer select-none py-2.5 pl-10 pr-4 hover:bg-accent transition-colors"
+                    >
+                      <span className="block truncate text-sm text-foreground">
+                        {option}
+                      </span>
+                      {selectedValues.includes(option) && (
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                          <Check className="h-4 w-4 text-primary" />
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  {visibleCount < filteredOptions.length && (
+                    <div className="px-4 py-3 text-sm text-muted-foreground text-center bg-muted/50">
+                      Mostrando {visibleCount} de {filteredOptions.length} opciones...
+                      <br />
+                      <span className="text-xs">Scroll para cargar más</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Footer con resumen */}
+            {selectedValues.length > 0 && (
+              <div className="p-3 border-t border-border bg-muted/30">
+                <div className="flex flex-wrap gap-1">
+                  {selectedValues.slice(0, 3).map((value) => (
+                    <span
+                      key={value}
+                      className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-primary/10 text-primary rounded-md border border-primary/20"
+                    >
+                      {value.length > 15 ? `${value.substring(0, 15)}...` : value}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleOption(value);
+                        }}
+                        className="hover:bg-primary/20 rounded-sm p-0.5 transition-colors"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                  {selectedValues.length > 3 && (
+                    <span className="text-xs text-muted-foreground py-1">
+                      +{selectedValues.length - 3} más
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Overlay para cerrar */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+    </div>
+  );
+};
+
 export default function GlobalCatalogPage() {
   const router = useRouter();
   const { setHeaderProps, clearHeaderProps } = useHeader();
@@ -375,6 +585,7 @@ export default function GlobalCatalogPage() {
   const [products, setProducts] = useState<GlobalCatalogProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [isStatsCollapsed, setIsStatsCollapsed] = useState(false);
   const [summary, setSummary] = useState<GlobalCatalogSummary>({
     total_products: 0,
     argentine_products: 0,
@@ -387,6 +598,11 @@ export default function GlobalCatalogPage() {
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [availableSources, setAvailableSources] = useState<string[]>([]);
+
+  // Estados para filtros múltiples
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedSources, setSelectedSources] = useState<string[]>([]);
 
   // Estado para paginación
   const [criteriaResponse, setCriteriaResponse] = useState<CriteriaResponse<GlobalCatalogProduct>>({
@@ -421,79 +637,159 @@ export default function GlobalCatalogPage() {
       
       const params = new URLSearchParams();
       
-      // Paginación - ajustar para vista de cards
-      const pageSize = viewMode === 'cards' ? (criteria.page_size || 20) : (criteria.page_size || 20);
-      const offset = ((criteria.page || 1) - 1) * pageSize;
-      params.append('offset', offset.toString());
-      params.append('limit', pageSize.toString());
+      // Paginación - usar page y page_size como espera el backend
+      const page = criteria.page || 1;
+      const pageSize = criteria.page_size || 20;
+      params.append('page', page.toString());
+      params.append('page_size', pageSize.toString());
+      
+      // Ordenamiento
+      if (criteria.sort_by) {
+        params.append('sort_by', criteria.sort_by);
+      }
+      if (criteria.sort_dir) {
+        params.append('sort_dir', criteria.sort_dir);
+      }
       
       // Filtros
       if (criteria.search) {
         params.append('search', criteria.search);
       }
-      if (criteria.brand && criteria.brand !== 'all') {
-        params.append('brand', criteria.brand);
+      
+      // Filtros múltiples - enviar como arrays separados
+      if (selectedBrands.length > 0) {
+        selectedBrands.forEach(brand => {
+          params.append('brand', brand);
+        });
       }
-      if (criteria.category && criteria.category !== 'all') {
-        params.append('category', criteria.category);
+      
+      if (selectedCategories.length > 0) {
+        selectedCategories.forEach(category => {
+          params.append('category', category);
+        });
       }
+      
+      if (selectedSources.length > 0) {
+        selectedSources.forEach(source => {
+          params.append('source', source);
+        });
+      }
+      
+      // Filtros simples
       if (criteria.is_verified && criteria.is_verified !== 'all') {
         params.append('is_verified', criteria.is_verified);
-      }
-      if (criteria.source && criteria.source !== 'all') {
-        params.append('source', criteria.source);
       }
       if (criteria.is_argentine && criteria.is_argentine !== 'all') {
         params.append('is_argentine', criteria.is_argentine);
       }
 
       const response = await fetch(`/api/pim/global-catalog?${params.toString()}`);
-      const data: GlobalCatalogBackendResponse = await response.json();
+      const data = await response.json();
       
-      setProducts(data.products || []);
-      setSummary(data.summary || {
-        total_products: 0,
-        argentine_products: 0,
-        verified_products: 0,
-        high_quality_products: 0,
-        average_quality: 0
-      });
+      // El backend devuelve: { items: [...], total_count: X, page: Y, page_size: Z, total_pages: W }
+      const products = (data.items || []) as GlobalCatalogProduct[];
+      setProducts(products);
       
       setCriteriaResponse({
-        data: data.products || [],
-        total_count: data.pagination?.total || 0,
-        page: criteria.page || 1,
-        page_size: pageSize
+        data: products,
+        total_count: data.total_count || 0,
+        page: data.page || page,
+        page_size: data.page_size || pageSize
       });
       
     } catch (error) {
       console.error('Error fetching products:', error);
       setProducts([]);
+      setCriteriaResponse({
+        data: [],
+        total_count: 0,
+        page: 1,
+        page_size: 20
+      });
     } finally {
       setLoading(false);
     }
-  }, [viewMode]);
+  }, [selectedBrands, selectedCategories, selectedSources]);
 
   // Función para obtener opciones de filtros dinámicos
   const fetchFilterOptions = useCallback(async () => {
     try {
-      // Hacer una petición con límite alto para obtener más datos para filtros
-      const response = await fetch('/api/pim/global-catalog?limit=100');
-      const data: GlobalCatalogBackendResponse = await response.json();
+      console.log('🔄 Cargando opciones de filtros...');
       
-      const products = data.products || [];
+      // Agregar timestamp para evitar cache
+      const timestamp = Date.now();
       
-      // Extraer valores únicos para filtros
-      const brands = [...new Set(products.map(p => p.brand).filter(Boolean))].sort();
-      const categories = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
-      const sources = [...new Set(products.map(p => p.source).filter(Boolean))].sort();
+      // Obtener marcas del marketplace usando el endpoint correcto
+      const brandsPromise = fetch(`/api/pim/marketplace-brands?limit=500&sort_by=name&sort_dir=asc&_t=${timestamp}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'marketplace_admin'
+        }
+      });
+
+      // Obtener categorías del marketplace usando el endpoint correcto
+      const categoriesPromise = fetch(`/api/pim/marketplace-categories?limit=500&sort_by=name&sort_dir=asc&_t=${timestamp}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Role': 'marketplace_admin'
+        }
+      });
+
+      // Obtener sources desde productos (mantener comportamiento actual para sources)
+      const productsPromise = fetch(`/api/pim/global-catalog?limit=100&_t=${timestamp}`);
+
+      const [brandsResponse, categoriesResponse, productsResponse] = await Promise.all([
+        brandsPromise,
+        categoriesPromise,
+        productsPromise
+      ]);
+
+      // Procesar brands
+      const brandsData = await brandsResponse.json();
+      console.log('📊 Respuesta de marcas:', { 
+        total: brandsData.pagination?.total || 0,
+        received: brandsData.brands?.length || 0,
+        first5: brandsData.brands?.slice(0, 5).map((b: any) => b.name) || []
+      });
+      
+      const brands = (brandsData.brands || [])
+        .map((brand: { name: string }) => brand.name)
+        .filter(Boolean)
+        .sort() as string[];
+
+      // Procesar categories
+      const categoriesData = await categoriesResponse.json();
+      console.log('📊 Respuesta de categorías:', { 
+        total: categoriesData.pagination?.total || 0,
+        received: categoriesData.categories?.length || 0,
+        first5: categoriesData.categories?.slice(0, 5).map((c: any) => c.name) || []
+      });
+      
+      const categories = (categoriesData.categories || [])
+        .map((category: { name: string }) => category.name)
+        .filter(Boolean)
+        .sort() as string[];
+
+      // Procesar sources desde productos (mantener lógica original)
+      const productsData = await productsResponse.json();
+      const products = (productsData.items || []) as GlobalCatalogProduct[];
+      const sources = [...new Set(products.map(p => p.source).filter(Boolean))].sort() as string[];
+      
+      console.log('✅ Opciones de filtros cargadas:', {
+        brands: brands.length,
+        categories: categories.length,
+        sources: sources.length,
+        firstBrands: brands.slice(0, 10),
+        firstCategories: categories.slice(0, 10),
+        firstSources: sources.slice(0, 5)
+      });
       
       setAvailableBrands(brands);
       setAvailableCategories(categories);
       setAvailableSources(sources);
       
     } catch (error) {
-      console.error('Error fetching filter options:', error);
+      console.error('❌ Error fetching filter options:', error);
     }
   }, []);
 
@@ -509,6 +805,13 @@ export default function GlobalCatalogPage() {
     fetchProducts(criteriaState.criteria);
   }, [fetchFilterOptions, fetchProducts, criteriaState.criteria]);
 
+  // Recargar productos cuando cambien los filtros múltiples
+  useEffect(() => {
+    if (availableBrands.length > 0 || availableCategories.length > 0 || availableSources.length > 0) {
+      fetchProducts(criteriaState.criteria);
+    }
+  }, [selectedBrands, selectedCategories, selectedSources, fetchProducts, criteriaState.criteria]);
+
   // Funciones de manejo de acciones
   const handleViewProduct = useCallback((productId: string) => {
     router.push(`/global-catalog/view/${productId}`);
@@ -518,54 +821,8 @@ export default function GlobalCatalogPage() {
     router.push(`/global-catalog/edit/${productId}`);
   }, [router]);
 
-  // Filtros configurables para global catalog
-  const globalCatalogFilters: FilterType[] = useMemo(() => [
-    {
-      type: 'select',
-      key: 'brand',
-      placeholder: 'Filtrar por marca',
-      value: criteriaState.criteria.brand || 'all',
-      options: [
-        { value: 'all', label: 'Todas las marcas' },
-        ...availableBrands.map(brand => ({ value: brand, label: brand }))
-      ],
-      onChange: (value) => criteriaState.handleFilterChange('brand', value === 'all' ? undefined : value)
-    },
-    {
-      type: 'select',
-      key: 'category',
-      placeholder: 'Filtrar por categoría',
-      value: criteriaState.criteria.category || 'all',
-      options: [
-        { value: 'all', label: 'Todas las categorías' },
-        ...availableCategories.map(category => ({ value: category, label: category }))
-      ],
-      onChange: (value) => criteriaState.handleFilterChange('category', value === 'all' ? undefined : value)
-    },
-    {
-      type: 'select',
-      key: 'is_verified',
-      placeholder: 'Estado verificación',
-      value: criteriaState.criteria.is_verified || 'all',
-      options: [
-        { value: 'all', label: 'Todos los estados' },
-        { value: 'true', label: 'Verificados' },
-        { value: 'false', label: 'No verificados' }
-      ],
-      onChange: (value) => criteriaState.handleFilterChange('is_verified', value === 'all' ? undefined : value)
-    },
-    {
-      type: 'select',
-      key: 'source',
-      placeholder: 'Filtrar por fuente',
-      value: criteriaState.criteria.source || 'all',
-      options: [
-        { value: 'all', label: 'Todas las fuentes' },
-        ...availableSources.map(source => ({ value: source, label: source }))
-      ],
-      onChange: (value) => criteriaState.handleFilterChange('source', value === 'all' ? undefined : value)
-    }
-  ], [criteriaState, availableBrands, availableCategories, availableSources]);
+  // Filtros configurables para global catalog - solo mantener el filtro de verificación
+  const globalCatalogFilters: FilterType[] = useMemo(() => [], []);
 
   // Función para verificar producto
   const handleVerifyProduct = useCallback(async (productId: string) => {
@@ -602,6 +859,7 @@ export default function GlobalCatalogPage() {
     }
   }, [fetchProducts, criteriaState.criteria]);
 
+
   // Columnas de la tabla
   const columns: ColumnDef<GlobalCatalogProduct>[] = useMemo(() => [
     {
@@ -634,11 +892,17 @@ export default function GlobalCatalogPage() {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => (
-        <div className="max-w-[200px] truncate">
-          {row.getValue('name')}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const product = row.original;
+        return (
+          <div 
+            className="max-w-[200px] truncate text-primary hover:text-primary/80 cursor-pointer hover:underline"
+            onClick={() => handleViewProduct(product.id)}
+          >
+            {row.getValue('name')}
+          </div>
+        )
+      },
     },
     {
       accessorKey: 'brand',
@@ -714,9 +978,9 @@ export default function GlobalCatalogPage() {
       cell: ({ row }) => {
         const score = row.getValue('quality_score') as number;
         const getQualityColor = (score: number) => {
-          if (score >= 80) return 'text-green-600';
-          if (score >= 60) return 'text-yellow-600';
-          return 'text-red-600';
+          if (score >= 80) return 'text-green-600 dark:text-green-400';
+          if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
+          return 'text-red-600 dark:text-red-400';
         };
         
         return (
@@ -784,11 +1048,11 @@ export default function GlobalCatalogPage() {
                 Copiar ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push(`/global-catalog/view/${product.id}`)}>
+              <DropdownMenuItem onClick={() => handleViewProduct(product.id)}>
                 <Eye className="mr-2 h-4 w-4" />
                 Ver detalles
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push(`/global-catalog/edit/${product.id}`)}>
+              <DropdownMenuItem onClick={() => handleEditProduct(product.id)}>
                 <Edit className="mr-2 h-4 w-4" />
                 Editar
               </DropdownMenuItem>
@@ -800,7 +1064,7 @@ export default function GlobalCatalogPage() {
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                className="text-red-600"
+                className="text-destructive"
                 onClick={() => handleDeleteProduct(product.id)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -816,121 +1080,363 @@ export default function GlobalCatalogPage() {
   if (loading && products.length === 0) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+        <div className="h-8 bg-muted rounded w-1/4"></div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            <div key={i} className="h-32 bg-muted rounded"></div>
           ))}
         </div>
-        <div className="h-96 bg-gray-200 rounded"></div>
+        <div className="h-96 bg-muted rounded"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards Mejoradas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatsCard
-          title="Total Productos"
-          value={summary.total_products}
-          description="Productos en el catálogo global"
-          iconName="Package"
-          iconColor="text-blue-600"
-          trend={{
-            value: 12,
-            label: "Desde el mes pasado",
-            type: 'up'
+      {/* Stats Cards Colapsables */}
+      <div className="bg-card rounded-lg border shadow-sm">
+        <div 
+          className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg"
+          onClick={() => setIsStatsCollapsed(!isStatsCollapsed)}
+          role="button"
+          tabIndex={0}
+          aria-expanded={!isStatsCollapsed}
+          aria-controls="stats-content"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setIsStatsCollapsed(!isStatsCollapsed);
+            }
           }}
-          progress={{
-            value: summary.total_products,
-            max: 10000,
-            color: 'blue'
-          }}
-        />
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">Estadísticas del Catálogo</h3>
+              <p className="text-sm text-muted-foreground">
+                {summary.total_products.toLocaleString()} productos totales
+                {!isStatsCollapsed && (
+                  <span className="ml-2 text-blue-600 dark:text-blue-400">• Expandido</span>
+                )}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground hidden sm:inline">
+              {isStatsCollapsed ? 'Expandir' : 'Contraer'}
+            </span>
+            <Button variant="ghost" size="sm" className="hover:bg-muted/50">
+              {isStatsCollapsed ? (
+                <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+              ) : (
+                <ChevronUp className="h-4 w-4 transition-transform duration-200" />
+              )}
+            </Button>
+          </div>
+        </div>
         
-        <StatsCard
-          title="Verificados"
-          value={summary.verified_products}
-          description="Productos verificados y validados"
-          iconName="CheckCircle"
-          iconColor="text-green-600"
-          trend={{
-            value: 8,
-            label: "Nuevos verificados esta semana",
-            type: 'up'
-          }}
-          progress={{
-            value: summary.verified_products,
-            max: summary.total_products,
-            color: 'green'
-          }}
-          badge={{
-            text: `${Math.round((summary.verified_products / summary.total_products) * 100)}%`,
-            variant: 'default'
-          }}
-        />
-        
-        <StatsCard
-          title="Alta Calidad"
-          value={summary.high_quality_products}
-          description="Productos con calidad superior al 80%"
-          iconName="Award"
-          iconColor="text-yellow-600"
-          trend={{
-            value: 15,
-            label: "Mejora en calidad promedio",
-            type: 'up'
-          }}
-          progress={{
-            value: summary.high_quality_products,
-            max: summary.total_products,
-            color: 'yellow'
-          }}
-          badge={{
-            text: `${summary.average_quality}% promedio`,
-            variant: 'secondary'
-          }}
-        />
+        {!isStatsCollapsed && (
+          <div 
+            id="stats-content"
+            className="p-4 pt-0 transition-all duration-300 ease-in-out"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 transition-opacity duration-300 opacity-100">
+              <StatsCard
+                title="Total Productos"
+                value={summary.total_products}
+                description="Productos en el catálogo global"
+                iconName="Package"
+                iconColor="text-blue-600"
+                className="force-card-visibility"
+                trend={{
+                  value: 12,
+                  label: "Desde el mes pasado",
+                  type: 'up'
+                }}
+                progress={{
+                  value: summary.total_products,
+                  max: 10000,
+                  color: 'blue'
+                }}
+              />
+              
+              <StatsCard
+                title="Verificados"
+                value={summary.verified_products}
+                description="Productos verificados y validados"
+                iconName="CheckCircle"
+                iconColor="text-green-600"
+                className="force-card-visibility"
+                trend={{
+                  value: 8,
+                  label: "Nuevos verificados esta semana",
+                  type: 'up'
+                }}
+                progress={{
+                  value: summary.verified_products,
+                  max: summary.total_products,
+                  color: 'green'
+                }}
+                badge={{
+                  text: `${Math.round((summary.verified_products / summary.total_products) * 100)}%`,
+                  variant: 'default'
+                }}
+              />
+              
+              <StatsCard
+                title="Alta Calidad"
+                value={summary.high_quality_products}
+                description="Productos con calidad superior al 80%"
+                iconName="Award"
+                iconColor="text-yellow-600"
+                className="force-card-visibility"
+                trend={{
+                  value: 15,
+                  label: "Mejora en calidad promedio",
+                  type: 'up'
+                }}
+                progress={{
+                  value: summary.high_quality_products,
+                  max: summary.total_products,
+                  color: 'yellow'
+                }}
+                badge={{
+                  text: `${summary.average_quality}% promedio`,
+                  variant: 'secondary'
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Solapas para alternar entre vistas */}
-      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as ViewMode)}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="table" className="flex items-center gap-2">
-            <List className="h-4 w-4" />
-            Vista de Tabla
-          </TabsTrigger>
-          <TabsTrigger value="cards" className="flex items-center gap-2">
-            <Grid3X3 className="h-4 w-4" />
-            Vista de Cards
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Vista de Tabla */}
-        <TabsContent value="table" className="space-y-6">
-          <CriteriaDataTable
-            columns={columns}
-            data={criteriaResponse.data}
-            totalCount={criteriaResponse.total_count}
-            currentPage={criteriaResponse.page}
-            pageSize={criteriaResponse.page_size}
-            loading={loading}
-            searchValue={criteriaState.criteria.search || ''}
-            searchPlaceholder="Buscar productos por EAN, nombre, marca..."
-            buttonText="Nuevo Producto"
-            filters={globalCatalogFilters}
-            fullWidth={true}
-            onCreateClick={() => router.push('/global-catalog/create')}
-            onSearchChange={criteriaState.handleSearchChange}
-            onPageChange={criteriaState.handlePageChange}
-            onPageSizeChange={criteriaState.handlePageSizeChange}
-            onSortChange={criteriaState.handleSortChange}
-          />
-        </TabsContent>
-
-        {/* Vista de Cards */}
-        <TabsContent value="cards" className="space-y-6">
+      {/* Contenido principal basado en el modo de vista */}
+      {viewMode === 'table' ? (
+        <div className="bg-card p-4 rounded-lg border shadow-sm">
+          
+          {/* Filtros múltiples mejorados */}
+          <div className="mb-6 p-4 bg-card rounded-lg border border-border shadow-sm force-card-visibility">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Search className="h-4 w-4 text-primary" />
+              Filtros de búsqueda
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <MultiSelectFilter
+                label="Marcas"
+                placeholder="Seleccionar marcas..."
+                options={availableBrands}
+                selectedValues={selectedBrands}
+                onChange={setSelectedBrands}
+                maxHeight="250px"
+              />
+              
+              <MultiSelectFilter
+                label="Categorías"
+                placeholder="Seleccionar categorías..."
+                options={availableCategories}
+                selectedValues={selectedCategories}
+                onChange={setSelectedCategories}
+                maxHeight="250px"
+              />
+              
+              <MultiSelectFilter
+                label="Fuentes"
+                placeholder="Seleccionar fuentes..."
+                options={availableSources}
+                selectedValues={selectedSources}
+                onChange={setSelectedSources}
+                maxHeight="200px"
+              />
+              
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Estado verificación
+                </label>
+                <select
+                  value={criteriaState.criteria.is_verified || 'all'}
+                  onChange={(e) => criteriaState.handleFilterChange('is_verified', e.target.value === 'all' ? undefined : e.target.value)}
+                  className="w-full rounded-md border border-input bg-background py-2.5 pl-3 pr-10 text-sm text-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-20"
+                >
+                  <option value="all">Todos los estados</option>
+                  <option value="true">Verificados</option>
+                  <option value="false">No verificados</option>
+                </select>
+              </div>
+            </div>
+            
+            {/* Acciones de filtros */}
+            <div className="flex justify-between items-center mt-4 pt-4 border-t border-border">
+              <div className="text-sm text-muted-foreground">
+                {selectedBrands.length + selectedCategories.length + selectedSources.length > 0 && (
+                  <span className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    {selectedBrands.length + selectedCategories.length + selectedSources.length} filtros aplicados
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setSelectedBrands([]);
+                    setSelectedCategories([]);
+                    setSelectedSources([]);
+                    criteriaState.handleFilterChange('is_verified', undefined);
+                  }}
+                  className="px-3 py-1.5 text-xs bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors font-medium"
+                >
+                  Limpiar filtros
+                </button>
+                <button
+                  onClick={() => {
+                    console.log('🔄 Refrescando filtros manualmente...');
+                    fetchFilterOptions();
+                  }}
+                  className="px-3 py-1.5 text-xs bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors font-medium flex items-center gap-1"
+                >
+                  <Search className="h-3 w-3" />
+                  Refrescar
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          {/* Tabla de datos */}
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <CriteriaDataTable
+                columns={columns}
+                data={criteriaResponse.data}
+                totalCount={criteriaResponse.total_count}
+                currentPage={criteriaResponse.page}
+                pageSize={criteriaResponse.page_size}
+                loading={loading}
+                searchValue={criteriaState.criteria.search || ''}
+                searchPlaceholder="Buscar productos por EAN, nombre, marca..."
+                buttonText="Nuevo Producto"
+                filters={[]} // Sin filtros aquí, los manejamos arriba
+                fullWidth={true}
+                onCreateClick={() => router.push('/global-catalog/create')}
+                onSearchChange={criteriaState.handleSearchChange}
+                onPageChange={criteriaState.handlePageChange}
+                onPageSizeChange={criteriaState.handlePageSizeChange}
+                onSortChange={criteriaState.handleSortChange}
+              />
+            </div>
+            
+            {/* Controles de vista */}
+            <div className="flex lg:flex-col items-center gap-2">
+              <div className="flex items-center border rounded-md">
+                <Button
+                  variant={viewMode === 'table' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                  className="rounded-r-none"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={(viewMode as ViewMode) === 'cards' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('cards')}
+                  className="rounded-l-none"
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Vista de Cards */
+        <div className="space-y-6">
+          {/* Filtros múltiples mejorados para vista de cards */}
+          <div className="p-4 bg-card rounded-lg border border-border shadow-sm force-card-visibility">
+            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+              <Search className="h-4 w-4 text-primary" />
+              Filtros de búsqueda
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <MultiSelectFilter
+                label="Marcas"
+                placeholder="Seleccionar marcas..."
+                options={availableBrands}
+                selectedValues={selectedBrands}
+                onChange={setSelectedBrands}
+                maxHeight="250px"
+              />
+              
+              <MultiSelectFilter
+                label="Categorías"
+                placeholder="Seleccionar categorías..."
+                options={availableCategories}
+                selectedValues={selectedCategories}
+                onChange={setSelectedCategories}
+                maxHeight="250px"
+              />
+              
+              <MultiSelectFilter
+                label="Fuentes"
+                placeholder="Seleccionar fuentes..."
+                options={availableSources}
+                selectedValues={selectedSources}
+                onChange={setSelectedSources}
+                maxHeight="200px"
+              />
+              
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Estado verificación
+                </label>
+                <select
+                  value={criteriaState.criteria.is_verified || 'all'}
+                  onChange={(e) => criteriaState.handleFilterChange('is_verified', e.target.value === 'all' ? undefined : e.target.value)}
+                  className="w-full rounded-md border border-input bg-background py-2.5 pl-3 pr-10 text-sm text-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-20"
+                >
+                  <option value="all">Todos los estados</option>
+                  <option value="true">Verificados</option>
+                  <option value="false">No verificados</option>
+                </select>
+              </div>
+            </div>
+            
+            {/* Acciones de filtros */}
+            <div className="flex justify-between items-center mt-4 pt-4 border-t border-border">
+              <div className="text-sm text-muted-foreground">
+                {selectedBrands.length + selectedCategories.length + selectedSources.length > 0 && (
+                  <span className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    {selectedBrands.length + selectedCategories.length + selectedSources.length} filtros aplicados
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setSelectedBrands([]);
+                    setSelectedCategories([]);
+                    setSelectedSources([]);
+                    criteriaState.handleFilterChange('is_verified', undefined);
+                  }}
+                  className="px-3 py-1.5 text-xs bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors font-medium"
+                >
+                  Limpiar filtros
+                </button>
+                <button
+                  onClick={() => {
+                    console.log('🔄 Refrescando filtros manualmente...');
+                    fetchFilterOptions();
+                  }}
+                  className="px-3 py-1.5 text-xs bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors font-medium flex items-center gap-1"
+                >
+                  <Search className="h-3 w-3" />
+                  Refrescar
+                </button>
+              </div>
+            </div>
+          </div>
+          
           <Card>
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
@@ -944,30 +1450,42 @@ export default function GlobalCatalogPage() {
                       onChange={(e) => criteriaState.handleSearchChange(e.target.value)}
                     />
                   </div>
-                  {globalCatalogFilters.map((filter) => {
-                    if (filter.type === 'select' && 'options' in filter) {
-                      return (
-                        <select
-                          key={filter.key}
-                          value={filter.value}
-                          onChange={(e) => filter.onChange(e.target.value)}
-                          className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-w-[180px]"
-                        >
-                          {filter.options.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      );
-                    }
-                    return null;
-                  })}
                 </div>
-                <Button onClick={() => router.push('/global-catalog/create')}>
-                  <Package className="h-4 w-4 mr-2" />
-                  Nuevo Producto
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      console.log('🔄 Refrescando filtros manualmente...');
+                      fetchFilterOptions();
+                    }}
+                    className="whitespace-nowrap"
+                  >
+                    🔄 Refrescar
+                  </Button>
+                  <div className="flex items-center border rounded-md">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setViewMode('table')}
+                      className="rounded-r-none"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => setViewMode('cards')}
+                      className="rounded-l-none"
+                    >
+                      <Grid3X3 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Button onClick={() => router.push('/global-catalog/create')}>
+                    <Package className="h-4 w-4 mr-2" />
+                    Nuevo Producto
+                  </Button>
+                </div>
               </div>
 
               {loading ? (
@@ -1000,8 +1518,8 @@ export default function GlobalCatalogPage() {
               )}
             </div>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
 
       {/* Stats Summary */}
       <div className="text-center text-sm text-muted-foreground space-y-1">

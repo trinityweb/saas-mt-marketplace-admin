@@ -81,7 +81,7 @@ export default function MarketplaceBrandsPage() {
     unverifyBrand,
     updateBrand,
     deleteBrand
-  } = useMarketplaceBrands({ adminToken: token });
+  } = useMarketplaceBrands({ adminToken: token || undefined });
 
   // Icono memoizado
   const headerIcon = useMemo(() => <Award className="w-5 h-5 text-white" />, []);

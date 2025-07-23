@@ -41,6 +41,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
 import { useAuth } from '@/hooks/use-auth';
 import { useHeader } from '@/components/layout/admin-layout';
@@ -62,14 +63,14 @@ const editAttributeSchema = z.object({
     .max(100, 'El nombre no puede tener más de 100 caracteres'),
   description: z.string().optional(),
   type: z.enum(['text', 'number', 'select', 'multi_select', 'boolean', 'date']),
-  is_required: z.boolean().default(false),
-  is_filterable: z.boolean().default(false),
-  is_searchable: z.boolean().default(false),
+  is_required: z.boolean().optional(),
+  is_filterable: z.boolean().optional(),
+  is_searchable: z.boolean().optional(),
   default_value: z.string().optional(),
   unit: z.string().optional(),
   group_name: z.string().optional(),
-  sort_order: z.coerce.number().min(0).default(0),
-  is_active: z.boolean().default(true),
+  sort_order: z.coerce.number().min(0).optional(),
+  is_active: z.boolean().optional(),
   // Reglas de validación para campos numéricos
   min_length: z.coerce.number().optional(),
   max_length: z.coerce.number().optional(),
@@ -77,7 +78,7 @@ const editAttributeSchema = z.object({
   max_value: z.coerce.number().optional(),
   pattern: z.string().optional(),
   // Opciones para select
-  options: z.array(z.string()).default([])
+  options: z.array(z.string()).optional()
 });
 
 type EditAttributeForm = z.infer<typeof editAttributeSchema>;
@@ -107,7 +108,7 @@ export default function EditMarketplaceAttributePage() {
   const params = useParams();
   const { token } = useAuth();
   const { setHeaderProps, clearHeaderProps } = useHeader();
-  const { updateAttribute } = useMarketplaceAttributes({ adminToken: token });
+  const { updateAttribute } = useMarketplaceAttributes({ adminToken: token || undefined });
 
   const [attribute, setAttribute] = useState<MarketplaceAttribute | null>(null);
   const [loading, setLoading] = useState(true);
@@ -146,7 +147,7 @@ export default function EditMarketplaceAttributePage() {
   const loadAttribute = async () => {
     try {
       setLoading(true);
-      const response = await marketplaceApi.getMarketplaceAttribute(attributeId, token);
+      const response = await marketplaceApi.getMarketplaceAttribute(attributeId, token || undefined);
       
       if (response.error) {
         throw new Error(response.error);
@@ -217,14 +218,14 @@ export default function EditMarketplaceAttributePage() {
 
   const handleAddOption = () => {
     if (newOption.trim()) {
-      const currentOptions = form.getValues('options');
+      const currentOptions = form.getValues('options') || [];
       form.setValue('options', [...currentOptions, newOption.trim()]);
       setNewOption('');
     }
   };
 
   const handleRemoveOption = (index: number) => {
-    const currentOptions = form.getValues('options');
+    const currentOptions = form.getValues('options') || [];
     form.setValue('options', currentOptions.filter((_, i) => i !== index));
   };
 
@@ -238,19 +239,19 @@ export default function EditMarketplaceAttributePage() {
         name: data.name,
         description: data.description || undefined,
         type: data.type,
-        is_required: data.is_required,
-        is_filterable: data.is_filterable,
-        is_searchable: data.is_searchable,
+        is_required: data.is_required ?? false,
+        is_filterable: data.is_filterable ?? false,
+        is_searchable: data.is_searchable ?? false,
         default_value: data.default_value || undefined,
         unit: data.unit || undefined,
         group_name: data.group_name || undefined,
-        sort_order: data.sort_order,
-        is_active: data.is_active
+        sort_order: data.sort_order ?? 0,
+        is_active: data.is_active ?? true
       };
 
       // Agregar opciones para select
       if (data.type === 'select' || data.type === 'multi_select') {
-        updateData.options = data.options;
+        updateData.options = data.options || [];
       }
 
       // Agregar reglas de validación
@@ -331,7 +332,7 @@ export default function EditMarketplaceAttributePage() {
                   {attribute.is_active ? "Activo" : "Inactivo"}
                 </Badge>
                 {attribute.is_required && (
-                  <Badge variant="destructive">
+                  <Badge variant="danger">
                     Requerido
                   </Badge>
                 )}
@@ -670,7 +671,7 @@ export default function EditMarketplaceAttributePage() {
                   </Button>
                 </div>
 
-                {currentOptions.length > 0 && (
+                {currentOptions && currentOptions.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Opciones actuales:</p>
                     <div className="space-y-1">

@@ -27,22 +27,11 @@ export interface GlobalCatalogProduct {
 }
 
 export interface GlobalCatalogResponse {
-  products: GlobalCatalogProduct[];
-  pagination: {
-    offset: number;
-    limit: number;
-    total: number;
-    has_next: boolean;
-    has_prev: boolean;
-    total_pages: number;
-  };
-  summary: {
-    total_products: number;
-    argentine_products: number;
-    verified_products: number;
-    high_quality_products: number;
-    average_quality: number;
-  };
+  items: GlobalCatalogProduct[];
+  total_count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
 }
 
 export interface GlobalCatalogFilters {
@@ -130,7 +119,7 @@ class PimApiClient {
   async getGlobalCatalogBrands(): Promise<string[]> {
     try {
       const response = await this.getGlobalCatalogProducts({ limit: 1000 });
-      const brands = [...new Set(response.products.map(p => p.brand))];
+      const brands = [...new Set(response.items.map(p => p.brand))];
       return brands.filter(Boolean).sort();
     } catch (error) {
       console.error('Error getting brands:', error);
@@ -142,7 +131,7 @@ class PimApiClient {
   async getGlobalCatalogCategories(): Promise<string[]> {
     try {
       const response = await this.getGlobalCatalogProducts({ limit: 1000 });
-      const categories = [...new Set(response.products.map(p => p.category))];
+      const categories = [...new Set(response.items.map(p => p.category))];
       return categories.filter(Boolean).sort();
     } catch (error) {
       console.error('Error getting categories:', error);
@@ -154,7 +143,7 @@ class PimApiClient {
   async getGlobalCatalogSources(): Promise<string[]> {
     try {
       const response = await this.getGlobalCatalogProducts({ limit: 1000 });
-      const sources = [...new Set(response.products.map(p => p.source))];
+      const sources = [...new Set(response.items.map(p => p.source))];
       return sources.filter(Boolean).sort();
     } catch (error) {
       console.error('Error getting sources:', error);
@@ -164,7 +153,4 @@ class PimApiClient {
 }
 
 // Singleton instance
-export const pimApi = new PimApiClient();
-
-// Export types
-export type { GlobalCatalogProduct, GlobalCatalogResponse, GlobalCatalogFilters }; 
+export const pimApi = new PimApiClient(); 

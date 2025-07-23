@@ -86,7 +86,7 @@ export default function MarketplaceAttributesPage() {
     loadPage,
     updateAttribute,
     deleteAttribute
-  } = useMarketplaceAttributes({ adminToken: token });
+  } = useMarketplaceAttributes({ adminToken: token || undefined });
 
   // Icono memoizado
   const headerIcon = useMemo(() => <Settings className="w-5 h-5 text-white" />, []);
@@ -114,7 +114,7 @@ export default function MarketplaceAttributesPage() {
 
   // Obtener grupos únicos para filtros
   const groups = useMemo(() => {
-    const uniqueGroups = [...new Set(attributes.map(attr => attr.group_name).filter(Boolean))];
+    const uniqueGroups = [...new Set(attributes.map(attr => attr.group_name).filter((group): group is string => Boolean(group)))];
     return uniqueGroups.sort();
   }, [attributes]);
 

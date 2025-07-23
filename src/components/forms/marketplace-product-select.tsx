@@ -1,18 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, Package, ShieldCheck, Shield, Star, Tag } from 'lucide-react';
+import { Package, ShieldCheck, Shield } from 'lucide-react';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect, type SearchableSelectOption } from '@/components/shared-ui/molecules/searchable-select';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 
 import { useGlobalProducts } from '@/hooks/use-global-products';
 import { GlobalCatalogProduct } from '@/lib/api/pim';
@@ -104,15 +97,43 @@ export function MarketplaceProductSelect({
       return a.name.localeCompare(b.name);
     });
 
-  // Agrupar productos por marca
-  const groupedProducts = filteredProducts.reduce((groups, product) => {
-    const brand = product.brand || 'Sin marca';
-    if (!groups[brand]) {
-      groups[brand] = [];
+  // Convertir productos a opciones planas de SearchableSelect con grupo como propiedad
+  const productOptions: SearchableSelectOption[] = filteredProducts.map((product) => {
+    // Construir badges dinámicos
+    const badges = [];
+    
+    badges.push({
+      text: product.is_verified ? 'Verificado' : 'No verificado',
+      variant: product.is_verified ? 'default' as const : 'secondary' as const
+    });
+    
+    if (product.source) {
+      badges.push({
+        text: product.source,
+        variant: 'outline' as const
+      });
     }
-    groups[brand].push(product);
-    return groups;
-  }, {} as Record<string, GlobalCatalogProduct[]>);
+    
+    // Construir descripción con EAN y categoría
+    const descriptionParts = [];
+    if (product.ean) {
+      descriptionParts.push(`EAN: ${product.ean}`);
+    }
+    if (product.category) {
+      descriptionParts.push(product.category);
+    }
+    descriptionParts.push(`Calidad: ${product.quality_score.toFixed(1)}/5.0`);
+
+    return {
+      value: product.name,
+      label: product.name,
+      description: descriptionParts.join(' • '),
+      icon: <Package className="w-4 h-4 text-muted-foreground" />,
+      badge: badges[0], // Badge principal de verificación
+      group: product.brand || 'Sin marca', // Agregar grupo como propiedad
+      disabled: false,
+    };
+  });
 
   // Manejar la selección
   const handleSelect = (productValue: string) => {
@@ -141,104 +162,18 @@ export function MarketplaceProductSelect({
         </Alert>
       )}
 
-      <Select
+      <SearchableSelect
+        options={productOptions}
         value={value}
         onValueChange={handleSelect}
+        placeholder={placeholder}
+        searchPlaceholder="Buscar productos..."
         disabled={disabled || loading}
-      >
-        <SelectTrigger className="w-full">
-          {loading ? (
-            <div className="flex items-center">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Cargando productos...
-            </div>
-          ) : (
-            <SelectValue placeholder={placeholder} />
-          )}
-        </SelectTrigger>
-        <SelectContent>
-          {Object.entries(groupedProducts).map(([brandName, brandProducts]) => (
-            <div key={brandName}>
-              {Object.keys(groupedProducts).length > 1 && (
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-b">
-                  {brandName}
-                </div>
-              )}
-              {brandProducts.map((product) => {
-                const VerificationIcon = product.is_verified ? ShieldCheck : Shield;
-                const qualityStars = Math.round(product.quality_score * 5);
-                
-                return (
-                  <SelectItem key={product.id} value={product.name} className="py-3">
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-shrink-0">
-                          <Package className="w-4 h-4 text-muted-foreground" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm truncate">
-                            {product.name}
-                            {product.is_verified && (
-                              <VerificationIcon className="inline w-3 h-3 ml-1 text-green-600" />
-                            )}
-                          </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {product.ean && (
-                              <span className="mr-2">EAN: {product.ean}</span>
-                            )}
-                            {product.category && (
-                              <span>• {product.category}</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge 
-                              variant={product.is_verified ? 'default' : 'secondary'}
-                              className="text-xs"
-                            >
-                              {product.is_verified ? 'Verificado' : 'No verificado'}
-                            </Badge>
-                            
-                            {/* Quality Score */}
-                            <div className="flex items-center gap-1">
-                              <div className="flex">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star 
-                                    key={i} 
-                                    className={`w-3 h-3 ${
-                                      i < qualityStars 
-                                        ? 'text-yellow-400 fill-yellow-400' 
-                                        : 'text-gray-300'
-                                    }`} 
-                                  />
-                                ))}
-                              </div>
-                              <span className="text-xs text-muted-foreground">
-                                ({product.quality_score.toFixed(1)})
-                              </span>
-                            </div>
-
-                            {product.source && (
-                              <Badge variant="outline" className="text-xs">
-                                <Tag className="w-3 h-3 mr-1" />
-                                {product.source}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </SelectItem>
-                );
-              })}
-            </div>
-          ))}
-          {filteredProducts.length === 0 && !loading && (
-            <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-              No hay productos disponibles
-            </div>
-          )}
-        </SelectContent>
-      </Select>
+        loading={loading}
+        allowClear={true}
+        emptyMessage="No hay productos disponibles"
+        className="w-full"
+      />
     </div>
   );
 }

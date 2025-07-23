@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
 import { useAuth } from '@/hooks/use-auth';
 import { useHeader } from '@/components/layout/admin-layout';

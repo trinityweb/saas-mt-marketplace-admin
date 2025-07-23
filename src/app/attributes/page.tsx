@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/shared-ui/molecules/dropdown-menu';
 
-import { marketplaceApi, TenantCustomAttribute } from '@/lib/api';
+import { marketplaceApi, TenantCustomAttribute, MarketplaceAttribute } from '@/lib/api';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
 import { useHeader } from '@/components/layout/admin-layout';
@@ -50,10 +50,10 @@ export default function AttributesPage() {
   } = useMarketplaceAttributes({ adminToken: token || undefined });
   const { setHeaderProps, clearHeaderProps } = useHeader();
   
-  const [selectedAttribute, setSelectedAttribute] = useState<TenantCustomAttribute | null>(null);
+  const [selectedAttribute, setSelectedAttribute] = useState<MarketplaceAttribute | null>(null);
 
   // Estado para paginación simulada
-  const [criteriaResponse, setCriteriaResponse] = useState<CriteriaResponse<TenantCustomAttribute>>({
+  const [criteriaResponse, setCriteriaResponse] = useState<CriteriaResponse<MarketplaceAttribute>>({
     data: [],
     total_count: 0,
     page: 1,
@@ -96,8 +96,9 @@ export default function AttributesPage() {
     if (criteria.search) {
       const searchTerm = criteria.search.toLowerCase();
       filtered = filtered.filter(attribute =>
-        attribute.marketplace_attribute_id.toLowerCase().includes(searchTerm) ||
-        attribute.attribute_values.some(val => val.toLowerCase().includes(searchTerm))
+        attribute.name.toLowerCase().includes(searchTerm) ||
+        attribute.type.toLowerCase().includes(searchTerm) ||
+        (attribute.options?.some(val => val.toLowerCase().includes(searchTerm)) ?? false)
       );
     }
 
@@ -111,20 +112,41 @@ export default function AttributesPage() {
     if (criteria.marketplace_attribute_id) {
       const attributeType = criteria.marketplace_attribute_id.toLowerCase();
       filtered = filtered.filter(attribute => 
-        attribute.marketplace_attribute_id.toLowerCase().includes(attributeType)
+        attribute.type.toLowerCase().includes(attributeType) ||
+        attribute.name.toLowerCase().includes(attributeType)
       );
     }
 
     // Aplicar ordenamiento
     if (criteria.sort_by) {
       filtered.sort((a, b) => {
-        const aValue = a[criteria.sort_by as keyof TenantCustomAttribute];
-        const bValue = b[criteria.sort_by as keyof TenantCustomAttribute];
+        const sortKey = criteria.sort_by as string;
+        
+        // Verificar si la clave es válida para ordenar
+        if (!Object.prototype.hasOwnProperty.call(a, sortKey) || !Object.prototype.hasOwnProperty.call(b, sortKey)) {
+          return 0;
+        }
+        
+        // Acceder a los valores de forma segura
+        const aValue = (a as any)[sortKey];
+        const bValue = (b as any)[sortKey];
         
         if (aValue === null || aValue === undefined) return 1;
         if (bValue === null || bValue === undefined) return -1;
         
-        const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+        // Manejar diferentes tipos de valores
+        let comparison = 0;
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          comparison = aValue.localeCompare(bValue);
+        } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+          comparison = aValue - bValue;
+        } else if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+          comparison = aValue === bValue ? 0 : aValue ? 1 : -1;
+        } else {
+          // Para otros tipos, convertir a string y comparar
+          comparison = String(aValue).localeCompare(String(bValue));
+        }
+        
         return criteria.sort_dir === 'desc' ? -comparison : comparison;
       });
     }
@@ -184,9 +206,9 @@ export default function AttributesPage() {
   };
 
   // Columnas de la tabla
-  const columns: ColumnDef<TenantCustomAttribute>[] = useMemo(() => [
+  const columns: ColumnDef<MarketplaceAttribute>[] = useMemo(() => [
     {
-      accessorKey: 'marketplace_attribute_id',
+      accessorKey: 'type',
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -200,27 +222,28 @@ export default function AttributesPage() {
         const attribute = row.original;
         return (
           <div className="font-medium">
-            {attribute.marketplace_attribute_id}
+            {attribute.type}
           </div>
         );
       },
     },
     {
-      accessorKey: 'attribute_values',
+      accessorKey: 'options',
       header: 'Valores Personalizados',
       cell: ({ row }) => {
         const attribute = row.original;
+        const options = attribute.options || [];
         return (
           <div className="max-w-xs">
             <div className="flex flex-wrap gap-1">
-              {attribute.attribute_values.slice(0, 3).map((value, index) => (
+              {options.slice(0, 3).map((value, index) => (
                 <Badge key={index} variant="outline" className="text-xs">
                   {value}
                 </Badge>
               ))}
-              {attribute.attribute_values.length > 3 && (
+              {options.length > 3 && (
                 <Badge variant="outline" className="text-xs">
-                  +{attribute.attribute_values.length - 3} más
+                  +{options.length - 3} más
                 </Badge>
               )}
             </div>
@@ -277,16 +300,16 @@ export default function AttributesPage() {
 
         const handleDeleteAttribute = async () => {
           const confirmed = window.confirm(
-            `¿Estás seguro de que quieres eliminar el atributo "${attribute.marketplace_attribute_id}"?\n\nEsta acción no se puede deshacer.`
+            `¿Estás seguro de que quieres eliminar el atributo "${attribute.name || attribute.type}"?\n\nEsta acción no se puede deshacer.`
           );
 
           if (!confirmed) return;
 
-          const success = await deleteAttribute(attribute.id);
-          if (success) {
+          try {
+            await deleteAttribute(attribute.id);
             console.log('Attribute deleted successfully');
-          } else {
-            console.error('Failed to delete attribute');
+          } catch (error) {
+            console.error('Failed to delete attribute:', error);
           }
         };
 
@@ -335,14 +358,18 @@ export default function AttributesPage() {
   return (
     <div className="space-y-6">
       {/* Tabla de atributos con filtros modernos */}
-      <CriteriaDataTable
+      <CriteriaDataTable<MarketplaceAttribute, unknown>
         data={criteriaResponse.data}
         columns={columns}
         totalCount={criteriaResponse.total_count}
+        currentPage={criteriaResponse.page}
+        pageSize={criteriaResponse.page_size}
         loading={loading}
         searchPlaceholder="Buscar atributos por tipo o valores..."
-        filters={attributeFilters}
-        criteriaState={criteriaState}
+        searchValue={criteriaState.criteria.search || ''}
+        onSearchChange={(value) => criteriaState.handleFilterChange('search', value)}
+        onPageChange={(page) => criteriaState.handleFilterChange('page', page)}
+        onPageSizeChange={(pageSize) => criteriaState.handleFilterChange('page_size', pageSize)}
         customActions={
           <Button asChild>
             <Link href="/attributes/create">
@@ -371,7 +398,7 @@ export default function AttributesPage() {
                     Tipo de Atributo
                   </label>
                   <p className="text-sm font-medium">
-                    {selectedAttribute.marketplace_attribute_id}
+                    {selectedAttribute.type}
                   </p>
                 </div>
                 <div>
@@ -398,14 +425,14 @@ export default function AttributesPage() {
 
               <div>
                 <label className="text-sm font-medium text-muted-foreground">
-                  Valores Personalizados ({selectedAttribute.attribute_values.length})
+                  Valores Personalizados ({selectedAttribute.options?.length || 0})
                 </label>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {selectedAttribute.attribute_values.map((value, index) => (
+                  {selectedAttribute.options?.map((value, index) => (
                     <Badge key={index} variant="outline">
                       {value}
                     </Badge>
-                  ))}
+                  )) || []}
                 </div>
               </div>
 

@@ -20,7 +20,8 @@ import {
   ShoppingBag,
   Heart,
   Leaf,
-  LucideIcon
+  LucideIcon,
+  ArrowUpDown
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -114,8 +115,8 @@ export default function BusinessTypesPage() {
       setCriteriaResponse({
         data: [],
         total_count: 0,
-        page: criteriaState.criteria.page,
-        page_size: criteriaState.criteria.page_size
+        page: criteriaState.criteria.page || 1,
+        page_size: criteriaState.criteria.page_size || 10
       });
     } finally {
       setLoading(false);
@@ -222,6 +223,7 @@ export default function BusinessTypesPage() {
           className="h-auto p-0 font-semibold"
         >
           Nombre
+          <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => {
@@ -246,7 +248,16 @@ export default function BusinessTypesPage() {
     },
     {
       accessorKey: 'description',
-      header: 'Descripción',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Descripción
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <div className="max-w-xs truncate">
           {row.original.description || 'Sin descripción'}
@@ -255,7 +266,16 @@ export default function BusinessTypesPage() {
     },
     {
       accessorKey: 'is_active',
-      header: 'Estado',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Estado
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <Badge className={getStatusBadgeColor(row.original.is_active)}>
           {row.original.is_active ? (
@@ -274,7 +294,16 @@ export default function BusinessTypesPage() {
     },
     {
       accessorKey: 'sort_order',
-      header: 'Orden',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Orden
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => (
         <span className="text-sm font-mono">{row.original.sort_order}</span>
       ),

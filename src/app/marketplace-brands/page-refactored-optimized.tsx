@@ -96,25 +96,25 @@ export default function MarketplaceBrandsPageOptimized() {
     stats,
     pagination,
     filters,
-    updateFilters,
+    setFilters,
     loadBrands,
     verifyBrand,
     unverifyBrand,
     updateBrand,
     deleteBrand
-  } = useMarketplaceBrands({ adminToken: token });
+  } = useMarketplaceBrands({ adminToken: token || undefined });
 
   // Icono memoizado
   const headerIcon = useMemo(() => <Award className="w-5 h-5 text-white" />, []);
 
   // Configurar header con información dinámica
   useEffect(() => {
-    const currentStart = pagination.totalCount > 0 ? (pagination.currentPage - 1) * pagination.pageSize + 1 : 0;
-    const currentEnd = Math.min(pagination.currentPage * pagination.pageSize, pagination.totalCount);
+    const currentStart = pagination.total > 0 ? (pagination.page - 1) * pagination.limit + 1 : 0;
+    const currentEnd = Math.min(pagination.page * pagination.limit, pagination.total);
     
     setHeaderProps({
       title: 'Gestión de Marcas',
-      subtitle: `Administra las marcas globales del marketplace (${currentStart}-${currentEnd} de ${pagination.totalCount})`,
+      subtitle: `Administra las marcas globales del marketplace (${currentStart}-${currentEnd} de ${pagination.total})`,
       icon: headerIcon
     });
 
@@ -150,7 +150,7 @@ export default function MarketplaceBrandsPageOptimized() {
             )} />
             <div>
               <div className="font-medium">{brand.name}</div>
-              <div className="text-sm text-muted-foreground">{brand.code}</div>
+              <div className="text-sm text-muted-foreground">ID: {brand.id}</div>
             </div>
           </div>
         );
@@ -231,12 +231,6 @@ export default function MarketplaceBrandsPageOptimized() {
                 <Edit className="mr-2 h-4 w-4" />
                 Editar
               </DropdownMenuItem>
-              {brand.website_url && (
-                <DropdownMenuItem onClick={() => window.open(brand.website_url, '_blank')}>
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  Visitar sitio web
-                </DropdownMenuItem>
-              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleVerificationToggle}>
                 {brand.verification_status === 'verified' ? (
@@ -280,7 +274,7 @@ export default function MarketplaceBrandsPageOptimized() {
         { value: 'disputed', label: 'Disputadas' },
         { value: 'pending', label: 'Pendientes' }
       ],
-      onChange: (value) => updateFilters({ 
+      onChange: (value) => setFilters({ 
         verification_status: value === 'all' ? undefined : value as any 
       })
     },
@@ -294,11 +288,11 @@ export default function MarketplaceBrandsPageOptimized() {
         { value: 'true', label: 'Activas' },
         { value: 'false', label: 'Inactivas' }
       ],
-      onChange: (value) => updateFilters({ 
+      onChange: (value) => setFilters({ 
         is_active: value === 'all' ? undefined : value === 'true' 
       })
     }
-  ], [filters, updateFilters]);
+  ], [filters, setFilters]);
 
   // Mostrar estadísticas con componentes shared-ui
   const renderStats = () => {
@@ -353,19 +347,19 @@ export default function MarketplaceBrandsPageOptimized() {
       <CriteriaDataTable
         columns={columns}
         data={brands}
-        totalCount={pagination.totalCount}
-        currentPage={pagination.currentPage}
-        pageSize={pagination.pageSize}
+        totalCount={pagination.total}
+        currentPage={pagination.page}
+        pageSize={pagination.limit}
         loading={loading}
         searchValue={filters.search || ''}
         searchPlaceholder="Buscar marcas..."
         buttonText="Crear Marca"
         filters={brandFilters}
         onCreateClick={() => router.push('/marketplace-brands/create')}
-        onSearchChange={(value) => updateFilters({ search: value })}
-        onPageChange={(page) => updateFilters({ page })}
-        onPageSizeChange={(pageSize) => updateFilters({ page_size: pageSize })}
-        onSortChange={(sortBy, sortDir) => updateFilters({ sort_by: sortBy, sort_dir: sortDir })}
+        onSearchChange={(value) => setFilters({ search: value })}
+        onPageChange={(page) => setFilters({ page })}
+        onPageSizeChange={(pageSize) => setFilters({ page_size: pageSize })}
+        onSortChange={(sortBy, sortDir) => setFilters({ sort_by: sortBy, sort_dir: sortDir })}
         showSearch={true}
       />
 
@@ -386,8 +380,8 @@ export default function MarketplaceBrandsPageOptimized() {
                   <p className="text-sm text-muted-foreground">{selectedBrand.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Código</label>
-                  <p className="text-sm text-muted-foreground">{selectedBrand.code}</p>
+                  <label className="text-sm font-medium">ID</label>
+                  <p className="text-sm text-muted-foreground">{selectedBrand.id}</p>
                 </div>
               </div>
               
@@ -419,22 +413,6 @@ export default function MarketplaceBrandsPageOptimized() {
                 </div>
               </div>
               
-              {selectedBrand.website_url && (
-                <div>
-                  <label className="text-sm font-medium">Sitio Web</label>
-                  <p className="text-sm">
-                    <a 
-                      href={selectedBrand.website_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center gap-1"
-                    >
-                      {selectedBrand.website_url}
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </p>
-                </div>
-              )}
             </div>
           )}
           <DialogFooter>

@@ -69,7 +69,7 @@ export function useMarketplaceCategories(
   }, []);
 
   const refreshCategories = useCallback(async () => {
-    const token = adminToken || 
+    const token: string = adminToken || 
       (typeof window !== 'undefined' ? localStorage.getItem('iam_access_token') : null) ||
       'dev-marketplace-admin';
     
@@ -129,7 +129,7 @@ export function useMarketplaceCategories(
   }, [adminToken, filters]);
 
   const createCategory = useCallback(async (category: CreateMarketplaceCategoryRequest): Promise<boolean> => {
-    const token = adminToken || 
+    const token: string = adminToken || 
       (typeof window !== 'undefined' ? localStorage.getItem('iam_access_token') : null) ||
       'dev-marketplace-admin';
     
@@ -160,7 +160,7 @@ export function useMarketplaceCategories(
   }, [adminToken, refreshCategories]);
 
   const updateCategory = useCallback(async (id: string, updates: Partial<MarketplaceCategory>): Promise<boolean> => {
-    const token = adminToken || 
+    const token: string = adminToken || 
       (typeof window !== 'undefined' ? localStorage.getItem('iam_access_token') : null) ||
       'dev-marketplace-admin';
     
@@ -191,7 +191,7 @@ export function useMarketplaceCategories(
   }, [adminToken, refreshCategories]);
 
   const deleteCategory = useCallback(async (id: string): Promise<boolean> => {
-    const token = adminToken || 
+    const token: string = adminToken || 
       (typeof window !== 'undefined' ? localStorage.getItem('iam_access_token') : null) ||
       'dev-marketplace-admin';
     
@@ -204,12 +204,14 @@ export function useMarketplaceCategories(
     setError(null);
 
     try {
-      const response = await marketplaceApi.deleteMarketplaceCategory(id, token);
-      if (response.error) {
-        throw new Error(response.error);
-      }
-      await refreshCategories();
-      return true;
+      // TODO: Implementar cuando el endpoint esté disponible en el backend
+      // const response = await marketplaceApi.deleteMarketplaceCategory(id, token);
+      // if (response.error) {
+      //   throw new Error(response.error);
+      // }
+      // await refreshCategories();
+      throw new Error('La eliminación de categorías no está disponible en este momento');
+      // return true;
     } catch (err: any) {
       console.error('Error deleting category:', err);
       setError(err.message || 'Error al eliminar la categoría');
@@ -220,7 +222,7 @@ export function useMarketplaceCategories(
   }, [adminToken, refreshCategories]);
 
   const syncChanges = useCallback(async (): Promise<boolean> => {
-    const token = adminToken || 
+    const token: string = adminToken || 
       (typeof window !== 'undefined' ? localStorage.getItem('iam_access_token') : null) ||
       'dev-marketplace-admin';
     

@@ -25,14 +25,14 @@
     --input: 270 15% 90%;                  /* #E6E1F0 */
     --ring: 270 91% 56%;                   /* #9333EA - Púrpura principal */
     --radius: 0.75rem;
-    /* Sidebar con contraste usando los colores de TiendaVecina */
-    --sidebar-background: 240 15% 12%;     /* #1F2028 - Gris oscuro en lugar de negro */
-    --sidebar-foreground: 0 0% 96%;        /* #F5F5F5 */
+    /* Sidebar claro para tema claro */
+    --sidebar-background: 270 20% 94%;     /* #F0EDF6 - Púrpura gris claro */
+    --sidebar-foreground: 240 10% 15%;     /* #222431 */
     --sidebar-primary: 270 91% 56%;        /* #9333EA - Púrpura */
     --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
     --sidebar-accent: 186 100% 43%;        /* #06B6D4 - Cyan */
     --sidebar-accent-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-border: 240 15% 16%;         /* #292A33 */
+    --sidebar-border: 270 15% 86%;         /* #D2C7DE */
     --sidebar-ring: 270 91% 56%;           /* #9333EA */
   }
 
@@ -57,15 +57,15 @@
     --border: 240 15% 22%;                 /* #3A3B4F */
     --input: 240 15% 22%;                  /* #3A3B4F */
     --ring: 270 91% 65%;                   /* #A855F7 */
-    /* Sidebar claro con acentos de TiendaVecina */
-    --sidebar-background: 270 20% 94%;     /* #F0EDF6 - Púrpura gris claro */
-    --sidebar-foreground: 240 10% 15%;     /* #222431 */
-    --sidebar-primary: 270 91% 50%;        /* #8B5CF6 */
+    /* Sidebar oscuro para tema oscuro */
+    --sidebar-background: 240 15% 12%;     /* #1F2028 - Gris oscuro */
+    --sidebar-foreground: 0 0% 96%;        /* #F5F5F5 */
+    --sidebar-primary: 270 91% 65%;        /* #A855F7 - Púrpura más brillante */
     --sidebar-primary-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-accent: 186 100% 40%;        /* #0891B2 */
+    --sidebar-accent: 186 100% 50%;        /* #00BCD4 - Cyan más brillante */
     --sidebar-accent-foreground: 0 0% 100%; /* #FFFFFF */
-    --sidebar-border: 270 15% 86%;         /* #D2C7DE */
-    --sidebar-ring: 270 91% 50%;           /* #8B5CF6 */
+    --sidebar-border: 240 15% 16%;         /* #292A33 */
+    --sidebar-ring: 270 91% 65%;           /* #A855F7 */
   }
 }
 
@@ -211,4 +211,58 @@
 
 .prose th {
   @apply bg-slate-100 dark:bg-slate-800 font-semibold;
+}
+
+/* Estilos adicionales para asegurar visibilidad del tema */
+@layer utilities {
+  .theme-debug {
+    background: red !important;
+    color: white !important;
+    border: 2px solid yellow !important;
+  }
+  
+  .force-theme-visibility {
+    background-color: hsl(var(--background)) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .force-card-visibility {
+    background-color: hsl(var(--card)) !important;
+    color: hsl(var(--card-foreground)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+  }
+  
+  .force-primary-visibility {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+  }
+  
+  .force-secondary-visibility {
+    background-color: hsl(var(--secondary)) !important;
+    color: hsl(var(--secondary-foreground)) !important;
+  }
+}
+
+/* Debug para verificar que las variables CSS están definidas */
+:root {
+  /* Verificación de que las variables estén disponibles */
+  --test-bg: var(--background, #ff0000); /* Si no está definido, será rojo */
+  --test-fg: var(--foreground, #00ff00); /* Si no está definido, será verde */
+}
+
+/* Estilos específicos para componentes problemáticos */
+.multi-select-filter {
+  background-color: hsl(var(--popover)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--popover-foreground)) !important;
+}
+
+.multi-select-option {
+  background-color: hsl(var(--popover)) !important;
+  color: hsl(var(--popover-foreground)) !important;
+}
+
+.multi-select-option:hover {
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
 }

@@ -34,7 +34,7 @@ export interface StatsCardProps {
   }
   badge?: {
     text: string
-    variant?: 'default' | 'secondary' | 'destructive' | 'outline'
+    variant?: 'default' | 'secondary' | 'danger' | 'outline'
   }
   href?: string
   loading?: boolean

@@ -130,7 +130,7 @@ export default function EditBusinessTypeTemplatePage() {
       setError(null);
       
       try {
-        const response = await marketplaceApi.getBusinessTypeTemplate(templateId, token);
+        const response = await marketplaceApi.getBusinessTypeTemplate(templateId, token || undefined);
         
         if (response.error) {
           throw new Error(response.error);
@@ -369,7 +369,7 @@ export default function EditBusinessTypeTemplatePage() {
         metadata: {}
       };
 
-      const response = await marketplaceApi.updateBusinessTypeTemplate(templateId, updateData, token);
+      const response = await marketplaceApi.updateBusinessTypeTemplate(templateId, updateData, token || undefined);
       
       if (response.error) {
         throw new Error(response.error);
@@ -649,7 +649,6 @@ export default function EditBusinessTypeTemplatePage() {
 
               {/* Lista de categorías */}
               <div className="space-y-2">
-                {console.log('🗂️ Rendering categories:', formData.categories.length, formData.categories)}
                 {formData.categories.map((category, index) => (
                   <div key={`category-${category.id || index}`} className="flex items-center justify-between p-3 bg-background border rounded-lg">
                     <div>
@@ -780,7 +779,7 @@ export default function EditBusinessTypeTemplatePage() {
                     label="Seleccionar Producto"
                     placeholder="Seleccionar producto del catálogo global..."
                     showVerifiedOnly={false}
-                    minQualityScore={0.5}
+                    minQualityScore={1}
                   />
                 </div>
                 <div className="flex items-end">

@@ -55,7 +55,7 @@ export const useGlobalProducts = (options: UseGlobalProductsOptions = {}): UseGl
       return acc;
     }, {} as Record<string, number>),
     by_category: products.reduce((acc, product) => {
-      const category = product.category?.name || 'Sin categoría';
+      const category = product.category || 'Sin categoría';
       acc[category] = (acc[category] || 0) + 1;
       return acc;
     }, {} as Record<string, number>),
@@ -89,14 +89,18 @@ export const useGlobalProducts = (options: UseGlobalProductsOptions = {}): UseGl
       });
 
       if (response) {
-        setProducts(response.products || []);
+        // El backend devuelve: { items: [...], total_count: X, page: Y, page_size: Z, total_pages: W }
+        const products = response.items || [];
+        setProducts(products);
+        
+        const offset = (response.page - 1) * response.page_size;
         setPagination({
-          offset: response.pagination.offset,
-          limit: response.pagination.limit,
-          total: response.pagination.total
+          offset: offset,
+          limit: response.page_size || 20,
+          total: response.total_count || 0
         });
         
-        console.log('✅ Loaded global products:', response.products?.length || 0);
+        console.log('✅ Loaded global products:', products.length);
       }
     } catch (err: any) {
       console.error('Error loading global products:', err);
@@ -199,9 +203,6 @@ export const useGlobalProducts = (options: UseGlobalProductsOptions = {}): UseGl
     setFilters,
     loadProducts,
     loadPage,
-    createProduct,
-    updateProduct,
-    deleteProduct,
     verifyProduct
   };
 };

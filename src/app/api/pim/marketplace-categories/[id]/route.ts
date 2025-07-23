@@ -4,10 +4,10 @@ const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'http://localhost:8001';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Como el endpoint individual no existe, obtenemos todas las categorías y filtramos
     const response = await fetch(`${API_GATEWAY_URL}/pim/api/v1/marketplace/categories`, {
@@ -65,10 +65,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     
     console.log('🔄 Actualizando categoría ID:', id, 'con datos:', body);
@@ -108,10 +108,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     
     // Por ahora, como el endpoint de eliminación individual no existe,
     // retornamos un mensaje simulando el éxito

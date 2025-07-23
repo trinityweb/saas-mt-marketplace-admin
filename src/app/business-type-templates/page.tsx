@@ -101,7 +101,7 @@ export default function BusinessTypeTemplatesPage() {
       };
 
       console.log('🔄 Loading templates with criteria:', criteriaState.criteria);
-      const response = await marketplaceApi.getBusinessTypeTemplates(params, token);
+      const response = await marketplaceApi.getBusinessTypeTemplates(params, token || undefined);
       
       if (response.error) {
         throw new Error(response.error);
@@ -156,8 +156,8 @@ export default function BusinessTypeTemplatesPage() {
       setCriteriaResponse({
         data: [],
         total_count: 0,
-        page: criteriaState.criteria.page,
-        page_size: criteriaState.criteria.page_size
+        page: criteriaState.criteria.page || 1,
+        page_size: criteriaState.criteria.page_size || 20
       });
     } finally {
       setLoading(false);

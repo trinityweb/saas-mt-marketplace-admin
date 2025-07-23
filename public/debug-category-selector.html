@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Category Selector</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: white; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #333; border-radius: 8px; }
+        .result { margin: 10px 0; padding: 10px; background: #2a2a2a; border-radius: 4px; }
+        .success { color: #4ade80; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        button { padding: 10px 20px; margin: 5px; background: #7c3aed; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #6d28d9; }
+        select { width: 100%; padding: 8px; margin: 10px 0; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 4px; }
+        .category-item { padding: 4px 0; border-bottom: 1px solid #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Category Selector</h1>
+        
+        <div class="test-section">
+            <h2>1. Test getAllMarketplaceCategoriesComplete</h2>
+            <button onclick="testCompleteCategories()">Test Complete Function</button>
+            <div id="complete-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Test Single Page Fallback</h2>
+            <button onclick="testSinglePage()">Test Single Page</button>
+            <div id="single-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Test Breadcrumb Construction</h2>
+            <button onclick="testBreadcrumbs()">Test Breadcrumbs</button>
+            <div id="breadcrumb-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Simulated Category Selector</h2>
+            <button onclick="loadCategoriesInSelector()">Load Categories</button>
+            <select id="category-selector" size="10">
+                <option>Click "Load Categories" to populate...</option>
+            </select>
+            <div id="selector-stats" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>5. Alimentos y Bebidas Subcategories</h2>
+            <button onclick="testAlimentosSubcategories()">Find Alimentos Subcategories</button>
+            <div id="alimentos-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'http://localhost:3004/api/pim';
+
+        async function testCompleteCategories() {
+            const resultDiv = document.getElementById('complete-result');
+            resultDiv.innerHTML = '🔄 Testing getAllMarketplaceCategoriesComplete...';
+            
+            try {
+                // Simular llamada a getAllMarketplaceCategoriesComplete
+                const pages = [];
+                
+                // Página 1
+                const page1 = await fetch(`${BASE_URL}/marketplace-categories?page=1&page_size=20&is_active=true`);
+                const data1 = await page1.json();
+                pages.push(data1);
+                
+                const total = data1.pagination.total;
+                const totalPages = Math.ceil(total / 20);
+                
+                // Páginas adicionales
+                for (let page = 2; page <= totalPages; page++) {
+                    const pageResponse = await fetch(`${BASE_URL}/marketplace-categories?page=${page}&page_size=20&is_active=true`);
+                    const pageData = await pageResponse.json();
+                    pages.push(pageData);
+                }
+                
+                // Combinar todas las categorías
+                let allCategories = [];
+                pages.forEach(pageData => {
+                    if (pageData.categories) {
+                        allCategories = allCategories.concat(pageData.categories);
+                    }
+                });
+                
+                // Deduplicar
+                const uniqueCategories = allCategories.filter((category, index, self) => 
+                    index === self.findIndex(c => c.id === category.id)
+                );
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ getAllMarketplaceCategoriesComplete simulation:</div>
+                    <div>📊 Total from API: ${total}</div>
+                    <div>📄 Pages fetched: ${totalPages}</div>
+                    <div>🔢 Categories collected: ${allCategories.length}</div>
+                    <div>🎯 Unique categories: ${uniqueCategories.length}</div>
+                    <div>📋 Sample names: ${uniqueCategories.slice(0, 5).map(c => c.name).join(', ')}</div>
+                `;
+                
+                // Store for other tests
+                window.debugCategories = uniqueCategories;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testSinglePage() {
+            const resultDiv = document.getElementById('single-result');
+            resultDiv.innerHTML = '🔄 Testing single page fallback...';
+            
+            try {
+                const response = await fetch(`${BASE_URL}/marketplace-categories?page=1&page_size=20&is_active=true`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="warning">⚠️ Single page fallback (what component uses if complete fails):</div>
+                    <div>📊 Total available: ${data.pagination.total}</div>
+                    <div>🔢 Categories in page 1: ${data.categories?.length || 0}</div>
+                    <div>📋 Sample names: ${data.categories?.slice(0, 5).map(c => c.name).join(', ') || 'None'}</div>
+                    <div class="error">❌ Missing categories: ${data.pagination.total - (data.categories?.length || 0)}</div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        function buildCategoryPath(category, allCategories) {
+            const path = [];
+            let currentCategory = category;
+            
+            // Crear un mapa para búsqueda rápida por ID
+            const categoryMap = new Map();
+            allCategories.forEach(cat => categoryMap.set(cat.id, cat));
+            
+            // Recorrer hacia arriba en la jerarquía
+            while (currentCategory) {
+                path.unshift(currentCategory.name);
+                
+                if (currentCategory.parent_id) {
+                    currentCategory = categoryMap.get(currentCategory.parent_id);
+                } else {
+                    currentCategory = undefined;
+                }
+            }
+            
+            return path.join(' > ');
+        }
+
+        async function testBreadcrumbs() {
+            const resultDiv = document.getElementById('breadcrumb-result');
+            
+            if (!window.debugCategories) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ Run "Test Complete Function" first</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '🔄 Testing breadcrumb construction...';
+            
+            try {
+                const categories = window.debugCategories;
+                
+                // Construir paths para todas las categorías
+                const categoriesWithPath = categories.map(cat => ({
+                    ...cat,
+                    fullPath: buildCategoryPath(cat, categories)
+                }));
+                
+                // Ordenar alfabéticamente
+                const sortedCategories = categoriesWithPath.sort((a, b) => 
+                    a.fullPath.localeCompare(b.fullPath)
+                );
+                
+                // Buscar subcategorías de Alimentos y Bebidas
+                const alimentosParentId = 'c071cc1c-f6c8-48a0-8d85-bd91c16a2437';
+                const alimentosSubcats = sortedCategories.filter(cat => cat.parent_id === alimentosParentId);
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Breadcrumb construction:</div>
+                    <div>🔢 Total with paths: ${sortedCategories.length}</div>
+                    <div>🍞 Sample breadcrumbs:</div>
+                    <div style="margin-left: 20px;">
+                        ${sortedCategories.slice(0, 10).map(c => `<div class="category-item">${c.fullPath}</div>`).join('')}
+                    </div>
+                    <div>🥖 Alimentos subcategories found: ${alimentosSubcats.length}</div>
+                    <div style="margin-left: 20px;">
+                        ${alimentosSubcats.map(c => `<div class="category-item success">${c.fullPath}</div>`).join('')}
+                    </div>
+                `;
+                
+                // Store sorted for selector test
+                window.debugSortedCategories = sortedCategories;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function loadCategoriesInSelector() {
+            if (!window.debugSortedCategories) {
+                document.getElementById('selector-stats').innerHTML = '<div class="warning">⚠️ Run breadcrumb test first</div>';
+                return;
+            }
+            
+            const selector = document.getElementById('category-selector');
+            const statsDiv = document.getElementById('selector-stats');
+            
+            selector.innerHTML = '';
+            
+            const categories = window.debugSortedCategories;
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.fullPath;
+                selector.appendChild(option);
+            });
+            
+            // Buscar subcategorías de Alimentos y Bebidas
+            const alimentosParentId = 'c071cc1c-f6c8-48a0-8d85-bd91c16a2437';
+            const alimentosSubcats = categories.filter(cat => cat.parent_id === alimentosParentId);
+            
+            statsDiv.innerHTML = `
+                <div class="success">✅ Selector populated:</div>
+                <div>🔢 Total options: ${categories.length}</div>
+                <div>🥖 Alimentos subcategories: ${alimentosSubcats.length}</div>
+                <div>📋 Alimentos subs: ${alimentosSubcats.map(c => c.name).join(', ')}</div>
+            `;
+        }
+
+        async function testAlimentosSubcategories() {
+            const resultDiv = document.getElementById('alimentos-result');
+            resultDiv.innerHTML = '🔄 Searching for Alimentos y Bebidas subcategories...';
+            
+            try {
+                // Test en todas las páginas
+                const alimentosParentId = 'c071cc1c-f6c8-48a0-8d85-bd91c16a2437';
+                const subcategoriesFound = [];
+                
+                for (let page = 1; page <= 4; page++) {
+                    const response = await fetch(`${BASE_URL}/marketplace-categories?page=${page}&page_size=20&is_active=true`);
+                    const data = await response.json();
+                    
+                    const pageSubcats = data.categories.filter(cat => cat.parent_id === alimentosParentId);
+                    subcategoriesFound.push(...pageSubcats.map(cat => ({ ...cat, foundInPage: page })));
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Alimentos y Bebidas subcategories search:</div>
+                    <div>🔍 Parent ID: ${alimentosParentId}</div>
+                    <div>🔢 Total subcategories found: ${subcategoriesFound.length}</div>
+                    <div>📋 Subcategories by page:</div>
+                    <div style="margin-left: 20px;">
+                        ${subcategoriesFound.map(cat => 
+                            `<div class="category-item">Page ${cat.foundInPage}: <strong>${cat.name}</strong> (${cat.id})</div>`
+                        ).join('')}
+                    </div>
+                    ${subcategoriesFound.length === 6 ? 
+                        '<div class="success">✅ All 6 expected subcategories found!</div>' : 
+                        '<div class="error">❌ Expected 6, found ' + subcategoriesFound.length + '</div>'
+                    }
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html> 

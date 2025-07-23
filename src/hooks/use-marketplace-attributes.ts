@@ -104,10 +104,10 @@ export const useMarketplaceAttributes = (options: UseMarketplaceAttributesOption
       }
 
       if (response.data) {
-        setAttributes(response.data.attributes || []);
+        setAttributes(response.data.items || []);
         
         // Actualizar información de paginación
-        const total = response.data.total || 0;
+        const total = response.data.total_count || 0;
         const pageSize = currentFilters.page_size || 20;
         const currentPage = currentFilters.page || 1;
         
@@ -136,8 +136,8 @@ export const useMarketplaceAttributes = (options: UseMarketplaceAttributesOption
         page: 1
       }, adminToken);
       
-      if (response.data && response.data.attributes) {
-        const attributes = response.data.attributes;
+      if (response.data && response.data.items) {
+        const attributes = response.data.items;
         
         // Calcular estadísticas
         const byType: Record<string, number> = {};

@@ -1,18 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, Hash, Type, ToggleLeft, Star, Filter } from 'lucide-react';
+import { Hash, Type, ToggleLeft } from 'lucide-react';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect, type SearchableSelectOption } from '@/components/shared-ui/molecules/searchable-select';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 
 import { useMarketplaceAttributes } from '@/hooks/use-marketplace-attributes';
 import { MarketplaceAttribute } from '@/lib/api';
@@ -50,14 +43,7 @@ const attributeTypeLabels = {
   date: 'Fecha'
 };
 
-const attributeTypeColors = {
-  text: 'bg-blue-100 text-blue-800',
-  number: 'bg-green-100 text-green-800',
-  select: 'bg-purple-100 text-purple-800',
-  multi_select: 'bg-purple-100 text-purple-800',
-  boolean: 'bg-yellow-100 text-yellow-800',
-  date: 'bg-indigo-100 text-indigo-800'
-};
+
 
 export function MarketplaceAttributeSelect({
   value,
@@ -128,15 +114,49 @@ export function MarketplaceAttributeSelect({
       return a.name.localeCompare(b.name);
     });
 
-  // Agrupar atributos por grupo
-  const groupedAttributes = filteredAttributes.reduce((groups, attribute) => {
-    const group = attribute.group_name || 'Sin grupo';
-    if (!groups[group]) {
-      groups[group] = [];
-    }
-    groups[group].push(attribute);
-    return groups;
-  }, {} as Record<string, MarketplaceAttribute[]>);
+  // Convertir atributos a opciones de SearchableSelect con agrupación
+  const attributeOptions: SearchableSelectOption[] = filteredAttributes.map((attribute) => {
+      const TypeIcon = attributeTypeIcons[attribute.type];
+      
+      // Construir badges dinámicos
+      const badges = [];
+      
+      badges.push({
+        text: attributeTypeLabels[attribute.type],
+        variant: 'outline' as const
+      });
+      
+      if (attribute.is_required) {
+        badges.push({
+          text: 'Requerido',
+          variant: 'danger' as const
+        });
+      }
+      
+      if (attribute.is_filterable) {
+        badges.push({
+          text: 'Filtrable',
+          variant: 'outline' as const
+        });
+      }
+      
+      if (attribute.unit) {
+        badges.push({
+          text: attribute.unit,
+          variant: 'outline' as const
+        });
+      }
+
+      return {
+        value: attribute.name,
+        label: attribute.name,
+        description: attribute.description || `Tipo: ${attributeTypeLabels[attribute.type]}`,
+        icon: <TypeIcon className="w-4 h-4 text-muted-foreground" />,
+        badge: badges[0], // Badge principal del tipo
+        group: attribute.group_name || 'Sin grupo',
+        disabled: !attribute.is_active,
+      };
+    });
 
   // Manejar la selección
   const handleSelect = (attributeValue: string) => {
@@ -165,90 +185,18 @@ export function MarketplaceAttributeSelect({
         </Alert>
       )}
 
-      <Select
+      <SearchableSelect
+        options={attributeOptions}
         value={value}
         onValueChange={handleSelect}
+        placeholder={placeholder}
+        searchPlaceholder="Buscar atributos..."
         disabled={disabled || loading}
-      >
-        <SelectTrigger className="w-full">
-          {loading ? (
-            <div className="flex items-center">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Cargando atributos...
-            </div>
-          ) : (
-            <SelectValue placeholder={placeholder} />
-          )}
-        </SelectTrigger>
-        <SelectContent>
-          {Object.entries(groupedAttributes).map(([groupName, groupAttributes]) => (
-            <div key={groupName}>
-              {Object.keys(groupedAttributes).length > 1 && (
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-b">
-                  {groupName}
-                </div>
-              )}
-              {groupAttributes.map((attribute) => {
-                const TypeIcon = attributeTypeIcons[attribute.type];
-                
-                return (
-                  <SelectItem key={attribute.id} value={attribute.name} className="py-3">
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-shrink-0">
-                          <TypeIcon className="w-4 h-4 text-muted-foreground" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm truncate">
-                            {attribute.name}
-                            {attribute.is_required && (
-                              <Star className="inline w-3 h-3 ml-1 text-yellow-500" />
-                            )}
-                          </div>
-                          {attribute.description && (
-                            <div className="text-xs text-muted-foreground truncate">
-                              {attribute.description}
-                            </div>
-                          )}
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge 
-                              variant="outline"
-                              className={`text-xs ${attributeTypeColors[attribute.type]}`}
-                            >
-                              {attributeTypeLabels[attribute.type]}
-                            </Badge>
-                            {attribute.is_required && (
-                              <Badge variant="destructive" className="text-xs">
-                                Requerido
-                              </Badge>
-                            )}
-                            {attribute.is_filterable && (
-                              <Badge variant="outline" className="text-xs">
-                                <Filter className="w-3 h-3 mr-1" />
-                                Filtrable
-                              </Badge>
-                            )}
-                            {attribute.unit && (
-                              <Badge variant="outline" className="text-xs">
-                                {attribute.unit}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </SelectItem>
-                );
-              })}
-            </div>
-          ))}
-          {filteredAttributes.length === 0 && !loading && (
-            <div className="px-2 py-4 text-center text-sm text-muted-foreground">
-              No hay atributos disponibles
-            </div>
-          )}
-        </SelectContent>
-      </Select>
+        loading={loading}
+        allowClear={true}
+        emptyMessage="No hay atributos disponibles"
+        className="w-full"
+      />
     </div>
   );
 }

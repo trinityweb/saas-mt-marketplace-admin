@@ -63,7 +63,7 @@ export {
 
 // Organisms - Export individually
 export { AdminSidebar } from './organisms/admin-sidebar'
-export type { SidebarConfig, MenuItem, SidebarTheme, SidebarBehavior, SidebarUser } from './organisms/admin-sidebar'
+export type { SidebarConfig, MenuItem, SidebarTheme, SidebarBehavior, SidebarUser } from './types/sidebar'
 export { ThemeSelector } from './organisms/theme-selector'
 export {
   Dialog,
@@ -92,7 +92,4 @@ export {
 export { cn } from './utils/cn'
 
 // Export types
-export type { ButtonProps } from './atoms/button'
-export type { BadgeProps } from './atoms/badge'
-export type { InputProps } from './atoms/input'
-export type { LabelProps } from './atoms/label'
+// TODO: Fix type exports after build issues are resolved

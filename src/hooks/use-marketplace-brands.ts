@@ -37,7 +37,7 @@ interface UseMarketplaceBrandsReturn {
   unverifyBrand: (brandId: string) => Promise<any>;
   updateBrand: (brandId: string, updates: Partial<MarketplaceBrand>) => Promise<any>;
   deleteBrand: (brandId: string) => Promise<any>;
-  createBrand: (brandData: Partial<MarketplaceBrand>) => Promise<any>;
+  createBrand: (brandData: { name: string; description?: string; logo_url?: string; website?: string; aliases?: string[] }) => Promise<any>;
 }
 
 export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}): UseMarketplaceBrandsReturn => {
@@ -199,7 +199,7 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}):
     }
   }, [adminToken, loadBrands, loadStatistics]);
 
-  const createBrand = useCallback(async (brandData: Partial<MarketplaceBrand>) => {
+  const createBrand = useCallback(async (brandData: { name: string; description?: string; logo_url?: string; website?: string; aliases?: string[] }) => {
     try {
       const response = await marketplaceApi.createMarketplaceBrand(brandData, adminToken);
       if (response.error) {

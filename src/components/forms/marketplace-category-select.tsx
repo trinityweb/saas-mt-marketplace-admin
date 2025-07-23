@@ -1,15 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
+import { SearchableSelect, type SearchableSelectOption } from '@/components/shared-ui/molecules/searchable-select';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -28,6 +22,34 @@ interface MarketplaceCategorySelectProps {
   className?: string;
 }
 
+// Función para construir el path completo de una categoría (breadcrumbs)
+function buildCategoryPath(category: MarketplaceCategory, allCategories: MarketplaceCategory[]): string {
+  const path: string[] = [];
+  let currentCategory: MarketplaceCategory | undefined = category;
+  
+  // Crear un mapa para búsqueda rápida por ID
+  const categoryMap = new Map<string, MarketplaceCategory>();
+  allCategories.forEach(cat => categoryMap.set(cat.id, cat));
+  
+  // Recorrer hacia arriba en la jerarquía
+  while (currentCategory) {
+    path.unshift(currentCategory.name);
+    
+    if (currentCategory.parent_id) {
+      currentCategory = categoryMap.get(currentCategory.parent_id);
+    } else {
+      currentCategory = undefined;
+    }
+  }
+  
+  return path.join(' > ');
+}
+
+// Interfaz extendida para categorías con path
+interface CategoryWithPath extends MarketplaceCategory {
+  fullPath: string;
+}
+
 export function MarketplaceCategorySelect({
   value,
   onValueChange,
@@ -42,7 +64,7 @@ export function MarketplaceCategorySelect({
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<MarketplaceCategory[]>([]);
+  const [categories, setCategories] = useState<CategoryWithPath[]>([]);
 
   // Cargar categorías al montar el componente
   useEffect(() => {
@@ -51,16 +73,60 @@ export function MarketplaceCategorySelect({
       setError(null);
 
       try {
+        // Usar la misma lógica robusta que el hook useMarketplaceCategories
+        const adminToken = token || 
+          (typeof window !== 'undefined' ? localStorage.getItem('iam_access_token') : null) ||
+          'dev-marketplace-admin';
+        
         const filters = {
-          page: 1,
-          page_size: 200, // Cargar más categorías para tener opciones
           ...(showActiveOnly && { is_active: true })
         };
 
-        const response = await marketplaceApi.getAllMarketplaceCategories(filters, token || '');
+        console.log('🔍 MarketplaceCategorySelect: Loading all categories with filters:', filters);
+        console.log('🔑 Using admin token:', adminToken ? 'Available' : 'Missing');
+
+        const response = await marketplaceApi.getAllMarketplaceCategoriesComplete(filters, adminToken);
+
+        console.log('🎯 getAllMarketplaceCategoriesComplete response:', { 
+          hasError: !!response.error, 
+          error: response.error,
+          categoriesCount: response.data?.categories?.length,
+          totalFromResponse: response.data?.total
+        });
 
         if (response.error) {
-          throw new Error(response.error);
+          // Fallback: usar solo la primera página si falla getAllMarketplaceCategoriesComplete
+          console.warn('⚠️ getAllMarketplaceCategoriesComplete failed, falling back to single page:', response.error);
+          
+          const fallbackResponse = await marketplaceApi.getAllMarketplaceCategories({
+            page: 1,
+            page_size: 20,
+            ...filters
+          }, adminToken);
+          
+          if (fallbackResponse.error) {
+            throw new Error(fallbackResponse.error);
+          }
+          
+          if (fallbackResponse.data?.categories) {
+            const validCategories = fallbackResponse.data.categories.filter(cat => 
+              cat.name && cat.name.trim().length > 0
+            );
+            
+            // Construir paths completos y ordenar alfabéticamente
+            const categoriesWithPath: CategoryWithPath[] = validCategories.map(cat => ({
+              ...cat,
+              fullPath: buildCategoryPath(cat, validCategories)
+            }));
+            
+            const sortedCategories = categoriesWithPath.sort((a, b) => 
+              a.fullPath.localeCompare(b.fullPath)
+            );
+            
+            setCategories(sortedCategories);
+            console.log('✅ MarketplaceCategorySelect: Loaded categories with paths (fallback):', sortedCategories.length);
+            return;
+          }
         }
 
         if (response.data?.categories) {
@@ -69,17 +135,23 @@ export function MarketplaceCategorySelect({
             cat.name && cat.name.trim().length > 0
           );
           
-          // Ordenar categorías por nivel y nombre para mostrar jerarquía
-          const sortedCategories = validCategories.sort((a, b) => {
-            if (a.level !== b.level) return a.level - b.level;
-            return a.name.localeCompare(b.name);
-          });
+          // Construir paths completos para cada categoría
+          const categoriesWithPath: CategoryWithPath[] = validCategories.map(cat => ({
+            ...cat,
+            fullPath: buildCategoryPath(cat, validCategories)
+          }));
+          
+          // Ordenar alfabéticamente por el path completo
+          const sortedCategories = categoriesWithPath.sort((a, b) => 
+            a.fullPath.localeCompare(b.fullPath)
+          );
           
           setCategories(sortedCategories);
-          console.log('✅ Loaded marketplace categories:', sortedCategories.length, 'sorted by hierarchy');
+          console.log('✅ MarketplaceCategorySelect: Loaded categories with paths:', sortedCategories.length, 'total:', response.data.total);
+          console.log('📋 Sample paths:', sortedCategories.slice(0, 5).map(c => c.fullPath));
         }
       } catch (err: any) {
-        console.error('Error loading marketplace categories:', err);
+        console.error('❌ Error loading marketplace categories:', err);
         setError(err.message || 'Error al cargar categorías');
       } finally {
         setLoading(false);
@@ -88,6 +160,14 @@ export function MarketplaceCategorySelect({
 
     loadCategories();
   }, [token, showActiveOnly]);
+
+  // Convertir categorías a opciones de SearchableSelect
+  const categoryOptions: SearchableSelectOption[] = categories.map((category) => ({
+    value: category.name,
+    label: category.fullPath,
+    description: `Nivel ${category.level}${category.is_active ? ' • Activa' : ' • Inactiva'}`,
+    disabled: !category.is_active,
+  }));
 
   // Manejar la selección
   const handleSelect = (categoryValue: string) => {
@@ -116,31 +196,18 @@ export function MarketplaceCategorySelect({
         </Alert>
       )}
 
-      <Select
+      <SearchableSelect
+        options={categoryOptions}
         value={value}
         onValueChange={handleSelect}
+        placeholder={placeholder}
+        searchPlaceholder="Buscar categorías..."
         disabled={disabled || loading}
-      >
-        <SelectTrigger className="w-full">
-          {loading ? (
-            <div className="flex items-center">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Cargando categorías...
-            </div>
-          ) : (
-            <SelectValue placeholder={placeholder} />
-          )}
-        </SelectTrigger>
-        <SelectContent>
-          {categories.map((category) => (
-            <SelectItem key={category.id} value={category.name}>
-              <span className={category.level > 0 ? 'ml-4' : ''}>
-                {category.level > 0 && '↳ '}{category.name}
-              </span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        loading={loading}
+        allowClear={true}
+        emptyMessage="No hay categorías disponibles"
+        className="w-full"
+      />
     </div>
   );
 }
@@ -148,7 +215,7 @@ export function MarketplaceCategorySelect({
 // Hook personalizado para usar con formularios
 export function useMarketplaceCategories(showActiveOnly: boolean = true) {
   const { token } = useAuth();
-  const [categories, setCategories] = useState<MarketplaceCategory[]>([]);
+  const [categories, setCategories] = useState<CategoryWithPath[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -158,15 +225,46 @@ export function useMarketplaceCategories(showActiveOnly: boolean = true) {
 
     try {
       const filters = {
-        page: 1,
-        page_size: 200,
         ...(showActiveOnly && { is_active: true })
       };
 
-      const response = await marketplaceApi.getAllMarketplaceCategories(filters, token || '');
+      console.log('🔍 useMarketplaceCategories: Loading all categories with filters:', filters);
+
+      const response = await marketplaceApi.getAllMarketplaceCategoriesComplete(filters, token || '');
 
       if (response.error) {
-        throw new Error(response.error);
+        // Fallback: usar solo la primera página si falla getAllMarketplaceCategoriesComplete
+        console.warn('⚠️ getAllMarketplaceCategoriesComplete failed, falling back to single page:', response.error);
+        
+        const fallbackResponse = await marketplaceApi.getAllMarketplaceCategories({
+          page: 1,
+          page_size: 20,
+          ...filters
+        }, token || '');
+        
+        if (fallbackResponse.error) {
+          throw new Error(fallbackResponse.error);
+        }
+        
+        if (fallbackResponse.data?.categories) {
+          const validCategories = fallbackResponse.data.categories.filter(cat => 
+            cat.name && cat.name.trim().length > 0
+          );
+          
+          // Construir paths completos y ordenar alfabéticamente
+          const categoriesWithPath: CategoryWithPath[] = validCategories.map(cat => ({
+            ...cat,
+            fullPath: buildCategoryPath(cat, validCategories)
+          }));
+          
+          const sortedCategories = categoriesWithPath.sort((a, b) => 
+            a.fullPath.localeCompare(b.fullPath)
+          );
+          
+          setCategories(sortedCategories);
+          console.log('✅ useMarketplaceCategories: Loaded categories with paths (fallback):', sortedCategories.length);
+          return;
+        }
       }
 
       if (response.data?.categories) {
@@ -174,10 +272,23 @@ export function useMarketplaceCategories(showActiveOnly: boolean = true) {
         const validCategories = response.data.categories.filter(cat => 
           cat.name && cat.name.trim().length > 0
         );
-        setCategories(validCategories);
+        
+        // Construir paths completos para cada categoría
+        const categoriesWithPath: CategoryWithPath[] = validCategories.map(cat => ({
+          ...cat,
+          fullPath: buildCategoryPath(cat, validCategories)
+        }));
+        
+        // Ordenar alfabéticamente por el path completo
+        const sortedCategories = categoriesWithPath.sort((a, b) => 
+          a.fullPath.localeCompare(b.fullPath)
+        );
+        
+        setCategories(sortedCategories);
+        console.log('✅ useMarketplaceCategories: Loaded categories with paths:', sortedCategories.length, 'total:', response.data.total);
       }
     } catch (err: any) {
-      console.error('Error loading marketplace categories:', err);
+      console.error('❌ Error loading marketplace categories in hook:', err);
       setError(err.message || 'Error al cargar categorías');
     } finally {
       setLoading(false);

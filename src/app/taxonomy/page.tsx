@@ -140,7 +140,7 @@ const CategoryTreeView = ({
             <Badge variant={category.level > 0 ? 'secondary' : 'default'}>
               Nivel {category.level}
             </Badge>
-            <Badge variant={category.is_active ? 'default' : 'destructive'}>
+            <Badge variant={category.is_active ? 'default' : 'danger'}>
               {category.is_active ? (
                 <>
                   <CheckCircle className="h-3 w-3 mr-1" />
@@ -294,9 +294,13 @@ export default function TaxonomyPage() {
 
   // Estado para vista activa
   const [activeView, setActiveView] = useState<'table' | 'tree'>('table');
+  
+  // Estado para ordenamiento
+  const [sortBy, setSortBy] = useState<string>('sort_order');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
   // Ref para debounce
-  const searchTimeoutRef = useRef<NodeJS.Timeout>();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Icono memoizado para evitar recrear JSX
   const headerIcon = useMemo(() => <TreePine className="w-5 h-5 text-white" />, []);
@@ -317,84 +321,181 @@ export default function TaxonomyPage() {
   }, [setHeaderProps, clearHeaderProps, headerIcon]);
 
   // Función para obtener categorías
-  const fetchCategories = async (page = currentPage, size = pageSize, search = searchValue, activeFilter = isActiveFilter) => {
+  const fetchCategories = async (
+    page = currentPage, 
+    size = pageSize, 
+    search = searchValue, 
+    activeFilter = isActiveFilter,
+    orderBy = sortBy,
+    orderDir = sortDir
+  ) => {
     try {
       setLoading(true);
       setError(null);
       
-      console.log('🔍 Fetching categories with params:', { page, size, search, activeFilter });
+      console.log('🔍 Fetching categories with params:', { page, size, search, activeFilter, activeView });
       
-      const params = new URLSearchParams();
-      
-      // Para vista de árbol, obtener todas las categorías
+      // Para vista de árbol, obtener TODAS las categorías con múltiples llamadas
       if (activeView === 'tree') {
-        params.append('page', '1');
-        params.append('page_size', '1000'); // Obtener todas para el árbol
+        console.log('🌳 Tree view: fetching ALL categories with multiple requests');
+        
+        // Primero obtener el total
+        const firstCallParams = new URLSearchParams();
+        firstCallParams.append('page', '1');
+        firstCallParams.append('page_size', '20');
+        if (search.trim()) firstCallParams.append('search', search.trim());
+        if (activeFilter !== 'all') firstCallParams.append('is_active', activeFilter);
+        firstCallParams.append('_t', Date.now().toString());
+        
+        const firstResponse = await fetch(`/api/pim/marketplace-categories?${firstCallParams.toString()}`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
+        
+        if (!firstResponse.ok) {
+          throw new Error(`Error ${firstResponse.status}: ${firstResponse.statusText}`);
+        }
+        
+        const firstData = await firstResponse.json();
+        const totalCategories = firstData.pagination?.total || 0;
+        
+        console.log('📊 Total categories to fetch:', totalCategories);
+        
+        if (totalCategories === 0) {
+          setCategories([]);
+          setSummary({ total_categories: 0, active_count: 0, inactive_count: 0, root_categories: 0 });
+          setTotalCount(0);
+          return;
+        }
+        
+        // Si hay más de 20 categorías, hacer llamadas adicionales
+        let allCategories = firstData.categories || [];
+        const pageSize = 20; // El backend parece limitado a 20
+        const totalPages = Math.ceil(totalCategories / pageSize);
+        
+        console.log('📄 Total pages needed:', totalPages);
+        
+        // Hacer llamadas paralelas para las páginas restantes
+        if (totalPages > 1) {
+          const additionalRequests = [];
+          
+          for (let pageNum = 2; pageNum <= totalPages; pageNum++) {
+            const params = new URLSearchParams();
+            params.append('page', pageNum.toString());
+            params.append('page_size', pageSize.toString());
+            if (search.trim()) params.append('search', search.trim());
+            if (activeFilter !== 'all') params.append('is_active', activeFilter);
+            params.append('_t', Date.now().toString());
+            
+            additionalRequests.push(
+              fetch(`/api/pim/marketplace-categories?${params.toString()}`, {
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache' }
+              })
+            );
+          }
+          
+          console.log('🚀 Making', additionalRequests.length, 'additional requests');
+          
+          const additionalResponses = await Promise.all(additionalRequests);
+          
+          for (const response of additionalResponses) {
+            if (response.ok) {
+              const data = await response.json();
+              if (data.categories) {
+                allCategories = allCategories.concat(data.categories);
+              }
+            }
+          }
+        }
+        
+        console.log('🎯 Tree view - Total categories fetched:', allCategories.length);
+        setCategories(allCategories);
+        
+        // Calcular estadísticas desde todos los datos
+        const activeCategories = allCategories.filter((cat: any) => cat.is_active).length;
+        const inactiveCategories = allCategories.filter((cat: any) => !cat.is_active).length;
+        const rootCategories = allCategories.filter((cat: any) => !cat.parent_id).length;
+        
+        setSummary({
+          total_categories: totalCategories,
+          active_count: activeCategories,
+          inactive_count: inactiveCategories,
+          root_categories: rootCategories
+        });
+        
+        setTotalCount(totalCategories);
+        
       } else {
-        // Paginación normal para tabla - enviar page y page_size
+        // Vista tabla - paginación normal
+        console.log('📋 Table view: normal pagination');
+        
+        const params = new URLSearchParams();
         params.append('page', page.toString());
         params.append('page_size', size.toString());
-      }
-      
-      // Filtros
-      if (search.trim()) {
-        params.append('search', search.trim());
-      }
-      if (activeFilter !== 'all') {
-        params.append('is_active', activeFilter);
-      }
-
-      // Agregar timestamp para evitar cache
-      params.append('_t', Date.now().toString());
-      
-      const apiUrl = `/api/pim/marketplace-categories?${params.toString()}`;
-      console.log('🌐 API URL:', apiUrl);
-
-      const response = await fetch(apiUrl, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache'
+        
+        // Filtros
+        if (search.trim()) {
+          params.append('search', search.trim());
         }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        if (activeFilter !== 'all') {
+          params.append('is_active', activeFilter);
+        }
+        
+        // Ordenamiento
+        params.append('sort_by', orderBy);
+        params.append('sort_dir', orderDir);
+
+        // Agregar timestamp para evitar cache
+        params.append('_t', Date.now().toString());
+        
+        const apiUrl = `/api/pim/marketplace-categories?${params.toString()}`;
+        console.log('🌐 API URL:', apiUrl);
+
+        const response = await fetch(apiUrl, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('📦 Table view API Response:', {
+          categories_count: data.categories?.length || 0,
+          pagination: data.pagination,
+          first_category: data.categories?.[0]?.name
+        });
+        
+        // Usar la estructura correcta: categories en lugar de data
+        const categoriesData = data.categories || [];
+        console.log('🎯 Setting categories to state:', {
+          count: categoriesData.length,
+          first_3_names: categoriesData.slice(0, 3).map((c: any) => c.name),
+          page: page
+        });
+        setCategories(categoriesData);
+        
+        // Calcular estadísticas desde los datos reales
+        const totalCategories = data.pagination?.total || 0;
+        const activeCategories = categoriesData.filter((cat: any) => cat.is_active).length;
+        const inactiveCategories = categoriesData.filter((cat: any) => !cat.is_active).length;
+        const rootCategories = categoriesData.filter((cat: any) => !cat.parent_id).length;
+        
+        console.log('📊 Stats:', { totalCategories, activeCategories, inactiveCategories, rootCategories });
+        
+        setSummary({
+          total_categories: totalCategories,
+          active_count: activeCategories,
+          inactive_count: inactiveCategories,
+          root_categories: rootCategories
+        });
+        
+        setTotalCount(totalCategories);
       }
-      
-      const data = await response.json();
-      console.log('📦 API Response:', {
-        categories_count: data.categories?.length || 0,
-        pagination: data.pagination,
-        first_category: data.categories?.[0]?.name,
-        first_3_categories: data.categories?.slice(0, 3)?.map((c: any) => c.name),
-        full_response: data
-      });
-      
-      // Usar la estructura correcta: categories en lugar de data
-      const categoriesData = data.categories || [];
-      console.log('🎯 Setting categories to state:', {
-        count: categoriesData.length,
-        first_3_names: categoriesData.slice(0, 3).map((c: any) => c.name),
-        page: page
-      });
-      setCategories(categoriesData);
-      
-      // Calcular estadísticas desde los datos reales
-      const totalCategories = data.pagination?.total || 0;
-      const activeCategories = categoriesData.filter((cat: any) => cat.is_active).length;
-      const inactiveCategories = categoriesData.filter((cat: any) => !cat.is_active).length;
-      const rootCategories = categoriesData.filter((cat: any) => !cat.parent_id).length;
-      
-      console.log('📊 Stats:', { totalCategories, activeCategories, inactiveCategories, rootCategories });
-      
-      setSummary({
-        total_categories: totalCategories,
-        active_count: activeCategories,
-        inactive_count: inactiveCategories,
-        root_categories: rootCategories
-      });
-      
-      setTotalCount(totalCategories);
       
     } catch (err) {
       console.error('❌ Error loading categories:', err);
@@ -421,12 +522,12 @@ export default function TaxonomyPage() {
   useEffect(() => {
     if (activeView === 'tree') {
       console.log('🌳 Switching to tree view - loading all categories');
-      fetchCategories(1, 1000, searchValue, isActiveFilter);
+      fetchCategories(1, 1000, searchValue, isActiveFilter, sortBy, sortDir);
     } else {
       console.log('📋 Switching to table view - loading paginated');
       // Al cambiar a vista tabla, usar página 1 para evitar conflictos
       setCurrentPage(1);
-      fetchCategories(1, pageSize, searchValue, isActiveFilter);
+      fetchCategories(1, pageSize, searchValue, isActiveFilter, sortBy, sortDir);
     }
   }, [activeView]); // SOLO cuando cambia activeView
 
@@ -438,7 +539,7 @@ export default function TaxonomyPage() {
     
     searchTimeoutRef.current = setTimeout(() => {
       console.log('🔍 Debounced search triggered:', newSearchValue);
-      fetchCategories(1, pageSize, newSearchValue, isActiveFilter);
+      fetchCategories(1, pageSize, newSearchValue, isActiveFilter, sortBy, sortDir);
     }, 300);
   };
 
@@ -455,7 +556,7 @@ export default function TaxonomyPage() {
     setCurrentPage(page);
     // Solo hacer fetch si estamos en vista tabla
     if (activeView === 'table') {
-      fetchCategories(page, pageSize, searchValue, isActiveFilter);
+      fetchCategories(page, pageSize, searchValue, isActiveFilter, sortBy, sortDir);
     }
   };
 
@@ -463,14 +564,14 @@ export default function TaxonomyPage() {
     console.log('📏 Page size changed:', size);
     setPageSize(size);
     setCurrentPage(1);
-    fetchCategories(1, size, searchValue, isActiveFilter);
+    fetchCategories(1, size, searchValue, isActiveFilter, sortBy, sortDir);
   };
 
   const handleFilterChange = (value: string) => {
     console.log('🔄 Filter changed:', value);
     setIsActiveFilter(value);
     setCurrentPage(1);
-    fetchCategories(1, pageSize, searchValue, value);
+    fetchCategories(1, pageSize, searchValue, value, sortBy, sortDir);
   };
 
   const handleEditCategory = (id: string) => {
@@ -499,7 +600,7 @@ export default function TaxonomyPage() {
       }
 
       // Recargar las categorías después de eliminar
-      await fetchCategories(currentPage, pageSize, searchValue, isActiveFilter);
+      await fetchCategories(currentPage, pageSize, searchValue, isActiveFilter, sortBy, sortDir);
       
       console.log('✅ Category deleted successfully');
     } catch (error) {
@@ -602,7 +703,7 @@ export default function TaxonomyPage() {
       cell: ({ row }) => {
         const category = row.original;
         return (
-          <Badge variant={category.is_active ? 'default' : 'destructive'}>
+          <Badge variant={category.is_active ? 'default' : 'danger'}>
             {category.is_active ? (
               <>
                 <CheckCircle className="h-3 w-3 mr-1" />
@@ -728,11 +829,6 @@ export default function TaxonomyPage() {
 
         {/* Vista de Tabla */}
         <TabsContent value="table" className="space-y-6">
-          {console.log('🎯 About to render table with categories:', {
-            count: categories.length,
-            first_3_names: categories.slice(0, 3).map(c => c.name),
-            currentPage: currentPage
-          })}
           <CriteriaDataTable
             columns={columns}
             data={categories}
@@ -748,11 +844,12 @@ export default function TaxonomyPage() {
             onSearchChange={handleSearchChange}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
-            onSortChange={(sortBy, sortDir) => {
-              console.log('🔀 Sort changed:', { sortBy, sortDir });
+            onSortChange={(newSortBy, newSortDir) => {
+              console.log('🔀 Sort changed:', { sortBy: newSortBy, sortDir: newSortDir });
+              setSortBy(newSortBy || 'sort_order');
+              setSortDir(newSortDir || 'asc');
               setCurrentPage(1);
-              // Agregar los parámetros de ordenamiento a fetchCategories cuando el backend lo soporte
-              fetchCategories(1, pageSize, searchValue, isActiveFilter);
+              fetchCategories(1, pageSize, searchValue, isActiveFilter, newSortBy || 'sort_order', newSortDir || 'asc');
             }}
             fullWidth={true}
           />

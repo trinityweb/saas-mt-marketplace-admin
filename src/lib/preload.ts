@@ -6,13 +6,8 @@ export const preloadModules = () => {
     import('@radix-ui/react-dropdown-menu');
     import('@radix-ui/react-select');
     
-    // Precargar iconos más usados de lucide
-    import('lucide-react/dist/esm/icons/plus');
-    import('lucide-react/dist/esm/icons/search');
-    import('lucide-react/dist/esm/icons/filter');
-    import('lucide-react/dist/esm/icons/settings');
-    import('lucide-react/dist/esm/icons/users');
-    import('lucide-react/dist/esm/icons/package');
+    // Precargar lucide-react
+    import('lucide-react');
     
     // Precargar tanstack table
     import('@tanstack/react-table');

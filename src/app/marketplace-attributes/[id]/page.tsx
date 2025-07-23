@@ -79,7 +79,7 @@ export default function MarketplaceAttributeDetailPage() {
   const params = useParams();
   const { token } = useAuth();
   const { setHeaderProps, clearHeaderProps } = useHeader();
-  const { deleteAttributeValue, updateAttributeValue } = useMarketplaceAttributes({ adminToken: token });
+  const { deleteAttributeValue, updateAttributeValue } = useMarketplaceAttributes({ adminToken: token || undefined });
 
   // Estados
   const [attribute, setAttribute] = useState<MarketplaceAttributeWithValues | null>(null);
@@ -102,7 +102,7 @@ export default function MarketplaceAttributeDetailPage() {
     try {
       setLoading(true);
       setError(null);
-      const response = await marketplaceApi.getMarketplaceAttributeWithValues(attributeId, token);
+      const response = await marketplaceApi.getMarketplaceAttributeWithValues(attributeId, token || undefined);
       
       if (response.error) {
         setError(response.error);
@@ -130,7 +130,7 @@ export default function MarketplaceAttributeDetailPage() {
           page_size: pageSize,
           search: searchValue || undefined
         },
-        token
+        token || undefined
       );
       
       if (response.data) {

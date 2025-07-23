@@ -45,14 +45,15 @@ export class RoleAdapter implements IamRole {
   get CreatedAt(): string { return this.created_at; }
   get UpdatedAt(): string { return this.updated_at; }
 
-  static fromResponse(data: IamRole): RoleAdapter {
+  static fromResponse(data: any): RoleAdapter {
+    // Manejar tanto la estructura snake_case como PascalCase
     return new RoleAdapter(
-      data.id,
-      data.name,
-      data.description,
-      data.saas,
-      data.created_at,
-      data.updated_at
+      data.id || data.ID,
+      data.name || data.Name,
+      data.description || data.Description || '',
+      data.saas || data.Saas || '',
+      data.created_at || data.CreatedAt,
+      data.updated_at || data.UpdatedAt
     );
   }
 }
@@ -102,14 +103,21 @@ export class UserAdapter implements IamUser {
   get created_at(): string { return this.CreatedAt; }
   get updated_at(): string { return this.UpdatedAt; }
   get tenant(): IamTenant | undefined { return this.Tenant; }
-  get role(): { id: string; name: string; description: string; } | undefined { return this.Role; }
+  get role(): { id: string; name: string; description: string; } | undefined { 
+    if (!this.Role) return undefined;
+    return {
+      id: this.Role.ID,
+      name: this.Role.Name,
+      description: this.Role.Description
+    };
+  }
 
   // Getters de conveniencia
   get name(): string { return this.email.split('@')[0]; }
   get roleName(): string { return this.role?.name || this.role_id; }
 
-  static fromResponse(data: IamUser): UserAdapter {
-    // Manejar tanto la estructura snake_case como camelCase
+  static fromResponse(data: any): UserAdapter {
+    // Manejar tanto la estructura snake_case como PascalCase
     const id = data.id || data.ID;
     const email = data.email || data.Email;
     const tenantId = data.tenant_id || data.TenantID;
@@ -223,17 +231,18 @@ export class PlanAdapter implements IamPlan {
   get CreatedAt(): string { return this.created_at; }
   get UpdatedAt(): string { return this.updated_at; }
 
-  static fromResponse(data: IamPlan): PlanAdapter {
+  static fromResponse(data: any): PlanAdapter {
+    // Manejar tanto la estructura snake_case como PascalCase
     return new PlanAdapter(
-      data.id,
-      data.saas,
-      data.name,
-      data.description,
-      data.features,
-      data.monthly_price,
-      data.yearly_price,
-      data.created_at,
-      data.updated_at
+      data.id || data.ID,
+      data.saas || data.Saas || '',
+      data.name || data.Name,
+      data.description || data.Description || '',
+      data.features || data.Features || null,
+      data.monthly_price || data.MonthlyPrice || 0,
+      data.yearly_price || data.YearlyPrice || 0,
+      data.created_at || data.CreatedAt,
+      data.updated_at || data.UpdatedAt
     );
   }
 }
@@ -305,30 +314,34 @@ export class TenantAdapter implements IamTenant {
   get Plan(): IamPlan | undefined { return this.plan; }
   get Users(): IamUser[] | null | undefined { return this.users; }
 
-  static fromResponse(data: IamTenant): TenantAdapter {
+  static fromResponse(data: any): TenantAdapter {
+    // Manejar tanto la estructura snake_case como PascalCase
     return new TenantAdapter(
-      data.id,
-      data.name,
-      data.slug,
-      data.description,
-      data.type,
-      data.status,
-      data.plan_id,
-      data.max_users,
-      data.user_count,
-      data.owner_id,
-      data.settings,
-      data.features,
-      data.is_active,
-      data.can_access,
-      data.is_expired,
-      data.can_add_user,
-      data.has_plan,
-      data.has_custom_domain,
-      data.created_at,
-      data.updated_at,
-      data.plan,
-      data.users
+      data.id || data.ID,
+      data.name || data.Name,
+      data.slug || data.Slug,
+      data.description || data.Description || '',
+      data.type || data.Type,
+      data.status || data.Status,
+      data.plan_id || data.PlanID || '',
+      data.max_users || data.MaxUsers || 0,
+      data.user_count || data.UserCount || 0,
+      data.owner_id || data.OwnerID,
+      data.settings || data.Settings || {},
+      data.features || data.Features || {
+        friends_family: false,
+        premium_analytics: false
+      },
+      data.is_active !== undefined ? data.is_active : true,
+      data.can_access !== undefined ? data.can_access : true,
+      data.is_expired !== undefined ? data.is_expired : false,
+      data.can_add_user !== undefined ? data.can_add_user : true,
+      data.has_plan !== undefined ? data.has_plan : false,
+      data.has_custom_domain !== undefined ? data.has_custom_domain : false,
+      data.created_at || data.CreatedAt,
+      data.updated_at || data.UpdatedAt,
+      data.plan || data.Plan,
+      data.users || data.Users
     );
   }
 }
@@ -336,6 +349,7 @@ export class TenantAdapter implements IamTenant {
 export interface LoginRequest {
   email: string;
   password: string;
+  provider?: 'LOCAL' | 'GOOGLE';
 }
 
 export interface LoginResponse {

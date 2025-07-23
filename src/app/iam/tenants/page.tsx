@@ -70,9 +70,8 @@ export default function TenantsPage() {
       if (editingTenant) {
         // Actualizar tenant existente
         await updateTenant(editingTenant.id, {
-          Name: formData.get('name') as string,
-          EmailUserKey: formData.get('email_user_key') as string,
-          PlanID: formData.get('plan_id') as string
+          name: formData.get('name') as string,
+          plan_id: formData.get('plan_id') as string
         });
       } else {
         // Crear nuevo tenant

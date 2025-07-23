@@ -255,10 +255,11 @@ export interface UpdateMarketplaceAttributeRequest extends Partial<CreateMarketp
 }
 
 export interface MarketplaceAttributesResponse {
-  attributes: MarketplaceAttribute[];
-  total: number;
+  items: MarketplaceAttribute[];
+  total_count: number;
   page: number;
   page_size: number;
+  total_pages: number;
 }
 
 // ====================================
@@ -380,6 +381,7 @@ export interface MarketplaceBrandFilters {
   country_code?: string;
   page_size?: number;
   page?: number;
+  limit?: number; // Para compatibilidad con llamadas que usan limit
   sort_by?: string;
   sort_dir?: 'asc' | 'desc';
 }
@@ -636,14 +638,9 @@ class MarketplaceApiClient {
   }>> {
     const searchParams = new URLSearchParams();
     
-    // Convertir page/page_size a offset/limit para el backend
-    if (filters.page && filters.page_size) {
-      const offset = (filters.page - 1) * filters.page_size;
-      searchParams.set('offset', offset.toString());
-      searchParams.set('limit', filters.page_size.toString());
-    } else {
-      if (filters.page_size) searchParams.set('limit', filters.page_size.toString());
-    }
+    // Enviar page/page_size al proxy - el proxy hará la conversión a offset/limit
+    if (filters.page) searchParams.set('page', filters.page.toString());
+    if (filters.page_size) searchParams.set('page_size', filters.page_size.toString());
     
     if (filters.sort_by) searchParams.set('sort_by', filters.sort_by);
     if (filters.sort_dir) searchParams.set('sort_dir', filters.sort_dir);
@@ -676,6 +673,123 @@ class MarketplaceApiClient {
     }
 
     return { data: response.data };
+  }
+
+  // Nueva función para obtener TODAS las categorías haciendo múltiples llamadas
+  async getAllMarketplaceCategoriesComplete(
+    filters: {
+      sort_by?: string;
+      sort_dir?: 'asc' | 'desc';
+      search?: string;
+      is_active?: boolean;
+      parent_id?: string;
+    } = {},
+    adminToken: string
+  ): Promise<ApiResponse<{
+    categories: MarketplaceCategory[];
+    total: number;
+  }>> {
+    try {
+      console.log('🔍 getAllMarketplaceCategoriesComplete: Fetching all categories with filters:', filters);
+      
+      // Primera llamada para obtener el total
+      const firstCall = await this.getAllMarketplaceCategories({
+        page: 1,
+        page_size: 20,
+        ...filters
+      }, adminToken);
+
+      if (firstCall.error) {
+        return { error: firstCall.error };
+      }
+
+      if (!firstCall.data) {
+        return { data: { categories: [], total: 0 } };
+      }
+
+      const totalCategories = firstCall.data.pagination.total;
+      let allCategories = firstCall.data.categories || [];
+
+      console.log('📊 Total categories to fetch:', totalCategories);
+
+      if (totalCategories <= 20) {
+        // Si hay 20 o menos, ya las tenemos todas
+        return { 
+          data: { 
+            categories: allCategories, 
+            total: totalCategories 
+          } 
+        };
+      }
+
+      // Si hay más de 20, hacer llamadas adicionales
+      const pageSize = 20;
+      const totalPages = Math.ceil(totalCategories / pageSize);
+      
+      console.log('📄 Total pages needed:', totalPages);
+
+      // Hacer llamadas paralelas para las páginas restantes
+      const additionalRequests = [];
+      
+      for (let page = 2; page <= totalPages; page++) {
+        additionalRequests.push(
+          this.getAllMarketplaceCategories({
+            page,
+            page_size: pageSize,
+            ...filters
+          }, adminToken)
+        );
+      }
+
+      console.log('🚀 Making', additionalRequests.length, 'additional requests');
+
+      const additionalResponses = await Promise.all(additionalRequests);
+
+      // Combinar todas las respuestas válidas y contar errores
+      let errorCount = 0;
+      for (let i = 0; i < additionalResponses.length; i++) {
+        const response = additionalResponses[i];
+        const pageNum = i + 2; // página 2, 3, 4, etc.
+        
+        if (response.error) {
+          errorCount++;
+          console.warn(`⚠️ Failed request for page ${pageNum}:`, response.error);
+        } else if (response.data?.categories) {
+          console.log(`✅ Page ${pageNum}: Got ${response.data.categories.length} categories`);
+          allCategories = allCategories.concat(response.data.categories);
+        } else {
+          console.warn(`⚠️ Page ${pageNum}: No categories in response`);
+        }
+      }
+
+      console.log('✅ getAllMarketplaceCategoriesComplete: Total categories fetched:', allCategories.length);
+      if (errorCount > 0) {
+        console.warn('⚠️ Some requests failed:', errorCount, 'out of', additionalRequests.length);
+      }
+
+      // Deduplicar por ID para evitar duplicados
+      const uniqueCategories = allCategories.filter((category, index, self) => 
+        index === self.findIndex(c => c.id === category.id)
+      );
+
+      console.log('🔄 After deduplication:', uniqueCategories.length, 'unique categories');
+
+      // Si fallaron muchas llamadas, advertir al usuario
+      if (errorCount > additionalRequests.length / 2) {
+        console.warn('🚨 Most additional requests failed. Showing partial results.');
+      }
+
+      return { 
+        data: { 
+          categories: uniqueCategories, 
+          total: uniqueCategories.length // Usar el número real de categorías obtenidas
+        } 
+      };
+
+    } catch (error) {
+      console.error('❌ Error in getAllMarketplaceCategoriesComplete:', error);
+      return { error: 'Error al obtener todas las categorías' };
+    }
   }
 
   // Build category tree from flat list
@@ -997,7 +1111,7 @@ class MarketplaceApiClient {
     if (options.quality_score_max) searchParams.set('quality_score_max', options.quality_score_max.toString());
     if (options.source) searchParams.set('source', options.source);
 
-    const endpoint = `/catalog/global-products${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const endpoint = `/global-catalog${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
 
     return this.request<GlobalProductsResponse>(endpoint, {
       method: 'GET',
@@ -1012,7 +1126,7 @@ class MarketplaceApiClient {
     product: CreateGlobalProductRequest,
     _adminToken?: string
   ): Promise<ApiResponse<GlobalProduct>> {
-    return this.request<GlobalProduct>('/catalog/global-products', {
+    return this.request<GlobalProduct>('/global-catalog', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -1026,7 +1140,7 @@ class MarketplaceApiClient {
     productId: string,
     _adminToken?: string
   ): Promise<ApiResponse<GlobalProduct>> {
-    return this.request<GlobalProduct>(`/catalog/global-products/${productId}`, {
+    return this.request<GlobalProduct>(`/global-catalog/${productId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -1040,7 +1154,7 @@ class MarketplaceApiClient {
     updates: UpdateGlobalProductRequest,
     _adminToken?: string
   ): Promise<ApiResponse<GlobalProduct>> {
-    return this.request<GlobalProduct>(`/catalog/global-products/${productId}`, {
+    return this.request<GlobalProduct>(`/global-catalog/${productId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -1054,7 +1168,7 @@ class MarketplaceApiClient {
     productId: string,
     _adminToken?: string
   ): Promise<ApiResponse<void>> {
-    return this.request<void>(`/catalog/global-products/${productId}`, {
+    return this.request<void>(`/global-catalog/${productId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -1067,8 +1181,8 @@ class MarketplaceApiClient {
     productId: string,
     _adminToken?: string
   ): Promise<ApiResponse<GlobalProduct>> {
-    return this.request<GlobalProduct>(`/catalog/global-products/${productId}/verify`, {
-      method: 'POST',
+    return this.request<GlobalProduct>(`/global-catalog/${productId}/verify`, {
+      method: 'PATCH',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
         'X-User-Role': 'marketplace_admin',
@@ -1080,7 +1194,7 @@ class MarketplaceApiClient {
     products: CreateGlobalProductRequest[],
     _adminToken?: string
   ): Promise<ApiResponse<BulkImportResponse>> {
-    return this.request<BulkImportResponse>('/catalog/global-products/bulk-import', {
+    return this.request<BulkImportResponse>('/global-catalog/bulk-import', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -1155,6 +1269,145 @@ class MarketplaceApiClient {
     }, 'pim');
   }
 
+  async getAllMarketplaceBrandsComplete(
+    filters: {
+      search?: string;
+      verification_status?: string;
+      is_active?: boolean;
+      country_code?: string;
+      sort_by?: string;
+      sort_dir?: 'asc' | 'desc';
+    } = {},
+    adminToken?: string
+  ): Promise<ApiResponse<{
+    brands: MarketplaceBrand[];
+    total: number;
+  }>> {
+    try {
+      const allBrands: MarketplaceBrand[] = [];
+      let page = 1;
+      const pageSize = 100; // Tamaño máximo permitido
+      let hasMore = true;
+      let totalCount = 0;
+      let errorCount = 0;
+      const maxErrors = 3;
+
+      console.log('🔄 Iniciando carga completa de marcas...');
+
+      while (hasMore && errorCount < maxErrors) {
+        try {
+          console.log(`📄 Cargando página ${page} (tamaño: ${pageSize})`);
+          
+          const response = await this.getAllMarketplaceBrands({
+            ...filters,
+            page,
+            page_size: pageSize,
+          }, adminToken);
+
+          if (response.error) {
+            errorCount++;
+            console.warn(`⚠️ Error en página ${page}: ${response.error} (intento ${errorCount}/${maxErrors})`);
+            
+            if (errorCount >= maxErrors) {
+              console.error(`❌ Demasiados errores, deteniendo en página ${page}`);
+              return { error: `Error al cargar marcas después de ${maxErrors} intentos: ${response.error}` };
+            }
+            
+            // Esperar antes de reintentar
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          }
+
+          if (!response.data?.brands) {
+            console.warn(`⚠️ Página ${page} sin datos, deteniendo`);
+            break;
+          }
+
+          const brands = response.data.brands;
+          const pagination = response.data.pagination;
+          
+          // Actualizar total en la primera página exitosa
+          if (totalCount === 0 && pagination?.total) {
+            totalCount = pagination.total;
+            console.log(`📊 Total de marcas: ${totalCount}`);
+          }
+
+          // Agregar marcas únicas (por si hay duplicados)
+          const existingIds = new Set(allBrands.map(b => b.id));
+          const newBrands = brands.filter(brand => !existingIds.has(brand.id));
+          
+          if (newBrands.length > 0) {
+            allBrands.push(...newBrands);
+            console.log(`✅ Página ${page}: ${newBrands.length} marcas nuevas (total: ${allBrands.length})`);
+          } else {
+            console.log(`⚠️ Página ${page}: ${brands.length} marcas duplicadas ignoradas`);
+          }
+
+          // Verificar si hay más páginas
+          hasMore = pagination?.has_next || (brands.length === pageSize && allBrands.length < (totalCount || Infinity));
+          
+          if (!hasMore) {
+            console.log(`✅ Carga completa: ${allBrands.length} marcas únicas cargadas`);
+          }
+
+          page++;
+          errorCount = 0; // Reset error count en página exitosa
+
+        } catch (error) {
+          errorCount++;
+          console.error(`❌ Error inesperado en página ${page}:`, error);
+          
+          if (errorCount >= maxErrors) {
+            return { error: `Error inesperado después de ${maxErrors} intentos: ${error instanceof Error ? error.message : 'Error desconocido'}` };
+          }
+          
+          // Esperar antes de reintentar
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      // Aplicar ordenamiento si se especificó
+      if (filters.sort_by && allBrands.length > 0) {
+        const sortField = filters.sort_by as keyof MarketplaceBrand;
+        const sortDir = filters.sort_dir || 'asc';
+        
+        allBrands.sort((a, b) => {
+          const aVal = a[sortField];
+          const bVal = b[sortField];
+          
+          if (aVal === null || aVal === undefined) return 1;
+          if (bVal === null || bVal === undefined) return -1;
+          
+          let result = 0;
+          if (typeof aVal === 'string' && typeof bVal === 'string') {
+            result = aVal.localeCompare(bVal);
+          } else if (typeof aVal === 'number' && typeof bVal === 'number') {
+            result = aVal - bVal;
+          } else {
+            result = String(aVal).localeCompare(String(bVal));
+          }
+          
+          return sortDir === 'desc' ? -result : result;
+        });
+      }
+
+      console.log(`🎉 Carga de marcas completada: ${allBrands.length} marcas`);
+
+      return {
+        data: {
+          brands: allBrands,
+          total: allBrands.length
+        }
+      };
+
+    } catch (error) {
+      console.error('❌ Error fatal cargando marcas:', error);
+      return { 
+        error: `Error fatal cargando marcas: ${error instanceof Error ? error.message : 'Error desconocido'}` 
+      };
+    }
+  }
+
   async verifyMarketplaceBrand(
     brandId: string,
     _adminToken?: string
@@ -1196,11 +1449,11 @@ class MarketplaceApiClient {
     }
 
     const stats = {
-      total: allBrands.data?.total || 0,
-      verified: verifiedBrands.data?.total || 0,
-      unverified: (allBrands.data?.total || 0) - (verifiedBrands.data?.total || 0),
-      active: activeBrands.data?.total || 0,
-      inactive: (allBrands.data?.total || 0) - (activeBrands.data?.total || 0),
+      total: allBrands.data?.pagination?.total || 0,
+      verified: verifiedBrands.data?.pagination?.total || 0,
+      unverified: (allBrands.data?.pagination?.total || 0) - (verifiedBrands.data?.pagination?.total || 0),
+      active: activeBrands.data?.pagination?.total || 0,
+      inactive: (allBrands.data?.pagination?.total || 0) - (activeBrands.data?.pagination?.total || 0),
     };
 
     return { data: stats };
@@ -1227,7 +1480,7 @@ class MarketplaceApiClient {
     if (options.search) searchParams.set('search', options.search);
     if (options.is_active !== undefined) searchParams.set('is_active', options.is_active.toString());
 
-    const endpoint = `/marketplace-attributes/${attributeId}/values${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+    const endpoint = `/marketplace/attributes/${attributeId}/values${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
     
     return this.request<MarketplaceAttributeValuesResponse>(endpoint, {
       method: 'GET',
@@ -1242,7 +1495,7 @@ class MarketplaceApiClient {
     value: CreateMarketplaceAttributeValueRequest,
     _adminToken?: string
   ): Promise<ApiResponse<MarketplaceAttributeValue>> {
-    return this.request<MarketplaceAttributeValue>(`/marketplace-attributes/${value.attribute_id}/values`, {
+    return this.request<MarketplaceAttributeValue>(`/marketplace/attributes/${value.attribute_id}/values`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -1257,7 +1510,7 @@ class MarketplaceApiClient {
     valueId: string,
     _adminToken?: string
   ): Promise<ApiResponse<MarketplaceAttributeValue>> {
-    return this.request<MarketplaceAttributeValue>(`/marketplace-attributes/${attributeId}/values/${valueId}`, {
+    return this.request<MarketplaceAttributeValue>(`/marketplace/attributes/${attributeId}/values/${valueId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -1272,7 +1525,7 @@ class MarketplaceApiClient {
     updates: UpdateMarketplaceAttributeValueRequest,
     _adminToken?: string
   ): Promise<ApiResponse<MarketplaceAttributeValue>> {
-    return this.request<MarketplaceAttributeValue>(`/marketplace-attributes/${attributeId}/values/${valueId}`, {
+    return this.request<MarketplaceAttributeValue>(`/marketplace/attributes/${attributeId}/values/${valueId}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -1287,7 +1540,7 @@ class MarketplaceApiClient {
     valueId: string,
     _adminToken?: string
   ): Promise<ApiResponse<void>> {
-    return this.request<void>(`/marketplace-attributes/${attributeId}/values/${valueId}`, {
+    return this.request<void>(`/marketplace/attributes/${attributeId}/values/${valueId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
@@ -1421,4 +1674,4 @@ class MarketplaceApiClient {
 }
 
 // Export singleton instance
-export const marketplaceApi = new MarketplaceApiClient(); 
+export const marketplaceApi = new MarketplaceApiClient();

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Categories</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: white; }
+        button { padding: 10px 20px; background: #7c3aed; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #6d28d9; }
+        #results { margin-top: 20px; padding: 20px; background: #2a2a2a; border-radius: 5px; }
+        .error { color: #ef4444; }
+        .success { color: #10b981; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Debug getAllMarketplaceCategoriesComplete</h1>
+    <button onclick="testCategories()">Test Categories</button>
+    <div id="results"></div>
+
+    <script>
+        async function testCategories() {
+            console.log('🧪 Testing getAllMarketplaceCategoriesComplete...');
+            
+            try {
+                // Test directo al endpoint
+                const testResponse = await fetch('/api/pim/marketplace-categories?page=1&page_size=20&is_active=true');
+                const testData = await testResponse.json();
+                
+                console.log('✅ Direct test:', {
+                    status: testResponse.status,
+                    total: testData.pagination?.total,
+                    categoriesCount: testData.categories?.length,
+                    firstCategory: testData.categories?.[0]?.name
+                });
+
+                // Test con múltiples páginas
+                const promises = [1,2,3,4].map(page => 
+                    fetch(`/api/pim/marketplace-categories?page=${page}&page_size=20&is_active=true`)
+                        .then(r => r.json())
+                );
+
+                const allResponses = await Promise.all(promises);
+                let totalCategories = 0;
+                let allCategoryNames = [];
+
+                allResponses.forEach((resp, index) => {
+                    console.log(`📄 Page ${index + 1}:`, {
+                        count: resp.categories?.length || 0,
+                        sample: resp.categories?.slice(0, 3).map(c => c.name) || []
+                    });
+                    totalCategories += resp.categories?.length || 0;
+                    allCategoryNames = allCategoryNames.concat(resp.categories?.map(c => c.name) || []);
+                });
+
+                console.log('📊 Summary:', {
+                    totalCategories,
+                    uniqueNames: new Set(allCategoryNames).size,
+                    sampleNames: allCategoryNames.slice(0, 10)
+                });
+
+                // Mostrar subcategorías de Alimentos y Bebidas
+                const alimentosSubcats = [];
+                allResponses.forEach(resp => {
+                    resp.categories?.forEach(cat => {
+                        if (cat.parent_id === 'c071cc1c-f6c8-48a0-8d85-bd91c16a2437') {
+                            alimentosSubcats.push(cat.name);
+                        }
+                    });
+                });
+
+                console.log('🍎 Subcategorías de Alimentos y Bebidas:', alimentosSubcats);
+
+                // Construir breadcrumbs como en el componente
+                const categoriesWithPath = allCategoryNames.map((name, index) => {
+                    // Encontrar la categoría completa
+                    let fullCategory = null;
+                    allResponses.forEach(resp => {
+                        const found = resp.categories?.find(c => c.name === name);
+                        if (found) fullCategory = found;
+                    });
+                    return fullCategory;
+                }).filter(c => c !== null);
+
+                // Función buildCategoryPath
+                function buildCategoryPath(category, allCategories) {
+                    const path = [];
+                    let currentCategory = category;
+                    
+                    const categoryMap = new Map();
+                    allCategories.forEach(cat => categoryMap.set(cat.id, cat));
+                    
+                    while (currentCategory) {
+                        path.unshift(currentCategory.name);
+                        
+                        if (currentCategory.parent_id) {
+                            currentCategory = categoryMap.get(currentCategory.parent_id);
+                        } else {
+                            currentCategory = undefined;
+                        }
+                    }
+                    
+                    return path.join(' > ');
+                }
+
+                const categoriesWithPaths = categoriesWithPath.map(cat => ({
+                    ...cat,
+                    fullPath: buildCategoryPath(cat, categoriesWithPath)
+                }));
+
+                const sortedCategories = categoriesWithPaths.sort((a, b) => 
+                    a.fullPath.localeCompare(b.fullPath)
+                );
+
+                const alimentosPaths = sortedCategories
+                    .filter(c => c.fullPath.startsWith('Alimentos y Bebidas'))
+                    .map(c => c.fullPath);
+
+                console.log('🥖 Paths de Alimentos y Bebidas:', alimentosPaths);
+
+                document.getElementById('results').innerHTML = `
+                    <h2 class="success">✅ Results:</h2>
+                    <p><strong>Total Categories:</strong> ${totalCategories}</p>
+                    <p><strong>Expected:</strong> 74</p>
+                    <p><strong>Status:</strong> ${totalCategories === 74 ? '✅ CORRECTO' : '❌ INCORRECTO'}</p>
+                    <hr>
+                    <p><strong>Alimentos Subcategories:</strong> ${alimentosSubcats.join(', ')}</p>
+                    <p><strong>Expected count:</strong> 6</p>
+                    <p><strong>Status:</strong> ${alimentosSubcats.length >= 5 ? '✅ CORRECTO' : '❌ INCORRECTO'}</p>
+                    <hr>
+                    <h3>Breadcrumbs de Alimentos:</h3>
+                    <ul>${alimentosPaths.map(path => `<li>${path}</li>`).join('')}</ul>
+                    <hr>
+                    <p><em>Revisa la consola para logs detallados (F12 > Console)</em></p>
+                `;
+
+            } catch (error) {
+                console.error('❌ Error:', error);
+                document.getElementById('results').innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -391,7 +391,7 @@ class IamApiClient {
   }
 
   // Método de debug para búsqueda de usuarios
-  async debugSearchUsers(): Promise<{ success: boolean; method: string; result?: UserListResponse; error?: string }[]> {
+  async debugSearchUsers(): Promise<{ success: boolean; method: string; result?: UserListResponse | IamUser[]; error?: string }[]> {
     const methods = [
       { name: 'Búsqueda general', call: () => this.getUsers() },
       { name: 'Búsqueda por tenant', call: () => this.searchUsers({ tenantId: 'test-tenant' }) },

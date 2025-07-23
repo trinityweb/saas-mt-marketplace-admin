@@ -17,7 +17,7 @@ import {
   User,
   LogOut
 } from 'lucide-react'
-import type { SidebarConfig } from '@/components/shared-ui/organisms/admin-sidebar'
+import type { SidebarConfig } from '@/components/shared-ui/types/sidebar'
 
 export const marketplaceSidebarConfig: SidebarConfig = {
   theme: {

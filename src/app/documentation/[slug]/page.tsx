@@ -148,7 +148,7 @@ const CopyLinkButton = ({ headingId }: { headingId: string }) => {
 export default function DocumentPage() {
   const params = useParams()
   const router = useRouter()
-  const [document, setDocument] = useState<DocumentData | null>(null)
+  const [documentData, setDocumentData] = useState<DocumentData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -173,7 +173,7 @@ export default function DocumentPage() {
         const titleMatch = content.match(/^#\s+(.+)$/m)
         const title = titleMatch ? titleMatch[1] : slug.replace(/-/g, ' ').toUpperCase()
         
-        setDocument({
+        setDocumentData({
           content,
           title,
           filename,
@@ -193,7 +193,7 @@ export default function DocumentPage() {
 
   // Efecto para manejar enlaces directos con hash
   useEffect(() => {
-    if (!document || loading) return
+    if (!documentData || loading) return
 
     const hash = window.location.hash
     if (hash) {
@@ -211,7 +211,7 @@ export default function DocumentPage() {
         }
       }, 100)
     }
-  }, [document, loading])
+  }, [documentData, loading])
 
   // Función para generar IDs consistentes
   const generateHeadingId = (text: string) => {
@@ -310,7 +310,7 @@ export default function DocumentPage() {
     )
   }
 
-  if (error || !document) {
+  if (error || !documentData) {
     return (
       <div className="container mx-auto p-6">
         <div className="text-center py-12">
@@ -348,14 +348,14 @@ export default function DocumentPage() {
             <FileText className="h-8 w-8 text-purple-600" />
             <div>
               <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-                {document.title}
+                {documentData.title}
               </h1>
               <div className="flex items-center space-x-4 text-sm text-slate-600 dark:text-slate-400 mt-1">
-                <span>📄 {document.filename}</span>
-                {document.lastModified && (
+                <span>📄 {documentData.filename}</span>
+                {documentData.lastModified && (
                   <div className="flex items-center space-x-1">
                     <Calendar className="h-4 w-4" />
-                    <span>Actualizado: {document.lastModified}</span>
+                    <span>Actualizado: {documentData.lastModified}</span>
                   </div>
                 )}
               </div>
@@ -370,7 +370,7 @@ export default function DocumentPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Tabla de contenidos (sidebar en desktop) */}
         <div className="lg:col-span-1 order-2 lg:order-1">
-          <TableOfContents content={document.content} />
+          <TableOfContents content={documentData.content} />
         </div>
 
         {/* Contenido principal */}
@@ -382,7 +382,7 @@ export default function DocumentPage() {
                 rehypePlugins={[rehypeHighlight, rehypeRaw]}
                 components={components}
               >
-                {document.content}
+                {documentData.content}
               </ReactMarkdown>
             </div>
           </Card>

@@ -29,7 +29,7 @@ export function FormField({
           {required && <span className="text-destructive ml-1">*</span>}
         </Label>
       )}
-      {React.cloneElement(children as React.ReactElement, { 
+      {React.cloneElement(children as React.ReactElement<any>, { 
         id: childId,
         'aria-invalid': !!error,
         'aria-describedby': error ? `${childId}-error` : undefined

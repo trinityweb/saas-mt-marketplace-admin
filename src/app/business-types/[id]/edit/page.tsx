@@ -71,10 +71,10 @@ export default function EditBusinessTypePage() {
     if (currentBusinessType) {
       setFormData({
         name: currentBusinessType.name,
-        description: currentBusinessType.description,
-        icon: currentBusinessType.icon,
-        color: currentBusinessType.color,
-        is_active: currentBusinessType.is_active,
+        description: currentBusinessType.description || '',
+        icon: currentBusinessType.icon || '',
+        color: currentBusinessType.color || '',
+        is_active: currentBusinessType.is_active
       });
     }
   }, [currentBusinessType]);
@@ -91,12 +91,12 @@ export default function EditBusinessTypePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim()) {
+    if (!formData.name?.trim()) {
       setError('El nombre es requerido');
       return;
     }
 
-    if (!formData.description.trim()) {
+    if (!formData.description?.trim()) {
       setError('La descripción es requerida');
       return;
     }
@@ -180,7 +180,7 @@ export default function EditBusinessTypePage() {
               <div className="flex items-center gap-3">
                 <div 
                   className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-medium"
-                  style={{ backgroundColor: currentBusinessType.color }}
+                  style={{ backgroundColor: currentBusinessType.color || '#6366f1' }}
                 >
                   {currentBusinessType.name.charAt(0).toUpperCase()}
                 </div>
@@ -339,9 +339,9 @@ export default function EditBusinessTypePage() {
           <div className="flex items-center gap-3 p-4 border rounded-lg">
             <div 
               className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-lg font-medium"
-              style={{ backgroundColor: formData.color }}
+              style={{ backgroundColor: formData.color || '#6366f1' }}
             >
-              {formData.name.charAt(0).toUpperCase()}
+              {formData.name ? formData.name.charAt(0).toUpperCase() : 'T'}
             </div>
             <div className="flex-1">
               <h3 className="font-semibold">{formData.name || 'Nombre del tipo de negocio'}</h3>

@@ -18,8 +18,7 @@ export async function GET(request: NextRequest) {
     const headers = {
       'Content-Type': 'application/json',
       'X-Tenant-ID': 'marketplace-admin',
-      'X-User-Role': 'admin',
-      'X-Role': 'admin',
+      'X-User-Role': 'marketplace_admin',
       'Authorization': 'Bearer admin-test-token'
     };
 
@@ -38,39 +37,21 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json();
     
-    // PAGINACIÓN CLIENT-SIDE (temporal hasta que se arregle el backend)
+    // Mantener la estructura original que espera el frontend
     if (data.business_types && Array.isArray(data.business_types)) {
-      const page = parseInt(searchParams.get('page') || '1');
-      const pageSize = parseInt(searchParams.get('page_size') || '20');
-      const totalCount = data.total || data.business_types.length;
-      const totalPages = Math.ceil(totalCount / pageSize);
-      
-      // Aplicar paginación client-side
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedItems = data.business_types.slice(startIndex, endIndex);
-      
-      const result = {
-        items: paginatedItems,
-        total_count: totalCount,
-        page: page,
-        page_size: pageSize,
-        total_pages: totalPages,
-      };
-      
-      console.log('✅ Proxy API GET Response (paginated):', { 
-        total_count: result.total_count,
-        page: result.page,
-        items_count: result.items.length,
-        total_pages: result.total_pages
+      console.log('✅ Proxy API GET Response (business types):', { 
+        total: data.total,
+        count: data.business_types.length,
+        first_item: data.business_types[0]?.name
       });
       
-      return NextResponse.json(result);
+      // Devolver la estructura original sin transformación
+      return NextResponse.json(data);
     }
     
     console.log('✅ Proxy API GET Response:', { 
       total: Array.isArray(data) ? data.length : data.total || 0,
-      count: Array.isArray(data) ? data.length : data.items?.length || 0,
+      count: Array.isArray(data) ? data.length : data.business_types?.length || 0,
       structure: Array.isArray(data) ? 'array' : 'object'
     });
     
@@ -98,8 +79,7 @@ export async function POST(request: NextRequest) {
     const headers = {
       'Content-Type': 'application/json',
       'X-Tenant-ID': 'marketplace-admin',
-      'X-User-Role': 'admin',
-      'X-Role': 'admin',
+      'X-User-Role': 'marketplace_admin',
       'Authorization': 'Bearer admin-test-token'
     };
 

@@ -57,7 +57,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <HeaderContext.Provider value={{ setHeaderProps, clearHeaderProps }}>
       <PreloadManager />
-      <div className="h-screen bg-slate-50 dark:bg-slate-900 flex overflow-hidden">
+      <div className="h-screen bg-background flex overflow-hidden">
         {/* Navigation Sidebar - Left */}
         <AdminSidebar />
         
@@ -67,7 +67,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <AdminHeader {...headerProps} />
           
           {/* Page Content - Wrapped in Suspense */}
-          <main className="flex-1 p-4 overflow-y-auto">
+          <main className="flex-1 p-4 overflow-y-auto bg-background">
             <Suspense fallback={<Loading />}>
               {children}
             </Suspense>
@@ -75,7 +75,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </div>
         
         {/* Services Health Sidebar - Right */}
-        <div className="hidden xl:block w-80 border-l border-slate-200 dark:border-slate-700 overflow-y-auto">
+        <div className="hidden xl:block w-80 border-l border-border overflow-y-auto bg-card">
           <ServicesHealthSidebar />
         </div>
       </div>

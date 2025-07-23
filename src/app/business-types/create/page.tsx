@@ -188,6 +188,7 @@ export default function CreateBusinessTypePage() {
         icon: formData.icon,
         color: formData.color,
         metadata: {},
+        sort_order: 999, // Por defecto al final
       };
       
       const success = await createBusinessType(businessTypeData);

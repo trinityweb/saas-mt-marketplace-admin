@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'http://localhost:8001';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {

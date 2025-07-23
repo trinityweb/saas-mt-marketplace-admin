@@ -107,8 +107,7 @@ export function useAuth() {
     try {
       await iamClient.login({
         email,
-        password,
-        provider: 'LOCAL'
+        password
       });
       await new Promise(resolve => setTimeout(resolve, 100));
       const tokenData = getTokenData();

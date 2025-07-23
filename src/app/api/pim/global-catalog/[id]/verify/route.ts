@@ -6,10 +6,10 @@ const AUTH_TOKEN = 'admin-test-token';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const url = `${PIM_BASE_URL}/global-catalog/products/${id}/verify`;
     
     console.log('🔗 Proxy API PATCH Request:', url);
