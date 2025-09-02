@@ -4,8 +4,8 @@ import React from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Building, Users, UserCheck, Package, Shield } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/shared-ui";
+import { Card } from "@/components/shared-ui";
 
 interface IamMenuItem {
   icon: React.ComponentType<{ className?: string }>;

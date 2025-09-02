@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/shared-ui"
+import { Card } from "@/components/shared-ui"
+import { Badge } from "@/components/shared-ui"
 import { 
   Code,
   Zap
@@ -24,10 +24,26 @@ export function DevLoginHelper({ onDevLogin }: DevLoginHelperProps) {
   const simulateLogin = () => {
     setIsSimulating(true)
     
-    // Simular tokens de desarrollo
-    const mockAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRfaWQiOiJkZXYtdGVuYW50IiwidXNlcl9pZCI6ImRldi11c2VyIiwicm9sZV9pZCI6ImFkbWluIiwiZW1haWwiOiJhZG1pbkBkZXYuY29tIiwiZXhwIjo5OTk5OTk5OTk5fQ.mock-signature'
+    // Crear un JWT válido con exp en el futuro
+    const header = { alg: 'HS256', typ: 'JWT' }
+    const payload = {
+      tenant_id: '00000000-0000-0000-0000-000000000001',
+      user_id: 'dev-user-001',
+      role_id: 'marketplace_admin',
+      role: 'marketplace_admin',
+      email: 'admin@dev.com',
+      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24), // Expira en 24 horas
+      iat: Math.floor(Date.now() / 1000),
+      iss: 'dev-marketplace-admin'
+    }
+    
+    // Codificar el JWT (formato básico pero válido para desarrollo)
+    const base64Header = btoa(JSON.stringify(header))
+    const base64Payload = btoa(JSON.stringify(payload))
+    const mockAccessToken = `${base64Header}.${base64Payload}.dev-signature`
+    
     const mockRefreshToken = 'mock-refresh-token'
-    const mockTenantId = 'dev-tenant'
+    const mockTenantId = '00000000-0000-0000-0000-000000000001'
 
     // Guardar en localStorage
     localStorage.setItem('iam_access_token', mockAccessToken)

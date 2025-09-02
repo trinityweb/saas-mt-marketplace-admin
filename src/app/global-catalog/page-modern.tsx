@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ModernProductCard } from '@/components/shared/product-components/modern-product-card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/shared-ui';
+import { Badge } from '@/components/shared-ui';
+import { Card, CardContent } from '@/components/shared-ui';
+import { Input } from '@/components/shared-ui';
 import { 
   Package, 
   CheckCircle, 

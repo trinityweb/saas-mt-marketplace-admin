@@ -12,8 +12,8 @@ import {
   Eye
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/shared-ui';
+import { Input } from '@/components/shared-ui';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -22,7 +22,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/components/shared-ui';
 import {
   Select,
   SelectContent,
@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/shared-ui';
 
 import { useAuth } from '@/hooks/use-auth';
 import { useHeader } from '@/components/layout/admin-layout';

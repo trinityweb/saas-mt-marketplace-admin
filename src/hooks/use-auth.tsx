@@ -11,6 +11,7 @@ interface TokenData {
   user_id: string;
   role_id: string;
   email: string;
+  role?: string;
 }
 
 export function useAuth() {
@@ -19,6 +20,7 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<{ id: string; email: string; role: string } | null>(null);
 
   const getTokenData = () => {
     if (typeof window === 'undefined') return null;
@@ -61,6 +63,12 @@ export function useAuth() {
             setTenantId(tokenData.tenant_id);
             // Guardar tenant_id en localStorage para que lo usen las APIs
             localStorage.setItem('current_tenant_id', tokenData.tenant_id);
+            // Set user info
+            setUser({
+              id: tokenData.user_id,
+              email: tokenData.email,
+              role: tokenData.role || 'marketplace_admin' // Default role for marketplace admin
+            });
           }
           setIsLoading(false);
           return;
@@ -101,6 +109,12 @@ export function useAuth() {
         setTenantId(tokenData.tenant_id);
         // Guardar tenant_id en localStorage para que lo usen las APIs
         localStorage.setItem('current_tenant_id', tokenData.tenant_id);
+        // Set user info
+        setUser({
+          id: tokenData.user_id,
+          email: tokenData.email,
+          role: tokenData.role || 'marketplace_admin'
+        });
       }
       
       setIsAuthenticated(true);
@@ -129,6 +143,7 @@ export function useAuth() {
       setIsAuthenticated(false);
       setTenantId(null);
       setToken(null);
+      setUser(null);
       localStorage.removeItem('iam_access_token');
       localStorage.removeItem('iam_refresh_token');
       localStorage.removeItem('current_tenant_id');
@@ -149,7 +164,8 @@ export function useAuth() {
     logout,
     getToken,
     tenantId,
-    token
+    token,
+    user
   };
 }
 

@@ -13,11 +13,11 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/shared-ui';
+import { Input } from '@/components/shared-ui';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/shared-ui';
 import { Switch } from '@/components/ui/switch';
 import { 
   Select,
@@ -32,7 +32,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/components/shared-ui';
 import {
   Tabs,
   TabsContent,

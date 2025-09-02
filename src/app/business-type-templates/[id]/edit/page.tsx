@@ -11,14 +11,21 @@ import {
   Globe,
   Info,
   AlertTriangle,
-  Loader2
+  Loader2,
+  Sparkles,
+  ChevronRight,
+  ChevronLeft,
+  Lightbulb,
+  Target,
+  TrendingUp,
+  X
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/shared-ui';
+import { Input } from '@/components/shared-ui';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/shared-ui';
 import { Switch } from '@/components/ui/switch';
 import { 
   Select,
@@ -33,7 +40,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/components/shared-ui';
 import {
   Tabs,
   TabsContent,
@@ -90,6 +97,15 @@ export default function EditBusinessTypeTemplatePage() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('basic');
   const [error, setError] = useState<string | null>(null);
+  const [showAISidebar, setShowAISidebar] = useState(false);
+  const [aiSuggestions, setAISuggestions] = useState<{
+    categories?: string[];
+    attributes?: string[];
+    products?: string[];
+    brands?: string[];
+    insights?: string[];
+    regional?: { region: string; recommendation: string }[];
+  }>({});
   
   // Estado del formulario
   const [formData, setFormData] = useState<BusinessTypeTemplateForm>({
@@ -220,6 +236,13 @@ export default function EditBusinessTypeTemplatePage() {
     };
   }, [setHeaderProps, clearHeaderProps, headerIcon, formData.name, formData.business_type_id]);
 
+  // Cargar sugerencias AI cuando cambie el tipo de negocio
+  useEffect(() => {
+    if (formData.business_type_id && showAISidebar) {
+      loadAISuggestions();
+    }
+  }, [formData.business_type_id, showAISidebar]);
+
   // Validación del formulario
   const isValidForm = () => {
     return formData.name && 
@@ -341,6 +364,45 @@ export default function EditBusinessTypeTemplatePage() {
     }));
   };
 
+  // Función para cargar sugerencias AI (simuladas por ahora)
+  const loadAISuggestions = () => {
+    // Simulación de sugerencias basadas en el tipo de negocio
+    const businessType = mockBusinessTypes.find(bt => bt.id === formData.business_type_id);
+    
+    if (!businessType) return;
+    
+    // Simulación de sugerencias contextuales
+    const suggestions: typeof aiSuggestions = {};
+    
+    if (businessType.code === 'restaurant') {
+      suggestions.categories = ['Bebidas alcohólicas', 'Postres artesanales', 'Menú del día'];
+      suggestions.attributes = ['Tiempo de preparación', 'Alérgenos', 'Nivel de picante'];
+      suggestions.products = ['Combo ejecutivo', 'Happy hour especial', 'Menú degustación'];
+      suggestions.brands = ['Proveedor local certificado', 'Marca propia del restaurante'];
+      suggestions.insights = [
+        'Los restaurantes en tu región suelen tener 30% más ventas con combos',
+        'Considera agregar opciones veganas (crecimiento 45% YoY)',
+        'Los menús con fotos aumentan pedidos en 23%'
+      ];
+      suggestions.regional = [
+        { region: 'AR', recommendation: 'Incluir opciones de vinos locales' },
+        { region: 'MX', recommendation: 'Agregar salsas picantes personalizables' }
+      ];
+    } else if (businessType.code === 'fashion') {
+      suggestions.categories = ['Accesorios de temporada', 'Línea sustentable', 'Ofertas flash'];
+      suggestions.attributes = ['Guía de talles', 'Material', 'Cuidados de la prenda'];
+      suggestions.products = ['Pack inicio temporada', 'Cápsulas básicas', 'Edición limitada'];
+      suggestions.brands = ['Marcas eco-friendly', 'Diseñadores locales', 'Marcas premium'];
+      suggestions.insights = [
+        'Las tiendas de moda con talles inclusivos venden 40% más',
+        'El filtro por color es usado por 67% de compradores',
+        'Las devoluciones gratis aumentan conversión en 35%'
+      ];
+    }
+    
+    setAISuggestions(suggestions);
+  };
+
   // Función para guardar cambios
   const handleSave = async () => {
     if (!isValidForm()) return;
@@ -417,7 +479,8 @@ export default function EditBusinessTypeTemplatePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="relative">
+      <div className={`space-y-6 ${showAISidebar ? 'mr-96' : ''} transition-all duration-300`}>
       {error && (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
@@ -426,7 +489,16 @@ export default function EditBusinessTypeTemplatePage() {
         </Alert>
       )}
 
-      <div className="flex justify-end items-center">
+      <div className="flex justify-between items-center">
+        <Button
+          variant="outline"
+          onClick={() => setShowAISidebar(!showAISidebar)}
+          className="gap-2"
+        >
+          <Sparkles className="h-4 w-4" />
+          {showAISidebar ? 'Ocultar' : 'Mostrar'} Sugerencias AI
+        </Button>
+        
         <div className="flex gap-2">
           <Button 
             variant="outline" 
@@ -908,6 +980,194 @@ export default function EditBusinessTypeTemplatePage() {
           </Card>
         </TabsContent>
       </Tabs>
+    </div>
+
+      {/* Panel lateral de Sugerencias AI */}
+      {showAISidebar && (
+        <div className="fixed right-0 top-0 h-full w-96 bg-background border-l shadow-lg overflow-y-auto z-50">
+          <div className="sticky top-0 bg-background border-b p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-purple-600" />
+                <h3 className="font-semibold">Asistente AI</h3>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowAISidebar(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="p-4 space-y-6">
+            {/* Botón de Optimizar */}
+            <Button 
+              className="w-full gap-2"
+              variant="default"
+              onClick={loadAISuggestions}
+            >
+              <Sparkles className="h-4 w-4" />
+              Optimizar con IA
+            </Button>
+
+            {/* Insights generales */}
+            {aiSuggestions.insights && aiSuggestions.insights.length > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4" />
+                    Insights del Negocio
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {aiSuggestions.insights.map((insight, index) => (
+                    <div key={index} className="flex items-start gap-2">
+                      <TrendingUp className="h-3 w-3 text-green-600 mt-1 flex-shrink-0" />
+                      <p className="text-sm text-muted-foreground">{insight}</p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Sugerencias por región */}
+            {aiSuggestions.regional && aiSuggestions.regional.length > 0 && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    Recomendaciones Regionales
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {aiSuggestions.regional.map((item, index) => (
+                    <div key={index} className="space-y-1">
+                      <Badge variant="outline" className="text-xs">
+                        {item.region}
+                      </Badge>
+                      <p className="text-sm text-muted-foreground">{item.recommendation}</p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Sugerencias por sección basadas en el tab activo */}
+            {activeTab === 'categories' && aiSuggestions.categories && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Categorías Sugeridas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {aiSuggestions.categories.map((category, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                      <span className="text-sm">{category}</span>
+                      <Button size="sm" variant="ghost">
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {activeTab === 'attributes' && aiSuggestions.attributes && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Atributos Recomendados
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {aiSuggestions.attributes.map((attribute, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                      <span className="text-sm">{attribute}</span>
+                      <Button size="sm" variant="ghost">
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {activeTab === 'products' && aiSuggestions.products && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Productos Populares
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {aiSuggestions.products.map((product, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                      <span className="text-sm">{product}</span>
+                      <Button size="sm" variant="ghost">
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {activeTab === 'brands' && aiSuggestions.brands && (
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Marcas Recomendadas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {aiSuggestions.brands.map((brand, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                      <span className="text-sm">{brand}</span>
+                      <Button size="sm" variant="ghost">
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Preview de distribución */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm">Distribución del Template</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Categorías</span>
+                    <span className="font-medium">{formData.categories.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Atributos</span>
+                    <span className="font-medium">{formData.attributes.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Productos</span>
+                    <span className="font-medium">{formData.products.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Marcas</span>
+                    <span className="font-medium">{formData.brands.length}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/shared-ui"
+import { Button } from "@/components/shared-ui"
 import { 
   AlertTriangle,
   CheckCircle,

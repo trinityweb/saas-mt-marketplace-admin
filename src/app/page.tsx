@@ -36,6 +36,7 @@ import {
   Sparkles
 } from "lucide-react"
 import Link from "next/link"
+import { useDashboardOverview } from '@/hooks/use-marketplace-overview'
 
 interface DashboardStats {
   totalProducts: number
@@ -46,60 +47,17 @@ interface DashboardStats {
 }
 
 export default function MarketplaceAdminPage() {
-  const [stats, setStats] = useState<DashboardStats>({
-    totalProducts: 0,
-    totalCategories: 0,
-    totalBrands: 0,
-    totalTenants: 12, // Este viene del IAM, por ahora hardcoded
-    loading: true
-  })
+  // Usar el hook de overview específico para dashboard
+  const { data: overviewData, loading: overviewLoading, error: overviewError, refetch } = useDashboardOverview()
 
-  useEffect(() => {
-    const fetchDashboardStats = async () => {
-      try {
-        // Fetch datos del catálogo global
-        const productsResponse = await fetch('/api/pim/global-catalog?limit=100')
-        const productsData = await productsResponse.json()
-        
-        // Para categorías, podríamos usar la API de taxonomía cuando esté disponible
-        // Por ahora usamos un valor estimado basado en los productos
-        const estimatedCategories = Math.floor(productsData.count / 15) || 45
-
-        // Fetch datos de marcas del marketplace
-        const brandsResponse = await fetch('/api/pim/marketplace-brands?limit=1000')
-        let totalBrands = 192; // Fallback basado en nuestra refactorización
-        
-        if (brandsResponse.ok) {
-          try {
-            const brandsData = await brandsResponse.json()
-            totalBrands = brandsData.total || brandsData.data?.length || 192
-          } catch (e) {
-            // Usar fallback si hay error en el JSON
-          }
-        }
-
-        setStats({
-          totalProducts: productsData.count || 0,
-          totalCategories: estimatedCategories,
-          totalBrands: totalBrands,
-          totalTenants: 12, // IAM data
-          loading: false
-        })
-      } catch (error) {
-        console.error('Error fetching dashboard stats:', error)
-        // Fallback a datos por defecto
-        setStats({
-          totalProducts: 692,
-          totalCategories: 45,
-          totalBrands: 192,
-          totalTenants: 12,
-          loading: false
-        })
-      }
-    }
-
-    fetchDashboardStats()
-  }, [])
+  // Extraer estadísticas del overview data
+  const stats: DashboardStats = {
+    totalProducts: overviewData?.dashboard?.total_global_products || 0,
+    totalCategories: overviewData?.dashboard?.total_categories || 0,
+    totalBrands: overviewData?.dashboard?.total_brands || 0,
+    totalTenants: overviewData?.dashboard?.active_tenants || 12, // Fallback para demo
+    loading: overviewLoading
+  }
 
   return (
     <div className="space-y-8">
@@ -109,6 +67,33 @@ export default function MarketplaceAdminPage() {
         <p className="text-muted-foreground">
           Panel de administración global del marketplace multi-tenant
         </p>
+        
+        {/* Error indicator */}
+        {overviewError && (
+          <div className="rounded-md bg-yellow-50 p-4 border border-yellow-200">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <TrendingUp className="h-5 w-5 text-yellow-400" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-yellow-800">
+                  Datos de overview no disponibles
+                </h3>
+                <div className="mt-2 text-sm text-yellow-700">
+                  <p>Mostrando datos estáticos. {overviewError}</p>
+                </div>
+                <div className="mt-4">
+                  <button
+                    onClick={() => refetch()}
+                    className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded hover:bg-yellow-200"
+                  >
+                    Reintentar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main Stats Cards */}

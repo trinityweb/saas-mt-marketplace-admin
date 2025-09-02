@@ -15,7 +15,16 @@ import {
   ShoppingCart,
   Globe,
   User,
-  LogOut
+  LogOut,
+  Database,
+  Activity,
+  Calendar,
+  History,
+  Sparkles,
+  ListChecks,
+  Clock,
+  MessageSquare,
+  Brain
 } from 'lucide-react'
 import type { SidebarConfig } from '@/components/shared-ui/types/sidebar'
 
@@ -98,6 +107,50 @@ export const marketplaceSidebarConfig: SidebarConfig = {
       ]
     },
     {
+      id: 'scraper',
+      label: 'Sistema de Scraping',
+      icon: Database,
+      submenu: [
+        {
+          id: 'scraper-dashboard',
+          label: 'Dashboard',
+          href: '/scraper',
+          icon: Activity
+        },
+        {
+          id: 'curation',
+          label: 'Curación de Productos',
+          icon: Sparkles,
+          submenu: [
+            {
+              id: 'curation-main',
+              label: 'Panel de Curación',
+              href: '/curation',
+              icon: ListChecks
+            },
+            {
+              id: 'curation-queue',
+              label: 'Cola de Procesamiento',
+              href: '/curation/queue',
+              icon: Clock
+            },
+            {
+              id: 'curation-history',
+              label: 'Historial',
+              href: '/curation/history',
+              icon: History
+            }
+          ]
+        },
+        {
+          id: 'scraper-products',
+          label: 'Productos Scrapeados',
+          href: '/scraper/products',
+          icon: Package
+        }
+      ]
+    },
+    {
       id: 'quickstart',
       label: 'Quickstart Dinámico',
       icon: Award,
@@ -117,19 +170,15 @@ export const marketplaceSidebarConfig: SidebarConfig = {
       ]
     },
     {
-      id: 'analytics',
-      label: 'Analytics',
-      icon: BarChart3,
+      id: 'ai-management',
+      label: 'Gestión de AI',
+      icon: Brain,
       submenu: [
         {
-          id: 'analytics-main',
-          label: 'Analytics',
-          href: '/analytics'
-        },
-        {
-          id: 'reports',
-          label: 'Reports',
-          href: '/reports'
+          id: 'ai-prompts',
+          label: 'Prompts de Agentes',
+          href: '/ai-prompts',
+          icon: MessageSquare
         }
       ]
     },
@@ -147,6 +196,18 @@ export const marketplaceSidebarConfig: SidebarConfig = {
           id: 'search',
           label: 'Búsqueda',
           href: '/config/search'
+        },
+        {
+          id: 'profile',
+          label: 'Mi Perfil',
+          href: '/profile',
+          icon: User
+        },
+        {
+          id: 'logout',
+          label: 'Cerrar Sesión',
+          href: '/logout',
+          icon: LogOut
         }
       ]
     },
@@ -156,30 +217,5 @@ export const marketplaceSidebarConfig: SidebarConfig = {
       href: '/documentation',
       icon: BookOpen
     },
-    {
-      id: 'admin',
-      label: 'Admin',
-      icon: Users,
-      submenu: [
-        {
-          id: 'profile',
-          label: 'Perfil',
-          href: '/profile',
-          icon: User
-        },
-        {
-          id: 'config',
-          label: 'Configuración',
-          href: '/settings',
-          icon: Settings
-        },
-        {
-          id: 'logout',
-          label: 'Cerrar sesión',
-          href: '/logout',
-          icon: LogOut
-        }
-      ]
-    }
   ]
 }

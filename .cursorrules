@@ -1,0 +1,293 @@
+# Reglas de Cursor para SaaS MT Marketplace Admin
+
+## Contexto del Proyecto
+Portal de super administración para gestionar el marketplace completo de "Tienda Vecina". Permite administrar tenants, catálogo global, templates de quickstart y configuraciones del sistema.
+
+**Puerto de desarrollo**: 3004
+
+## Stack Tecnológico
+- **Framework**: Next.js 15 con App Router
+- **Lenguaje**: TypeScript
+- **Styling**: Tailwind CSS + Radix UI
+- **Tablas**: TanStack Table
+- **Themes**: Sistema de 3 temas (light/dark/dim)
+
+## Comandos de Desarrollo
+
+```bash
+npm run dev              # Puerto 3004 con Turbopack
+npm run dev:webpack      # Puerto 3004 con Webpack tradicional
+npm run build            # Build producción
+npm run build:analyze    # Build con análisis bundle
+npm start               # Servidor producción
+npm test                # Tests
+npm run lint            # ESLint
+npm run clean           # Limpiar cache
+```
+
+## REGLA: USAR MCP FRONTEND INTEGRATOR PRIMERO
+
+**SIEMPRE** antes de crear/modificar componentes, consultar MCP:
+
+```bash
+# Analizar componentes marketplace-admin
+analyze_components --frontend="marketplace-admin"
+
+# Detectar duplicados entre frontends
+detect_duplicates --frontend="marketplace-admin"
+
+# Clasificar componente específico
+classify_component --component_path="services/saas-mt-marketplace-admin/components/forms/business-type-form.tsx"
+
+# Inventario completo
+get_component_inventory --frontend="marketplace-admin"
+
+# Patrones del sistema
+analyze_patterns --frontend="marketplace-admin"
+```
+
+## Arquitectura de Comunicación
+
+### Patrón API Proxy
+Frontend → Rutas locales → Kong Gateway → Microservicios
+
+```typescript
+// Frontend: GET /api/pim/marketplace-brands  
+// Proxy a: http://localhost:8001/pim/api/v1/marketplace/brands
+```
+
+### Headers Automáticos
+- `Authorization: Bearer <token>`
+- `X-Tenant-ID: <uuid>`  
+- `X-User-Role: marketplace_admin`
+
+## Servicios Backend Integrados
+
+### Kong Gateway (Puerto 8001)
+- **IAM Service**: `/iam/api/v1/*`
+- **PIM Service**: `/pim/api/v1/*`  
+- **Stock Service**: `/stock/api/v1/*`
+
+### Endpoints Implementados
+```http
+# IAM
+/api/pim/tenants
+/api/pim/roles
+/api/pim/plans
+
+# PIM Marketplace (Administración Global)
+/api/pim/marketplace-categories
+/api/pim/marketplace-brands
+/api/pim/marketplace-attributes
+/api/pim/global-catalog
+/api/pim/business-types
+/api/pim/business-type-templates
+```
+
+## Sistema de Componentes Atomic Design
+
+### Estructura
+```
+src/components/shared-ui/
+├── atoms/          # Botones, inputs, badges
+├── molecules/      # Searchable selects, cards
+├── organisms/      # Tablas, sidebars, formularios
+└── templates/      # Layouts de página
+```
+
+### Convenciones
+- **Archivos**: `kebab-case.tsx`
+- **Componentes**: `PascalCase`
+- **Props**: `<ComponentName>Props`
+- **Clases**: usar `cn()` para merge Tailwind
+
+## Estado Actual: PASO 0 - Quickstart 75% Completado
+
+### ✅ Completado
+- CRUD Business Types
+- CRUD Business Type Templates
+- CRUD Marketplace Categories (taxonomía)
+- CRUD Marketplace Brands
+- CRUD Marketplace Attributes
+- Global Catalog básico
+- Sistema de componentes shared-ui
+
+### 🔄 En Desarrollo
+- Wizard UI para quickstart
+- Integración con selección de templates
+- Proceso de importación al tenant
+
+### ❌ Pendiente
+- Validación end-to-end completa
+- Métricas de uso del quickstart
+
+## Patrones de Desarrollo
+
+### API Client Pattern
+```typescript
+import { marketplaceApi } from '@/lib/api';
+
+const response = await marketplaceApi.getAllMarketplaceBrands({
+  page: 1,
+  page_size: 20
+});
+```
+
+### Custom Hooks Pattern
+```typescript
+export function useMarketplaceBrands(filters) {
+  const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(true);
+  // Lógica de carga...
+  return { brands, loading, error };
+}
+```
+
+### Server/Client Components
+- Por defecto: Server Components
+- Client Components: solo con interactividad/hooks
+- Marcar con `'use client'` al inicio
+
+### Manejo de Errores
+```typescript
+const response = await marketplaceApi.someMethod();
+if (response.error) {
+  toast.error(response.error);
+  return;
+}
+// Procesar response.data
+```
+
+## Estructura de Archivos
+
+```
+src/
+├── app/                    # App Router Next.js
+│   ├── api/pim/           # API Routes proxy
+│   ├── (páginas)          # Páginas de la aplicación
+│   └── layout.tsx         # Layout con providers
+├── components/
+│   ├── shared-ui/         # Atomic Design
+│   ├── forms/             # Formularios específicos
+│   └── layout/            # Componentes de layout
+├── hooks/                 # Custom hooks
+├── lib/
+│   ├── api.ts            # Cliente API singleton
+│   ├── types/            # Interfaces TypeScript
+│   └── config.ts         # Configuración app
+└── config/               # Configuraciones estáticas
+```
+
+## Multi-Tenancy y Roles
+
+### Super Admin Features
+- Gestión completa de tenants
+- Configuración del catálogo global
+- Creación de business types y templates
+- Monitoreo del sistema
+
+### Validation Rules
+- Header `X-User-Role: marketplace_admin`
+- Verificación de permisos en cada endpoint
+- Datos aislados por tenant cuando corresponde
+
+## Configuraciones Importantes
+
+### Puerto de Desarrollo: 3004
+Evita conflictos con otros frontends:
+- Backoffice: 3000
+- Marketplace Frontend: 3005
+
+### Optimizaciones Next.js
+- Turbopack para desarrollo rápido
+- Standalone output para Docker
+- Transpilación de librerías internas
+
+### Docker Multi-stage
+- `deps`: Instalación dependencias
+- `builder`: Build aplicación
+- `development`: Imagen con hot reload
+- `production`: Imagen distroless optimizada
+
+## Flujo de Trabajo Típico
+
+1. **Nueva Feature**: Crear página en `app/`, componentes en `shared-ui/`
+2. **API Integration**: Agregar métodos en `lib/api.ts`
+3. **Forms**: React Hook Form + Zod para validación
+4. **Tables**: TanStack Table con componente `Table` base
+5. **Testing**: Tests en `__tests__/` con Jest
+
+## Sistema de Themes
+
+### Themes Disponibles
+- **Light**: Tema claro por defecto
+- **Dark**: Tema oscuro  
+- **Dim**: Tema intermedio
+
+### CSS Variables
+Variables en `globals.css`, aplicadas con `next-themes`:
+```css
+:root {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  /* ... más variables */
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  /* ... variables para dark */
+}
+```
+
+## Consideraciones de Performance
+
+### Bundle Optimization
+- Code splitting automático con Next.js
+- Tree shaking de librerías no usadas
+- Imagen optimizada con `next/image`
+
+### API Optimization  
+- Paginación obligatoria en listados
+- Filtros eficientes con criteria pattern
+- Cache de respuestas frecuentes
+
+## Debugging y Monitoreo
+
+### Development Tools
+- React DevTools para componentes
+- Network tab para API calls
+- Console logs estructurados
+
+### Error Boundaries
+- Captura de errores a nivel de página
+- Fallbacks informativos para usuarios
+- Logging de errores para debugging
+
+## Variables de Entorno
+
+```bash
+# Desarrollo
+NEXT_PUBLIC_API_URL=http://localhost:8001
+
+# Producción  
+NEXT_PUBLIC_API_URL=https://api.tiendavecina.com
+```
+
+## Convenciones de Naming
+
+- **Páginas**: `snake_case.tsx` en app/
+- **Componentes**: `PascalCase` en shared-ui/
+- **Hooks**: `camelCase` con prefijo `use`
+- **Types**: `PascalCase` con sufijos descriptivos
+- **APIs**: `camelCase` con sufijo `Api`
+
+## Consideraciones Importantes
+
+- **Multi-tenant**: Todos los datos aislados por `tenant_id`
+- **Roles**: Verificar permisos con `X-User-Role`
+- **Performance**: Usar paginación en listados
+- **UX**: Mantener consistencia con design system
+- **Errores**: Toast notifications claras
+
+**Estado**: 75% completado, enfoque en finalizar wizard de quickstart

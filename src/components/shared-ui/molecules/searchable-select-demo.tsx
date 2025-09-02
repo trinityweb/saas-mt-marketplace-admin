@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Star, Package, User, Tag } from "lucide-react"
 import { SearchableSelect, SearchableSelectOption, useSearchableSelectOptions } from "./searchable-select"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shared-ui"
 
 // ============================================================================
 // EJEMPLO 1: OPCIONES SIMPLES

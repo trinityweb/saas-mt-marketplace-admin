@@ -8,21 +8,31 @@ Panel de administración para el marketplace multi-tenant SaaS. Permite gestiona
 - ✅ **Dashboard Principal**: Overview con métricas clave
 - ✅ **UI Base**: Componentes reutilizados del backoffice principal
 - ✅ **Estilos TiendaVecina**: Paleta de colores y temas consistentes
+- ✅ **Sistema de Scraping**: Módulo completo para monitoreo y gestión de scraping
+  - Dashboard con métricas en tiempo real
+  - Monitor de jobs activos
+  - Gestión de 30+ fuentes argentinas
+  - Programación automática con cron
+  - Historial completo de ejecuciones
+- ✅ **Gestión de Marcas**: CRUD completo de marcas del marketplace
+- ✅ **Taxonomía**: Gestión de categorías jerárquicas
+- ✅ **Business Types**: Administración de tipos de negocio
+- ✅ **Templates**: Sistema de templates para quickstart
 
 ### 🚧 En Desarrollo (Roadmap)
-- [ ] **Taxonomía Global**: Gestión de categorías y atributos marketplace
-- [ ] **Quickstart Dinámico**: Admin panel para tipos de negocio y templates
-- [ ] **Analytics Dashboard**: Métricas de uso, búsquedas y adopción
+- [ ] **Catálogo Global**: Gestión unificada de productos
+- [ ] **Analytics Dashboard**: Métricas avanzadas de uso y adopción
+- [ ] **Integración AI**: Curación automática de productos scrapeados
 - [ ] **Configuración**: Settings globales del marketplace
 
 ## 🛠️ Tecnologías
 
-- **Framework**: Next.js 15 con App Router
+- **Framework**: Next.js 15 con App Router + Turbopack
 - **UI**: ShadCN UI + Radix UI primitives
 - **Estilos**: Tailwind CSS con variables CSS
 - **Iconos**: Lucide React
 - **Estado**: React Server Components + Client Components híbrido
-- **Puerto**: `3002` (para evitar conflictos con backoffice en 3001)
+- **Puerto**: `3004` (actualizado para evitar conflictos)
 
 ## 🚀 Desarrollo
 
@@ -49,21 +59,37 @@ src/
 ├── app/
 │   ├── page.tsx              # Dashboard principal
 │   ├── layout.tsx            # Layout base
-│   └── globals.css           # Estilos globales TiendaVecina
+│   ├── globals.css           # Estilos globales TiendaVecina
+│   ├── scraper/              # Módulo de scraping
+│   │   ├── page.tsx          # Dashboard de scraping
+│   │   ├── sources/          # Gestión de fuentes
+│   │   ├── schedule/         # Programación
+│   │   └── history/          # Historial
+│   ├── marketplace-brands/   # Gestión de marcas
+│   ├── taxonomy/             # Gestión de categorías
+│   └── business-types/       # Tipos de negocio
 ├── components/
-│   └── ui/                   # Componentes ShadCN copiados del backoffice
+│   ├── ui/                   # Componentes ShadCN 
+│   ├── scraper/              # Componentes del módulo scraping
+│   └── layout/               # Componentes de layout
+├── hooks/                    # Custom React hooks
+│   └── scraper/              # Hooks del módulo scraping
 └── lib/
-    └── utils.ts              # Utilidades compartidas
+    ├── utils.ts              # Utilidades compartidas
+    └── api/
+        └── scraper/          # Cliente API de scraping
 ```
 
 ## 🔗 Integración con Servicios
 
-El admin panel se conectará con:
+El admin panel se integra con:
 
-- **PIM Service**: APIs de taxonomía y productos
-- **IAM Service**: Autenticación y autorización
-- **Kong Gateway**: Enrutamiento de APIs
-- **ElasticSearch**: Consultas de búsqueda y analytics
+- **PIM Service** (8090): APIs de taxonomía, productos y templates
+- **IAM Service** (8080): Autenticación y autorización
+- **Scraper Service** (8086): Sistema de scraping Python
+- **Kong Gateway** (8001): Enrutamiento de APIs
+- **MongoDB**: Base de datos para productos scrapeados
+- **PostgreSQL**: Configuración y metadata
 
 ## 🌈 Paleta de Colores TiendaVecina
 
@@ -72,13 +98,50 @@ El admin panel se conectará con:
 - **Fondo**: `#F5F5F5` (Gris claro)
 - **Tarjetas**: `#FAFAFA` (Gris muy claro)
 
+## 📚 Documentación del Sistema de Scraping
+
+- [Documentación Completa](./public/docs/SCRAPING_MODULE_DOCUMENTATION.md)
+- [Guía Rápida](./public/docs/SCRAPING_QUICK_REFERENCE.md)
+
+### Características del Módulo de Scraping:
+
+1. **Dashboard de Métricas**
+   - Total de productos scrapeados
+   - Nuevos productos del día
+   - Tasa de éxito global
+   - Métricas por fuente
+
+2. **Monitor de Jobs**
+   - Seguimiento en tiempo real
+   - Inicio/cancelación de jobs
+   - Visualización de progreso
+   - Manejo de errores
+
+3. **Gestión de Fuentes**
+   - 30+ sitios argentinos configurados
+   - Toggle de habilitación
+   - Ejecución manual
+   - Métricas de salud
+
+4. **Programación Automática**
+   - Configuración cron por fuente
+   - Frecuencias predefinidas
+   - Horarios optimizados
+   - Vista previa de próxima ejecución
+
+5. **Historial Completo**
+   - Registro de todas las ejecuciones
+   - Filtros avanzados
+   - Exportación a CSV
+   - Detalles de errores
+
 ## 📋 Próximos Pasos
 
-1. **FASE 1**: Implementar gestión de taxonomía global
-2. **FASE 2**: Crear admin panel para quickstart dinámico
-3. **FASE 3**: Dashboard de analytics y métricas
-4. **FASE 4**: Configuración avanzada del marketplace
+1. **FASE 1**: ✅ Sistema de Scraping (COMPLETADO)
+2. **FASE 2**: Integración con AI para curación automática
+3. **FASE 3**: Dashboard de analytics y métricas avanzadas
+4. **FASE 4**: WebSocket para actualizaciones en tiempo real
 
 ---
 
-**Parte del ecosistema**: [saas-mt](../../README.md) | **Puerto**: 3002 | **Estado**: �� Base Implementada
+**Parte del ecosistema**: [saas-mt](../../README.md) | **Puerto**: 3004 | **Estado**: 🚀 En Producción

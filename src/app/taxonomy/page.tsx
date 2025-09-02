@@ -38,6 +38,7 @@ import {
 import { categoriesApi, Category } from '@/lib/api/categories';
 import { useAuth } from '@/hooks/use-auth';
 import { useHeader } from '@/components/layout/admin-layout';
+import { useMarketplaceOverview } from '@/hooks/use-marketplace-overview';
 import { CriteriaDataTable, CriteriaResponse, SearchCriteria } from '@/components/ui/criteria-data-table';
 import { Filter as FilterType } from '@/components/ui/table-toolbar';
 import { ColumnDef } from '@tanstack/react-table';
@@ -274,6 +275,16 @@ export default function TaxonomyPage() {
   const router = useRouter();
   const { setHeaderProps, clearHeaderProps } = useHeader();
   
+  // Hook para overview de taxonomía
+  const { 
+    data: overviewData, 
+    loading: overviewLoading, 
+    error: overviewError 
+  } = useMarketplaceOverview({ 
+    sections: ['taxonomy'], 
+    includeStats: true 
+  });
+  
   // Estado para datos de categorías
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -417,11 +428,13 @@ export default function TaxonomyPage() {
         const inactiveCategories = allCategories.filter((cat: any) => !cat.is_active).length;
         const rootCategories = allCategories.filter((cat: any) => !cat.parent_id).length;
         
+        // Combinar estadísticas locales con datos del overview
+        const overviewTaxonomy = overviewData?.taxonomy || {};
         setSummary({
-          total_categories: totalCategories,
-          active_count: activeCategories,
-          inactive_count: inactiveCategories,
-          root_categories: rootCategories
+          total_categories: overviewTaxonomy.total_categories || totalCategories,
+          active_count: overviewTaxonomy.active_categories || activeCategories,
+          inactive_count: (overviewTaxonomy.total_categories - overviewTaxonomy.active_categories) || inactiveCategories,
+          root_categories: overviewTaxonomy.root_categories || rootCategories
         });
         
         setTotalCount(totalCategories);
@@ -487,11 +500,13 @@ export default function TaxonomyPage() {
         
         console.log('📊 Stats:', { totalCategories, activeCategories, inactiveCategories, rootCategories });
         
+        // Combinar estadísticas locales con datos del overview
+        const overviewTaxonomy = overviewData?.taxonomy || {};
         setSummary({
-          total_categories: totalCategories,
-          active_count: activeCategories,
-          inactive_count: inactiveCategories,
-          root_categories: rootCategories
+          total_categories: overviewTaxonomy.total_categories || totalCategories,
+          active_count: overviewTaxonomy.active_categories || activeCategories,
+          inactive_count: (overviewTaxonomy.total_categories - overviewTaxonomy.active_categories) || inactiveCategories,
+          root_categories: overviewTaxonomy.root_categories || rootCategories
         });
         
         setTotalCount(totalCategories);
@@ -768,7 +783,7 @@ export default function TaxonomyPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="py-8">
         <div className="text-center">
           <p className="text-destructive mb-4">{error}</p>
           <Button onClick={() => fetchCategories(1, 20, '', 'all')} className="mt-4">
@@ -781,13 +796,36 @@ export default function TaxonomyPage() {
 
   return (
     <div className="space-y-6">
+      {/* Overview Status */}
+      {overviewError && (
+        <div className="rounded-md bg-yellow-50 p-3 border border-yellow-200">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <TrendingUp className="h-4 w-4 text-yellow-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-xs text-yellow-800">
+                Overview no disponible - Usando datos locales: {overviewError}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-2xl font-bold">{summary.total_categories}</p>
-              <p className="text-sm text-muted-foreground">Total Categorías</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">Total Categorías</p>
+                {overviewData?.taxonomy && (
+                  <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full">
+                    Overview
+                  </span>
+                )}
+              </div>
             </div>
             <TreePine className="h-8 w-8 text-primary" />
           </div>

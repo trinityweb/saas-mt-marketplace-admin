@@ -3,11 +3,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ModernProductCard } from '@/components/shared/product-components/modern-product-card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/shared-ui';
+import { Badge } from '@/components/shared-ui';
+import { Card, CardContent } from '@/components/shared-ui';
 import { StatsCard } from '@/components/ui/stats-card';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/shared-ui';
 import { 
   Package, 
   CheckCircle, 
@@ -1214,98 +1214,96 @@ export default function GlobalCatalogPage() {
 
       {/* Contenido principal basado en el modo de vista */}
       {viewMode === 'table' ? (
-        <div className="bg-card p-4 rounded-lg border shadow-sm">
+        <div className="space-y-4">
           
-          {/* Filtros múltiples mejorados */}
-          <div className="mb-6 p-4 bg-card rounded-lg border border-border shadow-sm force-card-visibility">
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Search className="h-4 w-4 text-primary" />
-              Filtros de búsqueda
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <MultiSelectFilter
-                label="Marcas"
-                placeholder="Seleccionar marcas..."
-                options={availableBrands}
-                selectedValues={selectedBrands}
-                onChange={setSelectedBrands}
-                maxHeight="250px"
+          {/* Filtros integrados */}
+          <div className="flex gap-4 items-center">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar productos..."
+                value={criteriaState.criteria.search || ''}
+                onChange={(e) => criteriaState.handleSearchChange(e.target.value)}
+                className="pl-10"
               />
-              
-              <MultiSelectFilter
-                label="Categorías"
-                placeholder="Seleccionar categorías..."
-                options={availableCategories}
-                selectedValues={selectedCategories}
-                onChange={setSelectedCategories}
-                maxHeight="250px"
-              />
-              
-              <MultiSelectFilter
-                label="Fuentes"
-                placeholder="Seleccionar fuentes..."
-                options={availableSources}
-                selectedValues={selectedSources}
-                onChange={setSelectedSources}
-                maxHeight="200px"
-              />
-              
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Estado verificación
-                </label>
-                <select
-                  value={criteriaState.criteria.is_verified || 'all'}
-                  onChange={(e) => criteriaState.handleFilterChange('is_verified', e.target.value === 'all' ? undefined : e.target.value)}
-                  className="w-full rounded-md border border-input bg-background py-2.5 pl-3 pr-10 text-sm text-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-20"
-                >
-                  <option value="all">Todos los estados</option>
-                  <option value="true">Verificados</option>
-                  <option value="false">No verificados</option>
-                </select>
-              </div>
             </div>
             
-            {/* Acciones de filtros */}
-            <div className="flex justify-between items-center mt-4 pt-4 border-t border-border">
-              <div className="text-sm text-muted-foreground">
-                {selectedBrands.length + selectedCategories.length + selectedSources.length > 0 && (
-                  <span className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
-                    {selectedBrands.length + selectedCategories.length + selectedSources.length} filtros aplicados
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setSelectedBrands([]);
-                    setSelectedCategories([]);
-                    setSelectedSources([]);
-                    criteriaState.handleFilterChange('is_verified', undefined);
-                  }}
-                  className="px-3 py-1.5 text-xs bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors font-medium"
+            <MultiSelectFilter
+              placeholder="Marcas"
+              options={availableBrands}
+              selectedValues={selectedBrands}
+              onChange={setSelectedBrands}
+              maxHeight="250px"
+              className="w-[180px]"
+            />
+            
+            <MultiSelectFilter
+              placeholder="Categorías"
+              options={availableCategories}
+              selectedValues={selectedCategories}
+              onChange={setSelectedCategories}
+              maxHeight="250px"
+              className="w-[180px]"
+            />
+            
+            <MultiSelectFilter
+              placeholder="Fuentes"
+              options={availableSources}
+              selectedValues={selectedSources}
+              onChange={setSelectedSources}
+              maxHeight="200px"
+              className="w-[140px]"
+            />
+            
+            <select
+              value={criteriaState.criteria.is_verified || 'all'}
+              onChange={(e) => criteriaState.handleFilterChange('is_verified', e.target.value === 'all' ? undefined : e.target.value)}
+              className="w-[140px] rounded-md border border-input bg-background py-2 pl-3 pr-10 text-sm text-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-20"
+            >
+              <option value="all">Todos</option>
+              <option value="true">Verificados</option>
+              <option value="false">No verificados</option>
+            </select>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedBrands([]);
+                  setSelectedCategories([]);
+                  setSelectedSources([]);
+                  criteriaState.handleFilterChange('is_verified', undefined);
+                }}
+                title="Limpiar filtros"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              <div className="h-4 w-px bg-border" />
+              <div className="flex items-center border rounded-md">
+                <Button
+                  variant={viewMode === 'table' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                  className="rounded-r-none h-8"
                 >
-                  Limpiar filtros
-                </button>
-                <button
-                  onClick={() => {
-                    console.log('🔄 Refrescando filtros manualmente...');
-                    fetchFilterOptions();
-                  }}
-                  className="px-3 py-1.5 text-xs bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors font-medium flex items-center gap-1"
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'cards' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('cards')}
+                  className="rounded-l-none h-8"
                 >
-                  <Search className="h-3 w-3" />
-                  Refrescar
-                </button>
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>
           
           {/* Tabla de datos */}
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <CriteriaDataTable
+          <div className="flex flex-col gap-4">
+            <CriteriaDataTable
                 columns={columns}
                 data={criteriaResponse.data}
                 totalCount={criteriaResponse.total_count}
@@ -1322,117 +1320,93 @@ export default function GlobalCatalogPage() {
                 onPageChange={criteriaState.handlePageChange}
                 onPageSizeChange={criteriaState.handlePageSizeChange}
                 onSortChange={criteriaState.handleSortChange}
+            />
+          </div>
+        </div>
+      ) : (
+        /* Vista de Cards */
+        <div className="space-y-4">
+          {/* Filtros integrados para vista de cards */}
+          <div className="flex gap-4 items-center">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar productos..."
+                value={criteriaState.criteria.search || ''}
+                onChange={(e) => criteriaState.handleSearchChange(e.target.value)}
+                className="pl-10"
               />
             </div>
             
-            {/* Controles de vista */}
-            <div className="flex lg:flex-col items-center gap-2">
+            <MultiSelectFilter
+              placeholder="Marcas"
+              options={availableBrands}
+              selectedValues={selectedBrands}
+              onChange={setSelectedBrands}
+              maxHeight="250px"
+              className="w-[180px]"
+            />
+            
+            <MultiSelectFilter
+              placeholder="Categorías"
+              options={availableCategories}
+              selectedValues={selectedCategories}
+              onChange={setSelectedCategories}
+              maxHeight="250px"
+              className="w-[180px]"
+            />
+            
+            <MultiSelectFilter
+              placeholder="Fuentes"
+              options={availableSources}
+              selectedValues={selectedSources}
+              onChange={setSelectedSources}
+              maxHeight="200px"
+              className="w-[140px]"
+            />
+            
+            <select
+              value={criteriaState.criteria.is_verified || 'all'}
+              onChange={(e) => criteriaState.handleFilterChange('is_verified', e.target.value === 'all' ? undefined : e.target.value)}
+              className="w-[140px] rounded-md border border-input bg-background py-2 pl-3 pr-10 text-sm text-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-20"
+            >
+              <option value="all">Todos</option>
+              <option value="true">Verificados</option>
+              <option value="false">No verificados</option>
+            </select>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedBrands([]);
+                  setSelectedCategories([]);
+                  setSelectedSources([]);
+                  criteriaState.handleFilterChange('is_verified', undefined);
+                }}
+                title="Limpiar filtros"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              <div className="h-4 w-px bg-border" />
               <div className="flex items-center border rounded-md">
                 <Button
                   variant={viewMode === 'table' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('table')}
-                  className="rounded-r-none"
+                  className="rounded-r-none h-8"
                 >
                   <List className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={(viewMode as ViewMode) === 'cards' ? 'default' : 'ghost'}
+                  variant={viewMode === 'cards' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('cards')}
-                  className="rounded-l-none"
+                  className="rounded-l-none h-8"
                 >
                   <Grid3X3 className="h-4 w-4" />
                 </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* Vista de Cards */
-        <div className="space-y-6">
-          {/* Filtros múltiples mejorados para vista de cards */}
-          <div className="p-4 bg-card rounded-lg border border-border shadow-sm force-card-visibility">
-            <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Search className="h-4 w-4 text-primary" />
-              Filtros de búsqueda
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <MultiSelectFilter
-                label="Marcas"
-                placeholder="Seleccionar marcas..."
-                options={availableBrands}
-                selectedValues={selectedBrands}
-                onChange={setSelectedBrands}
-                maxHeight="250px"
-              />
-              
-              <MultiSelectFilter
-                label="Categorías"
-                placeholder="Seleccionar categorías..."
-                options={availableCategories}
-                selectedValues={selectedCategories}
-                onChange={setSelectedCategories}
-                maxHeight="250px"
-              />
-              
-              <MultiSelectFilter
-                label="Fuentes"
-                placeholder="Seleccionar fuentes..."
-                options={availableSources}
-                selectedValues={selectedSources}
-                onChange={setSelectedSources}
-                maxHeight="200px"
-              />
-              
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Estado verificación
-                </label>
-                <select
-                  value={criteriaState.criteria.is_verified || 'all'}
-                  onChange={(e) => criteriaState.handleFilterChange('is_verified', e.target.value === 'all' ? undefined : e.target.value)}
-                  className="w-full rounded-md border border-input bg-background py-2.5 pl-3 pr-10 text-sm text-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-20"
-                >
-                  <option value="all">Todos los estados</option>
-                  <option value="true">Verificados</option>
-                  <option value="false">No verificados</option>
-                </select>
-              </div>
-            </div>
-            
-            {/* Acciones de filtros */}
-            <div className="flex justify-between items-center mt-4 pt-4 border-t border-border">
-              <div className="text-sm text-muted-foreground">
-                {selectedBrands.length + selectedCategories.length + selectedSources.length > 0 && (
-                  <span className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
-                    {selectedBrands.length + selectedCategories.length + selectedSources.length} filtros aplicados
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setSelectedBrands([]);
-                    setSelectedCategories([]);
-                    setSelectedSources([]);
-                    criteriaState.handleFilterChange('is_verified', undefined);
-                  }}
-                  className="px-3 py-1.5 text-xs bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors font-medium"
-                >
-                  Limpiar filtros
-                </button>
-                <button
-                  onClick={() => {
-                    console.log('🔄 Refrescando filtros manualmente...');
-                    fetchFilterOptions();
-                  }}
-                  className="px-3 py-1.5 text-xs bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors font-medium flex items-center gap-1"
-                >
-                  <Search className="h-3 w-3" />
-                  Refrescar
-                </button>
               </div>
             </div>
           </div>

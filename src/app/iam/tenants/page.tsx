@@ -2,15 +2,15 @@
 
 import React, { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/shared-ui";
 import { Label } from "@/components/ui/label";
 import { TenantAdapter } from "@/lib/types/iam-api";
 import { useTenants } from "@/hooks/use-tenants";
 import { Pencil, Trash2, Building, ArrowUpDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/shared-ui";
 import { CriteriaDataTable } from "@/components/ui/criteria-data-table";
 import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/shared-ui";
 import { useHeader } from "@/components/layout/admin-layout";
 import { Filter } from "@/components/ui/table-toolbar";
 import { useTableCriteria } from "@/hooks/use-table-criteria";

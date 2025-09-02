@@ -3,10 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import { Building, UserCheck, Package, Users, Shield, Activity, TrendingUp } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shared-ui";
+import { Button } from "@/components/shared-ui";
 import { useHeader } from "@/components/layout/admin-layout";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/shared-ui";
 
 export default function IamPage() {
   const { setHeaderProps, clearHeaderProps } = useHeader();

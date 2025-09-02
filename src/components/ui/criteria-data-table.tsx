@@ -85,10 +85,14 @@ export function CriteriaDataTable<TData, TValue>({
 }: CriteriaDataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
 
-  // Calcular información de paginación
-  const totalPages = Math.ceil(totalCount / pageSize)
-  const startItem = (currentPage - 1) * pageSize + 1
-  const endItem = Math.min(currentPage * pageSize, totalCount)
+  // Calcular información de paginación con valores seguros
+  const safeTotalCount = totalCount || 0
+  const safePageSize = pageSize || 20
+  const safeCurrentPage = currentPage || 1
+  
+  const totalPages = safeTotalCount > 0 ? Math.ceil(safeTotalCount / safePageSize) : 1
+  const startItem = safeTotalCount > 0 ? (safeCurrentPage - 1) * safePageSize + 1 : 0
+  const endItem = safeTotalCount > 0 ? Math.min(safeCurrentPage * safePageSize, safeTotalCount) : 0
 
   const table = useReactTable({
     data: data || [],
@@ -111,8 +115,8 @@ export function CriteriaDataTable<TData, TValue>({
     state: {
       sorting,
       pagination: {
-        pageIndex: currentPage - 1,
-        pageSize: pageSize,
+        pageIndex: safeCurrentPage - 1,
+        pageSize: safePageSize,
       },
     },
   })
@@ -121,8 +125,8 @@ export function CriteriaDataTable<TData, TValue>({
     const size = parseInt(newPageSize)
     onPageSizeChange(size)
     // Ajustar la página actual si es necesario
-    const newTotalPages = Math.ceil(totalCount / size)
-    if (currentPage > newTotalPages) {
+    const newTotalPages = safeTotalCount > 0 ? Math.ceil(safeTotalCount / size) : 1
+    if (safeCurrentPage > newTotalPages) {
       onPageChange(newTotalPages)
     }
   }
@@ -139,14 +143,14 @@ export function CriteriaDataTable<TData, TValue>({
       }
     } else {
       // Lógica más compleja para muchas páginas
-      if (currentPage <= 4) {
+      if (safeCurrentPage <= 4) {
         // Estamos cerca del inicio
         for (let i = 1; i <= 5; i++) {
           pages.push(i)
         }
         pages.push('ellipsis-end')
         pages.push(totalPages)
-      } else if (currentPage >= totalPages - 3) {
+      } else if (safeCurrentPage >= totalPages - 3) {
         // Estamos cerca del final
         pages.push(1)
         pages.push('ellipsis-start')
@@ -157,7 +161,7 @@ export function CriteriaDataTable<TData, TValue>({
         // Estamos en el medio
         pages.push(1)
         pages.push('ellipsis-start')
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+        for (let i = safeCurrentPage - 1; i <= safeCurrentPage + 1; i++) {
           pages.push(i)
         }
         pages.push('ellipsis-end')
@@ -250,18 +254,20 @@ export function CriteriaDataTable<TData, TValue>({
       {/* Paginación */}
       <div className={`flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between ${fullWidth ? 'px-0 mt-6' : 'px-6'}`}>
         <div className="text-sm text-muted-foreground">
-          Mostrando {startItem} a {endItem} de {totalCount} resultados
+          {safeTotalCount > 0 
+            ? `Mostrando ${startItem} a ${endItem} de ${safeTotalCount} resultados`
+            : 'No hay resultados'}
         </div>
         
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Filas por página</p>
             <Select
-              value={`${pageSize}`}
+              value={`${safePageSize}`}
               onValueChange={handlePageSizeChange}
             >
               <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue placeholder={`${pageSize}`} />
+                <SelectValue placeholder={`${safePageSize}`} />
               </SelectTrigger>
               <SelectContent side="top">
                 {[10, 20, 30, 40, 50].map((size) => (
@@ -279,7 +285,7 @@ export function CriteriaDataTable<TData, TValue>({
               variant="outline"
               size="sm"
               onClick={() => onPageChange(1)}
-              disabled={currentPage === 1}
+              disabled={safeCurrentPage === 1}
               className="h-8 w-8 p-0"
             >
               <ChevronsLeft className="h-4 w-4" />
@@ -289,8 +295,8 @@ export function CriteriaDataTable<TData, TValue>({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage === 1}
+              onClick={() => onPageChange(safeCurrentPage - 1)}
+              disabled={safeCurrentPage === 1}
               className="h-8 w-8 p-0"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -310,7 +316,7 @@ export function CriteriaDataTable<TData, TValue>({
                 return (
                   <Button
                     key={`page-${page}`}
-                    variant={currentPage === page ? "default" : "outline"}
+                    variant={safeCurrentPage === page ? "default" : "outline"}
                     size="sm"
                     onClick={() => onPageChange(page as number)}
                     className="h-8 w-8 p-0"
@@ -325,8 +331,8 @@ export function CriteriaDataTable<TData, TValue>({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
+              onClick={() => onPageChange(safeCurrentPage + 1)}
+              disabled={safeCurrentPage === totalPages}
               className="h-8 w-8 p-0"
             >
               <ChevronRight className="h-4 w-4" />
@@ -337,7 +343,7 @@ export function CriteriaDataTable<TData, TValue>({
               variant="outline"
               size="sm"
               onClick={() => onPageChange(totalPages)}
-              disabled={currentPage === totalPages}
+              disabled={safeCurrentPage === totalPages}
               className="h-8 w-8 p-0"
             >
               <ChevronsRight className="h-4 w-4" />

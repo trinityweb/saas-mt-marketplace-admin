@@ -14,11 +14,16 @@ import {
   Download,
   Globe,
   MapPin,
-  ArrowUpDown
+  ArrowUpDown,
+  Sparkles,
+  User,
+  Activity,
+  TrendingUp,
+  BarChart
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/shared-ui';
+import { Badge } from '@/components/shared-ui';
 import { 
   Dialog,
   DialogContent,
@@ -54,6 +59,14 @@ interface BusinessTypeTemplate extends ApiBusinessTypeTemplate {
     id: string;
     name: string;
     code: string;
+  };
+  // Campos AI
+  generated_by?: 'manual' | 'ai' | 'hybrid';
+  ai_confidence_score?: number;
+  performance_metrics?: {
+    usage_count: number;
+    success_rate: number;
+    modification_rate: number;
   };
 }
 
@@ -122,6 +135,14 @@ export default function BusinessTypeTemplatesPage() {
             id: template.business_type_id,
             name: template.name.split(' - ')[0] || template.name,
             code: template.business_type_id.split('-')[0] || 'unknown'
+          },
+          // Datos AI simulados (estos vendrían del backend en el futuro)
+          generated_by: Math.random() > 0.7 ? 'ai' : Math.random() > 0.4 ? 'hybrid' : 'manual',
+          ai_confidence_score: Math.random() * 100,
+          performance_metrics: {
+            usage_count: Math.floor(Math.random() * 500),
+            success_rate: 75 + Math.random() * 20,
+            modification_rate: Math.random() * 30
           }
         }));
 
@@ -271,6 +292,95 @@ export default function BusinessTypeTemplatesPage() {
         const template = row.original;
         return (
           <div className="font-medium">{template.name}</div>
+        );
+      },
+    },
+    {
+      accessorKey: 'generated_by',
+      header: () => (
+        <div className="font-semibold">
+          Generado por
+        </div>
+      ),
+      cell: ({ row }) => {
+        const generatedBy = row.original.generated_by || 'manual';
+        const getIcon = () => {
+          switch (generatedBy) {
+            case 'ai':
+              return <Sparkles className="w-4 h-4" />;
+            case 'hybrid':
+              return (
+                <div className="flex items-center">
+                  <User className="w-3 h-3" />
+                  <span className="mx-0.5">+</span>
+                  <Sparkles className="w-3 h-3" />
+                </div>
+              );
+            default:
+              return <User className="w-4 h-4" />;
+          }
+        };
+        
+        const getLabel = () => {
+          switch (generatedBy) {
+            case 'ai':
+              return 'IA';
+            case 'hybrid':
+              return 'Híbrido';
+            default:
+              return 'Manual';
+          }
+        };
+        
+        const getBadgeColor = () => {
+          switch (generatedBy) {
+            case 'ai':
+              return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+            case 'hybrid':
+              return "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300";
+            default:
+              return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+          }
+        };
+        
+        return (
+          <Badge className={`${getBadgeColor()} flex items-center gap-1 w-fit`}>
+            {getIcon()}
+            {getLabel()}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: 'performance_metrics.success_rate',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="h-auto p-0 font-semibold"
+        >
+          Performance
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const metrics = row.original.performance_metrics;
+        if (!metrics) return <span className="text-muted-foreground">-</span>;
+        
+        const successRate = metrics.success_rate;
+        const getColor = () => {
+          if (successRate >= 90) return "text-green-600 dark:text-green-400";
+          if (successRate >= 75) return "text-yellow-600 dark:text-yellow-400";
+          return "text-red-600 dark:text-red-400";
+        };
+        
+        return (
+          <div className="flex items-center gap-2">
+            <TrendingUp className={`w-4 h-4 ${getColor()}`} />
+            <span className={`font-medium ${getColor()}`}>
+              {successRate.toFixed(1)}%
+            </span>
+          </div>
         );
       },
     },
@@ -427,6 +537,20 @@ export default function BusinessTypeTemplatesPage() {
                 Exportar
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Link 
+                  href={`/business-type-templates/${template.id}/analytics`}
+                  className="flex items-center w-full"
+                >
+                  <BarChart className="h-4 w-4 mr-2" />
+                  Ver Analytics
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Optimizar con IA
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem className="text-red-600">
                 <Trash2 className="h-4 w-4 mr-2" />
                 Eliminar
@@ -464,7 +588,36 @@ export default function BusinessTypeTemplatesPage() {
         buttonText="Nueva Plantilla"
         filters={templateFilters}
         fullWidth={true}
-        onCreateClick={() => console.log('Create template clicked')}
+        customActions={
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Plantilla
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>
+                <Link 
+                  href="/business-type-templates/create"
+                  className="flex items-center w-full"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Crear Manual
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link 
+                  href="/business-type-templates/generate"
+                  className="flex items-center w-full"
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Generar con IA
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        }
         onSearchChange={criteriaState.handleSearchChange}
         onPageChange={criteriaState.handlePageChange}
         onPageSizeChange={criteriaState.handlePageSizeChange}
@@ -530,6 +683,35 @@ export default function BusinessTypeTemplatesPage() {
                   <div className="text-sm text-muted-foreground">Productos</div>
                 </div>
               </div>
+              
+              {selectedTemplate.performance_metrics && (
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">Métricas de Performance</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <div className="text-sm font-medium">Usos</div>
+                        <div className="text-xs text-muted-foreground">{selectedTemplate.performance_metrics.usage_count}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <div>
+                        <div className="text-sm font-medium">Éxito</div>
+                        <div className="text-xs text-muted-foreground">{selectedTemplate.performance_metrics.success_rate.toFixed(1)}%</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Edit className="h-4 w-4 text-blue-600" />
+                      <div>
+                        <div className="text-sm font-medium">Modificación</div>
+                        <div className="text-xs text-muted-foreground">{selectedTemplate.performance_metrics.modification_rate.toFixed(1)}%</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" asChild>

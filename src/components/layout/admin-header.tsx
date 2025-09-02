@@ -2,8 +2,8 @@
 
 import { Search, Bell, Globe, Zap, Activity, ArrowLeft, Layers } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/shared-ui"
+import { Button } from "@/components/shared-ui"
 import { ServicesStatusIndicator } from "@/components/ServicesStatusIndicator"
 import Link from "next/link"
 

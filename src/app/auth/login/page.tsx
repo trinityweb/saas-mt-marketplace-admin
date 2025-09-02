@@ -1,5 +1,5 @@
 import { LoginForm } from "@/components/login-form";
-import { Card } from "@/components/ui/card";
+import { Card } from "@/components/shared-ui";
 import { DevLoginHelper } from "@/components/DevLoginHelper";
 
 export default function LoginPage() {

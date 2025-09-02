@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/shared-ui"
+import { Badge } from "@/components/shared-ui"
 import { cn } from "@/lib/utils"
 import { 
   TrendingUp, 

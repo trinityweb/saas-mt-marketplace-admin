@@ -13,6 +13,8 @@ export { Alert, AlertDescription, AlertTitle } from './atoms/alert'
 export { Loading } from './atoms/loading'
 export { Textarea } from './atoms/textarea'
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './atoms/tabs'
+export { Progress } from './atoms/progress'
+export { ScrollArea, ScrollBar } from './atoms/scroll-area'
 
 // Molecules - Export individually
 export {
@@ -87,6 +89,17 @@ export {
   TableHeader,
   TableRow
 } from './organisms/table'
+export {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from './organisms/alert-dialog'
 
 // Export utilities
 export { cn } from './utils/cn'

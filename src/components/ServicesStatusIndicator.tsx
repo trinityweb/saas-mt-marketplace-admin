@@ -1,7 +1,7 @@
 'use client'
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/shared-ui"
+import { Button } from "@/components/shared-ui"
 import { 
   AlertCircle,
   CheckCircle,

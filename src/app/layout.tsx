@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ConditionalLayout } from "@/components/layout/conditional-layout";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 // Se importará el preload desde el cliente
@@ -36,6 +37,7 @@ export default function RootLayout({
               {children}
             </ConditionalLayout>
           </ErrorBoundary>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

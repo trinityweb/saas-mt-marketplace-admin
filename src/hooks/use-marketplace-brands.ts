@@ -4,6 +4,7 @@ import { marketplaceApi, type MarketplaceBrand, type MarketplaceBrandFilters } f
 interface UseMarketplaceBrandsOptions {
   adminToken?: string;
   initialFilters?: MarketplaceBrandFilters;
+  autoLoad?: boolean;
 }
 
 interface PaginationInfo {
@@ -41,7 +42,7 @@ interface UseMarketplaceBrandsReturn {
 }
 
 export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}): UseMarketplaceBrandsReturn => {
-  const { adminToken, initialFilters = {} } = options;
+  const { adminToken, initialFilters = {}, autoLoad = false } = options;
   const [filters, setFiltersState] = useState<MarketplaceBrandFilters>(initialFilters);
   const [brands, setBrands] = useState<MarketplaceBrand[]>([]);
   const [loading, setLoading] = useState(true);
@@ -216,9 +217,11 @@ export const useMarketplaceBrands = (options: UseMarketplaceBrandsOptions = {}):
 
   // Cargar datos iniciales y cuando cambien los filtros
   useEffect(() => {
-    loadBrands();
-    loadStatistics();
-  }, [filters, loadBrands, loadStatistics]);
+    if (autoLoad) {
+      loadBrands();
+      loadStatistics();
+    }
+  }, [autoLoad, filters, loadBrands, loadStatistics]);
 
   return {
     brands,

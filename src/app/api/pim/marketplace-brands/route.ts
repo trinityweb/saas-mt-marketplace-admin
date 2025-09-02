@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthHeaders } from '@/lib/api/auth-helpers';
 
 const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'http://localhost:8001';
 
 export async function GET(request: NextRequest) {
   try {
+    // Obtener headers de autenticación
+    const authResult = getAuthHeaders(request);
+    if ('error' in authResult) {
+      return authResult.error;
+    }
+
     const { searchParams } = new URL(request.url);
     
     // Construir query string para el backend
@@ -14,14 +21,8 @@ export async function GET(request: NextRequest) {
 
     console.log('🔗 Proxy API GET Request (via Kong):', url);
 
-    // Headers para el backend
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-Tenant-ID': 'marketplace-admin',
-      'X-User-Role': 'marketplace_admin', // Header requerido por marketplace brand handler
-      'X-Role': 'admin',
-      'Authorization': 'Bearer admin-test-token'
-    };
+    // Headers para el backend con autenticación correcta
+    const headers = authResult.headers;
 
     const response = await fetch(url, {
       method: 'GET',
@@ -58,6 +59,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Obtener headers de autenticación
+    const authResult = getAuthHeaders(request);
+    if ('error' in authResult) {
+      return authResult.error;
+    }
+
     const body = await request.json();
     
     // Construir URL del backend a través de Kong
@@ -65,14 +72,8 @@ export async function POST(request: NextRequest) {
 
     console.log('🔗 Proxy API POST Request (via Kong):', url);
 
-    // Headers para el backend
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-Tenant-ID': 'marketplace-admin',
-      'X-User-Role': 'marketplace_admin', // Header requerido por marketplace brand handler
-      'X-Role': 'admin',
-      'Authorization': 'Bearer admin-test-token'
-    };
+    // Headers para el backend con autenticación correcta
+    const headers = authResult.headers;
 
     const response = await fetch(url, {
       method: 'POST',

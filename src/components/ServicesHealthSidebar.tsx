@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { Card } from "@/components/shared-ui"
+import { Badge } from "@/components/shared-ui"
+import { Button } from "@/components/shared-ui"
+import { ScrollArea } from "@/components/shared-ui"
 import { Separator } from "@/components/ui/separator"
 import { 
   Activity,

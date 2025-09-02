@@ -12,11 +12,11 @@ import {
   Settings
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/shared-ui';
+import { Input } from '@/components/shared-ui';
 import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/shared-ui';
+import { Badge } from '@/components/shared-ui';
 import {
   Select,
   SelectContent,

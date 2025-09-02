@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, Edit, Eye, Trash2, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/shared-ui';
+import { Badge } from '@/components/shared-ui';
 import {
   DropdownMenu,
   DropdownMenuContent,

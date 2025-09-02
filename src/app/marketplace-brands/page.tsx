@@ -31,6 +31,7 @@ import {
 import { useAuth } from '@/hooks/use-auth';
 import { useHeader } from '@/components/layout/admin-layout';
 import { useMarketplaceBrands } from '@/hooks/use-marketplace-brands';
+import { useMarketplaceOverview } from '@/hooks/use-marketplace-overview';
 import { type MarketplaceBrand } from '@/lib/api';
 import { CriteriaDataTable } from '@/components/ui/criteria-data-table';
 import { Filter as FilterType } from '@/components/ui/table-toolbar';
@@ -69,6 +70,16 @@ export default function MarketplaceBrandsPage() {
   const router = useRouter();
   const { token } = useAuth();
   const { setHeaderProps, clearHeaderProps } = useHeader();
+  
+  // Hook para overview de brands
+  const { 
+    data: overviewData, 
+    loading: overviewLoading, 
+    error: overviewError 
+  } = useMarketplaceOverview({ 
+    sections: ['brands'], 
+    includeStats: true 
+  });
   
   // Usar el hook personalizado
   const {
@@ -419,8 +430,33 @@ export default function MarketplaceBrandsPage() {
     loadBrands({ search: value, page: 1 });
   };
 
+  // Combinar estadísticas locales con datos del overview
+  const enhancedStats = {
+    total: overviewData?.brands?.total_brands || stats.total,
+    verified: overviewData?.brands?.verified_brands || stats.verified,
+    unverified: (overviewData?.brands?.total_brands - overviewData?.brands?.verified_brands) || stats.unverified,
+    active: stats.active, // Mantenemos locales ya que overview no los separa así
+    inactive: stats.inactive, // Mantenemos locales
+  };
+
   return (
     <div className="space-y-6">
+      {/* Overview Status */}
+      {overviewError && (
+        <div className="rounded-md bg-yellow-50 p-3 border border-yellow-200">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <Award className="h-4 w-4 text-yellow-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-xs text-yellow-800">
+                Overview no disponible - Usando datos locales: {overviewError}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
@@ -429,7 +465,10 @@ export default function MarketplaceBrandsPage() {
             <Award className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-2xl font-bold">{enhancedStats.total}</div>
+            {overviewData?.brands && (
+              <div className="text-xs text-green-600 mt-1">Overview activo</div>
+            )}
           </CardContent>
         </Card>
         
@@ -439,7 +478,10 @@ export default function MarketplaceBrandsPage() {
             <ShieldCheck className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.verified}</div>
+            <div className="text-2xl font-bold text-green-600">{enhancedStats.verified}</div>
+            {overviewData?.brands && (
+              <div className="text-xs text-green-600 mt-1">Overview activo</div>
+            )}
           </CardContent>
         </Card>
         
@@ -449,7 +491,10 @@ export default function MarketplaceBrandsPage() {
             <Shield className="h-4 w-4 text-gray-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-600">{stats.unverified}</div>
+            <div className="text-2xl font-bold text-gray-600">{enhancedStats.unverified}</div>
+            {overviewData?.brands && (
+              <div className="text-xs text-green-600 mt-1">Overview activo</div>
+            )}
           </CardContent>
         </Card>
         
@@ -459,7 +504,7 @@ export default function MarketplaceBrandsPage() {
             <Check className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.active}</div>
+            <div className="text-2xl font-bold text-blue-600">{enhancedStats.active}</div>
           </CardContent>
         </Card>
         
@@ -469,7 +514,7 @@ export default function MarketplaceBrandsPage() {
             <X className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.inactive}</div>
+            <div className="text-2xl font-bold text-red-600">{enhancedStats.inactive}</div>
           </CardContent>
         </Card>
       </div>

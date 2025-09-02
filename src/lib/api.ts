@@ -177,6 +177,89 @@ export interface BusinessType {
   updated_at: string;
 }
 
+// AI Integration Types
+export interface AITemplateParams {
+  business_context: {
+    business_name: string;
+    business_type: string;
+    business_description: string;
+    region: string;
+    target_market: string;
+    business_size: string;
+    special_requirements?: string;
+  };
+  ai_parameters: {
+    optimization_focus: string;
+    category_depth: string;
+    product_variety: string;
+    price_range: string;
+    customization_level: string;
+  };
+}
+
+export interface AIGenerationMetadata {
+  confidence_score: number;
+  generation_time: number;
+  model_version: string;
+  insights: string[];
+}
+
+export interface TemplateAnalytics {
+  template_id: string;
+  template_name: string;
+  business_type: string;
+  metrics: {
+    usage_count: number;
+    success_rate: number;
+    modification_rate: number;
+    revenue_impact: number;
+    avg_setup_time: number;
+    tenant_retention: number;
+  };
+  usage_over_time: Array<{
+    date: string;
+    count: number;
+    success_rate: number;
+  }>;
+  regional_performance: Array<{
+    region: string;
+    usage_count: number;
+    success_rate: number;
+    popular_categories: string[];
+  }>;
+  product_popularity: Array<{
+    product_name: string;
+    category: string;
+    selection_rate: number;
+    modification_rate: number;
+    revenue_contribution: number;
+  }>;
+  category_distribution: Array<{
+    category: string;
+    product_count: number;
+    selection_rate: number;
+  }>;
+  top_modifications: string[];
+  ai_insights: string[];
+}
+
+export interface AISuggestions {
+  categories?: string[];
+  attributes?: string[];
+  products?: string[];
+  brands?: string[];
+  insights?: string[];
+  regional?: Array<{ region: string; recommendation: string }>;
+}
+
+export interface AIOptimizationChanges {
+  type: 'add' | 'remove' | 'modify';
+  section: 'categories' | 'attributes' | 'products' | 'brands';
+  item: string;
+  reason: string;
+  impact_score: number;
+}
+
 export interface CreateBusinessTypeRequest {
   code: string;
   name: string;
@@ -1670,6 +1753,113 @@ class MarketplaceApiClient {
         'X-User-Role': 'marketplace_admin',
       },
     }, 'pim');
+  }
+
+  // AI Integration Methods
+  async generateTemplateWithAI(
+    params: AITemplateParams,
+    _adminToken?: string
+  ): Promise<ApiResponse<{ template: BusinessTypeTemplate; ai_metadata: AIGenerationMetadata }>> {
+    return this.request<{ template: BusinessTypeTemplate; ai_metadata: AIGenerationMetadata }>(`/ai/templates/generate`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+      body: JSON.stringify(params),
+    }, 'pim');
+  }
+
+  async getTemplateAnalytics(
+    templateId: string,
+    timeRange?: string,
+    _adminToken?: string
+  ): Promise<ApiResponse<TemplateAnalytics>> {
+    const queryParams = timeRange ? `?time_range=${timeRange}` : '';
+    return this.request<TemplateAnalytics>(`/templates/${templateId}/analytics${queryParams}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+    }, 'pim');
+  }
+
+  async getAISuggestions(
+    templateId: string,
+    context: { business_type?: string; region?: string; current_data?: any },
+    _adminToken?: string
+  ): Promise<ApiResponse<AISuggestions>> {
+    return this.request<AISuggestions>(`/ai/templates/${templateId}/suggestions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+      body: JSON.stringify(context),
+    }, 'pim');
+  }
+
+  async optimizeTemplateWithAI(
+    templateId: string,
+    optimizationParams: { focus: string; constraints?: any },
+    _adminToken?: string
+  ): Promise<ApiResponse<{ optimized_template: BusinessTypeTemplate; changes: AIOptimizationChanges[] }>> {
+    return this.request<{ optimized_template: BusinessTypeTemplate; changes: AIOptimizationChanges[] }>(`/ai/templates/${templateId}/optimize`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${_adminToken || 'dev-marketplace-admin'}`,
+        'X-User-Role': 'marketplace_admin',
+      },
+      body: JSON.stringify(optimizationParams),
+    }, 'pim');
+  }
+
+  async validateBrand(
+    brandName: string,
+    _adminToken?: string
+  ): Promise<ApiResponse<{ 
+    valid: boolean; 
+    brand?: MarketplaceBrand; 
+    suggestions?: string[];
+    confidence?: number;
+  }>> {
+    // First, search for the brand in existing brands
+    const searchResult = await this.getAllMarketplaceBrands({
+      search: brandName,
+      page_size: 10
+    }, _adminToken);
+    
+    if (searchResult.error) {
+      return { error: searchResult.error };
+    }
+    
+    // Check if we have an exact match
+    const exactMatch = searchResult.data?.items.find(
+      b => b.name.toLowerCase() === brandName.toLowerCase() ||
+           b.normalized_name.toLowerCase() === brandName.toLowerCase()
+    );
+    
+    if (exactMatch) {
+      return {
+        data: {
+          valid: true,
+          brand: exactMatch,
+          confidence: 100
+        }
+      };
+    }
+    
+    // Check for similar brands
+    const similarBrands = searchResult.data?.items || [];
+    
+    return {
+      data: {
+        valid: false,
+        suggestions: similarBrands.map(b => b.name),
+        confidence: similarBrands.length > 0 ? 50 : 0
+      }
+    };
   }
 }
 

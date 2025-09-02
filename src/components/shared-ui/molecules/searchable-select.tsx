@@ -5,14 +5,14 @@ import { useState, useMemo } from "react"
 import { Check, ChevronDown, Search, X } from "lucide-react"
 import { cn } from "../utils/cn"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/shared-ui"
+import { Input } from "@/components/shared-ui"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/shared-ui"
 
 export interface SearchableSelectOption {
   value: string

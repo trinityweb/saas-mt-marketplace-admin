@@ -13,9 +13,9 @@ import {
   Database
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/shared-ui';
+import { Card } from '@/components/shared-ui';
+import { Badge } from '@/components/shared-ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
