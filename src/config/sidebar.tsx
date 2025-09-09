@@ -9,7 +9,6 @@ import {
   Layers,
   Sliders,
   Award,
-  BookOpen,
   FileText,
   BarChart3,
   ShoppingCart,
@@ -143,6 +142,12 @@ export const marketplaceSidebarConfig: SidebarConfig = {
           ]
         },
         {
+          id: 'scraper-sources',
+          label: 'Administración de Fuentes',
+          href: '/scraper/sources',
+          icon: Settings
+        },
+        {
           id: 'scraper-products',
           label: 'Productos Scrapeados',
           href: '/scraper/products',
@@ -210,12 +215,6 @@ export const marketplaceSidebarConfig: SidebarConfig = {
           icon: LogOut
         }
       ]
-    },
-    {
-      id: 'docs',
-      label: 'Documentación',
-      href: '/documentation',
-      icon: BookOpen
     },
   ]
 }

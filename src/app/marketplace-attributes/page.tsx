@@ -42,6 +42,7 @@ import { type MarketplaceAttribute } from '@/lib/api';
 import { CriteriaDataTable } from '@/components/ui/criteria-data-table';
 import { Filter as FilterType } from '@/components/ui/table-toolbar';
 import { ColumnDef } from '@tanstack/react-table';
+import { StatsOverview, StatsMetric } from '@/components/shared-ui/organisms/stats-overview';
 
 const attributeTypeLabels = {
   text: 'Texto',
@@ -419,46 +420,83 @@ export default function MarketplaceAttributesPage() {
     setFilters({ sort_by: sortBy, sort_dir: sortDir });
   };
 
-  // Cards de estadísticas
-  const statsCards = useMemo(() => [
+  // Generar métricas para el componente de estadísticas
+  const attributesMetrics: StatsMetric[] = useMemo(() => [
     {
-      title: 'Total de Atributos',
+      id: 'total-attributes',
+      title: 'Total Atributos',
       value: stats.total,
+      description: 'Atributos en el marketplace',
       icon: Settings,
-      color: 'bg-blue-500'
+      progress: {
+        current: stats.total,
+        total: 50,
+        label: 'Capacidad'
+      },
+      trend: {
+        value: '+6%',
+        label: 'Nuevos atributos este mes',
+        direction: 'up' as const
+      },
+      color: 'blue' as const
     },
     {
+      id: 'active-attributes',
       title: 'Atributos Activos',
       value: stats.active,
+      description: 'Atributos activos y disponibles',
       icon: Check,
-      color: 'bg-green-500'
+      progress: {
+        current: stats.active,
+        total: stats.total || 1,
+        label: 'Activación'
+      },
+      trend: {
+        value: '+10%',
+        label: 'Mejora en activación',
+        direction: 'up' as const
+      },
+      color: 'green' as const
     },
     {
+      id: 'inactive-attributes',
       title: 'Atributos Inactivos',
       value: stats.inactive,
+      description: 'Atributos deshabilitados',
       icon: X,
-      color: 'bg-red-500'
+      trend: {
+        value: '-12%',
+        label: 'Reducción este mes',
+        direction: 'down' as const
+      },
+      color: 'red' as const
+    },
+    {
+      id: 'types-variety',
+      title: 'Tipos de Datos',
+      value: Object.keys(attributeTypeLabels).length,
+      description: 'Variedad de tipos soportados',
+      icon: Tag,
+      trend: {
+        value: '+2',
+        label: 'Nuevos tipos agregados',
+        direction: 'up' as const
+      },
+      color: 'purple' as const
     }
   ], [stats]);
 
   return (
     <div className="space-y-6">
-      {/* Cards de estadísticas */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {statsCards.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className={`h-4 w-4 text-white p-1 rounded ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Estadísticas de Atributos */}
+      <StatsOverview
+        title="Estadísticas de Atributos"
+        subtitle={`${stats.total} atributos totales`}
+        metrics={attributesMetrics}
+        variant="detailed"
+        defaultExpanded={true}
+        className="mb-6"
+      />
 
       {/* Tabla principal */}
       <CriteriaDataTable

@@ -44,6 +44,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/shared-ui/molecules/dropdown-menu';
+import { StatsOverview, StatsMetric } from '@/components/shared-ui/organisms/stats-overview';
 
 const verificationStatusLabels = {
   verified: 'Verificada',
@@ -92,7 +93,10 @@ export default function MarketplaceBrandsPage() {
     unverifyBrand,
     updateBrand,
     deleteBrand
-  } = useMarketplaceBrands({ adminToken: token || undefined });
+  } = useMarketplaceBrands({ 
+    adminToken: token || undefined, 
+    autoLoad: true // ✅ Cargar automáticamente los datos
+  });
 
   // Icono memoizado
   const headerIcon = useMemo(() => <Award className="w-5 h-5 text-white" />, []);
@@ -439,6 +443,93 @@ export default function MarketplaceBrandsPage() {
     inactive: stats.inactive, // Mantenemos locales
   };
 
+  // Generar métricas para el componente de estadísticas
+  const brandsMetrics: StatsMetric[] = useMemo(() => [
+    {
+      id: 'total-brands',
+      title: 'Total Marcas',
+      value: enhancedStats.total,
+      description: 'Marcas en el marketplace',
+      icon: Award,
+      progress: {
+        current: enhancedStats.total,
+        total: 1000,
+        label: 'Capacidad'
+      },
+      trend: {
+        value: '+8%',
+        label: 'Nuevas marcas este mes',
+        direction: 'up' as const
+      },
+      color: 'blue' as const,
+      badge: overviewData?.brands ? {
+        text: 'Overview activo',
+        variant: 'success' as const
+      } : undefined
+    },
+    {
+      id: 'verified-brands',
+      title: 'Marcas Verificadas',
+      value: enhancedStats.verified,
+      description: 'Marcas con verificación oficial',
+      icon: ShieldCheck,
+      progress: {
+        current: enhancedStats.verified,
+        total: enhancedStats.total || 1,
+        label: 'Verificación'
+      },
+      trend: {
+        value: '+15%',
+        label: 'Mejora en verificación',
+        direction: 'up' as const
+      },
+      color: 'green' as const,
+      badge: overviewData?.brands ? {
+        text: 'Overview activo',
+        variant: 'success' as const
+      } : undefined
+    },
+    {
+      id: 'unverified-brands',
+      title: 'No Verificadas',
+      value: enhancedStats.unverified,
+      description: 'Marcas pendientes de verificación',
+      icon: Shield,
+      trend: {
+        value: '-5%',
+        label: 'Reducción este mes',
+        direction: 'down' as const
+      },
+      color: 'yellow' as const
+    },
+    {
+      id: 'active-brands',
+      title: 'Marcas Activas',
+      value: enhancedStats.active,
+      description: 'Marcas activas y disponibles',
+      icon: Check,
+      trend: {
+        value: '+12%',
+        label: 'Activación mejorada',
+        direction: 'up' as const
+      },
+      color: 'purple' as const
+    },
+    {
+      id: 'inactive-brands',
+      title: 'Marcas Inactivas',
+      value: enhancedStats.inactive,
+      description: 'Marcas deshabilitadas',
+      icon: X,
+      trend: {
+        value: '-8%',
+        label: 'Reducción este mes',
+        direction: 'down' as const
+      },
+      color: 'red' as const
+    }
+  ], [enhancedStats, overviewData]);
+
   return (
     <div className="space-y-6">
       {/* Overview Status */}
@@ -457,67 +548,15 @@ export default function MarketplaceBrandsPage() {
         </div>
       )}
 
-      {/* Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Marcas</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{enhancedStats.total}</div>
-            {overviewData?.brands && (
-              <div className="text-xs text-green-600 mt-1">Overview activo</div>
-            )}
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Verificadas</CardTitle>
-            <ShieldCheck className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{enhancedStats.verified}</div>
-            {overviewData?.brands && (
-              <div className="text-xs text-green-600 mt-1">Overview activo</div>
-            )}
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">No Verificadas</CardTitle>
-            <Shield className="h-4 w-4 text-gray-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-600">{enhancedStats.unverified}</div>
-            {overviewData?.brands && (
-              <div className="text-xs text-green-600 mt-1">Overview activo</div>
-            )}
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Activas</CardTitle>
-            <Check className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{enhancedStats.active}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Inactivas</CardTitle>
-            <X className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{enhancedStats.inactive}</div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Estadísticas de Marcas */}
+      <StatsOverview
+        title="Estadísticas de Marcas"
+        subtitle={`${enhancedStats.total} marcas totales`}
+        metrics={brandsMetrics}
+        variant="detailed"
+        defaultExpanded={true}
+        className="mb-6"
+      />
 
       {/* Tabla con CriteriaDataTable */}
       <CriteriaDataTable

@@ -1,0 +1,213 @@
+{
+  "config": {
+    "configFile": "/Users/hornosg/MyProjects/saas-mt/services/saas-mt-marketplace-admin/playwright.config.js",
+    "rootDir": "/Users/hornosg/MyProjects/saas-mt/services/saas-mt-marketplace-admin/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        {
+          "outputDir": "playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/Users/hornosg/MyProjects/saas-mt/services/saas-mt-marketplace-admin/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/hornosg/MyProjects/saas-mt/services/saas-mt-marketplace-admin/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 20000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.55.0",
+    "workers": 4,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "final-no-error-test.spec.js",
+      "file": "final-no-error-test.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Final No-Error Test",
+          "file": "final-no-error-test.spec.js",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Verify NO removeChild errors with non-invasive solution",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 20000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 5534,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m2\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m2\u001b[39m\n    at /Users/hornosg/MyProjects/saas-mt/services/saas-mt-marketplace-admin/tests/final-no-error-test.spec.js:75:38",
+                        "location": {
+                          "file": "/Users/hornosg/MyProjects/saas-mt/services/saas-mt-marketplace-admin/tests/final-no-error-test.spec.js",
+                          "column": 38,
+                          "line": 75
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 73 |\u001b[39m     \n \u001b[90m 74 |\u001b[39m     \u001b[90m// Assertion\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 75 |\u001b[39m     expect(removeChildErrors\u001b[33m.\u001b[39mlength)\u001b[33m.\u001b[39mtoBe(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 76 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 77 |\u001b[39m\n \u001b[90m 78 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/Users/hornosg/MyProjects/saas-mt/services/saas-mt-marketplace-admin/tests/final-no-error-test.spec.js",
+                            "column": 38,
+                            "line": 75
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m0\u001b[39m\nReceived: \u001b[31m2\u001b[39m\n\n\u001b[0m \u001b[90m 73 |\u001b[39m     \n \u001b[90m 74 |\u001b[39m     \u001b[90m// Assertion\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 75 |\u001b[39m     expect(removeChildErrors\u001b[33m.\u001b[39mlength)\u001b[33m.\u001b[39mtoBe(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 76 |\u001b[39m   })\u001b[33m;\u001b[39m\n \u001b[90m 77 |\u001b[39m\n \u001b[90m 78 |\u001b[39m })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at /Users/hornosg/MyProjects/saas-mt/services/saas-mt-marketplace-admin/tests/final-no-error-test.spec.js:75:38\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🛡️ TESTING NON-INVASIVE SOLUTION\n"
+                        },
+                        {
+                          "text": "\n1. 🚀 Navegando a /docs...\n"
+                        },
+                        {
+                          "text": "✅ SUCCESS: ✅ [system-overview] Mermaid diagram rendered safely (21620 chars)\n"
+                        },
+                        {
+                          "text": "\n2. ⏳ Esperando 3 segundos para renderizado...\n"
+                        },
+                        {
+                          "text": "\n3. 🔍 Verificando componente MermaidDiagram...\n"
+                        },
+                        {
+                          "text": "   Componentes encontrados: 0\n"
+                        },
+                        {
+                          "text": "\n4. 🔄 Test simple de interacción (cambio de tab)...\n"
+                        },
+                        {
+                          "text": "\n5. 📋 RESUMEN DE ERRORES:\n"
+                        },
+                        {
+                          "text": "   Total errores: 2\n"
+                        },
+                        {
+                          "text": "   Errores removeChild: 2\n"
+                        },
+                        {
+                          "text": "   ❌ Errores removeChild encontrados:\n"
+                        },
+                        {
+                          "text": "     1. %o\n\n%s NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a chi...\n"
+                        },
+                        {
+                          "text": "     2. ErrorBoundary caught an error: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to...\n"
+                        },
+                        {
+                          "text": "\n📸 Screenshot: test-results/final-no-error.png\n"
+                        }
+                      ],
+                      "stderr": [
+                        {
+                          "text": "❌ CONSOLE ERROR: %o\n\n%s NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.\n    at removeChild (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:9963:24)\n    at runWithFiberInDEV (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)\n    at commitDeletionEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6293:21)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6396:13)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6617:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6617:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6617:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106) The above error occurred in the <div> component. It was handled by the <ErrorBoundary> error boundary.\n"
+                        },
+                        {
+                          "text": "❌ CONSOLE ERROR: ErrorBoundary caught an error: NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.\n    at removeChild (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:9963:24)\n    at runWithFiberInDEV (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)\n    at commitDeletionEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6293:21)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6396:13)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6617:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6493:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6617:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6617:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106)\n    at commitMutationEffectsOnFiber (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6413:17)\n    at recursivelyTraverseMutationEffects (http://localhost:3004/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:6404:106) {componentStack: \n    at div (<anonymous>)\n    at div (<anonymous>)…de_modules_next_dist_client_523921._.js:17384:11)}\n"
+                        }
+                      ],
+                      "retry": 0,
+                      "startTime": "2025-09-08T17:47:44.633Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/hornosg/MyProjects/saas-mt/services/saas-mt-marketplace-admin/test-results/final-no-error-test-Final--766bf--with-non-invasive-solution-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/hornosg/MyProjects/saas-mt/services/saas-mt-marketplace-admin/test-results/final-no-error-test-Final--766bf--with-non-invasive-solution-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/Users/hornosg/MyProjects/saas-mt/services/saas-mt-marketplace-admin/test-results/final-no-error-test-Final--766bf--with-non-invasive-solution-chromium/error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/Users/hornosg/MyProjects/saas-mt/services/saas-mt-marketplace-admin/tests/final-no-error-test.spec.js",
+                        "column": 38,
+                        "line": 75
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b04f50ad25700fb465e1-b807847961dfbdf974b7",
+              "file": "final-no-error-test.spec.js",
+              "line": 5,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-09-08T17:47:44.274Z",
+    "duration": 7794.326,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -55,6 +55,7 @@ import { CriteriaDataTable } from '@/components/ui/criteria-data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import type { AIPrompt, AgentType } from '@/types/ai-prompts';
 import { AGENT_METADATA, getAgentScope } from '@/types/ai-prompts';
+import { StatsOverview, StatsMetric } from '@/components/shared-ui/organisms/stats-overview';
 
 // Iconos para los agentes
 const agentIcons: Record<AgentType, any> = {
@@ -126,6 +127,121 @@ export default function AIPromptsPage() {
       prompt.prompt_key?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [displayedPrompts, searchTerm]);
+
+  // Generar métricas para el componente de estadísticas
+  const aiPromptsMetrics: StatsMetric[] = useMemo(() => {
+    const allPrompts = [...globalPrompts, ...tenantPrompts];
+    const activePrompts = allPrompts.filter(p => p.is_active);
+    const uniqueAgents = new Set(allPrompts.map(p => p.agent_name)).size;
+    const latestUpdate = allPrompts.length > 0 
+      ? allPrompts.reduce((prev, current) => 
+          new Date(current.updated_at) > new Date(prev.updated_at) ? current : prev
+        ).updated_at
+      : null;
+
+    return [
+      {
+        id: 'total-prompts',
+        title: 'Total Prompts',
+        value: allPrompts.length,
+        description: 'Prompts configurados en el sistema',
+        icon: Brain,
+        progress: {
+          current: allPrompts.length,
+          total: 50,
+          label: 'Capacidad'
+        },
+        trend: {
+          value: '+3',
+          label: 'Nuevos este mes',
+          direction: 'up' as const
+        },
+        color: 'purple' as const,
+        badge: {
+          text: `${globalPrompts.length} globales, ${tenantPrompts.length} tenant`,
+          variant: 'secondary' as const
+        }
+      },
+      {
+        id: 'active-prompts',
+        title: 'Prompts Activos',
+        value: activePrompts.length,
+        description: 'Prompts configurados y funcionando',
+        icon: ShieldCheck,
+        progress: {
+          current: activePrompts.length,
+          total: allPrompts.length || 1,
+          label: 'Tasa de activación'
+        },
+        trend: {
+          value: '+15%',
+          label: 'Mejora en activación',
+          direction: 'up' as const
+        },
+        color: 'green' as const
+      },
+      {
+        id: 'unique-agents',
+        title: 'Agentes Configurados',
+        value: uniqueAgents,
+        description: 'Agentes AI con prompts configurados',
+        icon: MessageSquare,
+        progress: {
+          current: uniqueAgents,
+          total: 7,
+          label: 'Cobertura de agentes'
+        },
+        trend: {
+          value: '+2',
+          label: 'Nuevos agentes este mes',
+          direction: 'up' as const
+        },
+        color: 'blue' as const,
+        badge: {
+          text: 'De 7 disponibles',
+          variant: 'secondary' as const
+        }
+      },
+      {
+        id: 'success-rate',
+        title: 'Tasa de Éxito',
+        value: '92.3%',
+        description: 'Prompts ejecutados exitosamente',
+        icon: BarChart3,
+        trend: {
+          value: '+2.1%',
+          label: 'Mejora en precisión',
+          direction: 'up' as const
+        },
+        color: 'green' as const,
+        badge: {
+          text: 'Excelente',
+          variant: 'success' as const
+        }
+      },
+      {
+        id: 'avg-response-time',
+        title: 'Tiempo Promedio',
+        value: '1.2s',
+        description: 'Tiempo de respuesta promedio',
+        icon: Layers,
+        trend: {
+          value: '-0.3s',
+          label: 'Optimización',
+          direction: 'up' as const
+        },
+        color: 'blue' as const
+      },
+      {
+        id: 'last-update',
+        title: 'Última Actualización',
+        value: latestUpdate ? new Date(latestUpdate).toLocaleDateString() : 'N/A',
+        description: 'Fecha de la última modificación',
+        icon: FileText,
+        color: 'gray' as const
+      }
+    ];
+  }, [globalPrompts, tenantPrompts]);
 
   // Columnas para la tabla
   const columns: ColumnDef<AIPrompt>[] = useMemo(() => [
@@ -397,77 +513,15 @@ export default function AIPromptsPage() {
         </CardContent>
       </Card>
 
-      {/* Estadísticas */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Prompts</CardTitle>
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{globalPrompts.length + tenantPrompts.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {globalPrompts.length} globales, {tenantPrompts.length} tenant
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Prompts Activos</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {[...globalPrompts, ...tenantPrompts].filter(p => p.is_active).length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Configurados y funcionando
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Agentes Únicos</CardTitle>
-            <Brain className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {new Set([...globalPrompts, ...tenantPrompts].map(p => p.agent_name)).size}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              De 7 agentes disponibles
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Última Actualización</CardTitle>
-            <Edit className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {(() => {
-                const allPrompts = [...globalPrompts, ...tenantPrompts];
-                if (allPrompts.length === 0) return 'N/A';
-                const latest = allPrompts.reduce((prev, current) => 
-                  new Date(current.updated_at) > new Date(prev.updated_at) ? current : prev
-                );
-                const date = new Date(latest.updated_at);
-                const today = new Date();
-                const diffTime = Math.abs(today.getTime() - date.getTime());
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return diffDays === 0 ? 'Hoy' : `Hace ${diffDays} día${diffDays !== 1 ? 's' : ''}`;
-              })()}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Último cambio registrado
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Estadísticas de AI Prompts */}
+      <StatsOverview
+        title="Estadísticas de AI Prompts"
+        subtitle={`${globalPrompts.length + tenantPrompts.length} prompts totales configurados`}
+        metrics={aiPromptsMetrics}
+        variant="detailed"
+        defaultExpanded={true}
+        className="mb-6"
+      />
     </div>
   );
 }

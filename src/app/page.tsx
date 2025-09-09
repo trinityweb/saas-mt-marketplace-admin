@@ -119,7 +119,7 @@ export default function MarketplaceAdminPage() {
 
         <StatsCard
           title="Usuarios Totales"
-          value="2.4K"
+          value={overviewData?.dashboard?.total_users || "2.4K"}
           description="Usuarios registrados en todos los tenants"
           iconName="Users"
           iconColor="text-indigo-600"
@@ -129,7 +129,7 @@ export default function MarketplaceAdminPage() {
             type: 'up'
           }}
           progress={{
-            value: 2400,
+            value: overviewData?.dashboard?.total_users || 2400,
             max: 5000,
             color: 'blue'
           }}
@@ -179,7 +179,7 @@ export default function MarketplaceAdminPage() {
 
         <StatsCard
           title="Órdenes Procesadas"
-          value="18.7K"
+          value={overviewData?.dashboard?.total_orders || "18.7K"}
           description="Órdenes totales procesadas este mes"
           iconName="BarChart3"
           iconColor="text-emerald-600"

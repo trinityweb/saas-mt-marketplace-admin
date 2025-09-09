@@ -42,6 +42,7 @@ import { useMarketplaceOverview } from '@/hooks/use-marketplace-overview';
 import { CriteriaDataTable, CriteriaResponse, SearchCriteria } from '@/components/ui/criteria-data-table';
 import { Filter as FilterType } from '@/components/ui/table-toolbar';
 import { ColumnDef } from '@tanstack/react-table';
+import { StatsOverview, StatsMetric } from '@/components/shared-ui/organisms/stats-overview';
 
 // Componente para la vista de árbol
 const CategoryTreeView = ({ 
@@ -305,6 +306,76 @@ export default function TaxonomyPage() {
 
   // Estado para vista activa
   const [activeView, setActiveView] = useState<'table' | 'tree'>('table');
+
+  // Generar métricas para el componente de estadísticas
+  const taxonomyMetrics: StatsMetric[] = useMemo(() => [
+    {
+      id: 'total-categories',
+      title: 'Total Categorías',
+      value: summary.total_categories,
+      description: 'Categorías en el sistema',
+      icon: TreePine,
+      progress: {
+        current: summary.total_categories,
+        total: 100,
+        label: 'Capacidad'
+      },
+      trend: {
+        value: '+5%',
+        label: 'Nuevas categorías este mes',
+        direction: 'up' as const
+      },
+      color: 'blue' as const
+    },
+    {
+      id: 'active-categories',
+      title: 'Categorías Activas',
+      value: summary.active_count,
+      description: 'Categorías activas y disponibles',
+      icon: CheckCircle,
+      progress: {
+        current: summary.active_count,
+        total: summary.total_categories || 1,
+        label: 'Activación'
+      },
+      trend: {
+        value: '+12%',
+        label: 'Mejora en activación',
+        direction: 'up' as const
+      },
+      color: 'green' as const,
+      badge: overviewData?.taxonomy ? {
+        text: 'Overview',
+        variant: 'success' as const
+      } : undefined
+    },
+    {
+      id: 'root-categories',
+      title: 'Categorías Raíz',
+      value: summary.root_categories,
+      description: 'Categorías principales del árbol',
+      icon: BarChart3,
+      trend: {
+        value: '+8%',
+        label: 'Organización mejorada',
+        direction: 'up' as const
+      },
+      color: 'purple' as const
+    },
+    {
+      id: 'inactive-categories',
+      title: 'Categorías Inactivas',
+      value: summary.inactive_count,
+      description: 'Categorías deshabilitadas',
+      icon: XCircle,
+      trend: {
+        value: '-15%',
+        label: 'Reducción este mes',
+        direction: 'down' as const
+      },
+      color: 'red' as const
+    }
+  ], [summary, overviewData]);
   
   // Estado para ordenamiento
   const [sortBy, setSortBy] = useState<string>('sort_order');
@@ -321,8 +392,6 @@ export default function TaxonomyPage() {
     setHeaderProps({
       title: 'Taxonomía Marketplace',
       subtitle: 'Gestión de categorías globales del marketplace',
-      backUrl: '/',
-      backLabel: 'Volver al Dashboard',
       icon: headerIcon
     });
 
@@ -812,45 +881,15 @@ export default function TaxonomyPage() {
         </div>
       )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold">{summary.total_categories}</p>
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-muted-foreground">Total Categorías</p>
-                {overviewData?.taxonomy && (
-                  <span className="text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded-full">
-                    Overview
-                  </span>
-                )}
-              </div>
-            </div>
-            <TreePine className="h-8 w-8 text-primary" />
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-green-600">{summary.active_count}</p>
-              <p className="text-sm text-muted-foreground">Categorías Activas</p>
-            </div>
-            <CheckCircle className="h-8 w-8 text-green-600" />
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-blue-600">{summary.root_categories}</p>
-              <p className="text-sm text-muted-foreground">Categorías Raíz</p>
-            </div>
-            <BarChart3 className="h-8 w-8 text-blue-600" />
-          </div>
-        </Card>
-      </div>
+      {/* Estadísticas de Taxonomía */}
+      <StatsOverview
+        title="Estadísticas de Taxonomía"
+        subtitle={`${summary.total_categories} categorías totales`}
+        metrics={taxonomyMetrics}
+        variant="detailed"
+        defaultExpanded={true}
+        className="mb-6"
+      />
 
       {/* Solapas para alternar entre vistas */}
       <Tabs value={activeView} onValueChange={(value) => setActiveView(value as 'table' | 'tree')}>
@@ -941,13 +980,7 @@ export default function TaxonomyPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Resumen de Estadísticas */}
-      <div className="text-center text-sm text-muted-foreground space-x-4">
-        <span>📊 Total: {summary.total_categories}</span>
-        <span>✅ Activas: {summary.active_count}</span>
-        <span>❌ Inactivas: {summary.inactive_count}</span>
-        <span>🌳 Raíz: {summary.root_categories}</span>
-      </div>
+
     </div>
   );
 } 

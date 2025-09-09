@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'http://localhost:8001';
+// Usar Kong como el overview (headers simplificados)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8001';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,17 +10,15 @@ export async function GET(request: NextRequest) {
     // Construir query string para el backend
     const queryString = searchParams.toString();
     
-    // Construir URL del backend a través de Kong
-    const url = `${API_GATEWAY_URL}/pim/api/v1/global-catalog/products${queryString ? `?${queryString}` : ''}`;
+    // Via Kong con headers simplificados como overview
+    const url = `${API_BASE_URL}/pim/api/v1/global-catalog/products${queryString ? `?${queryString}` : ''}`;
 
-    console.log('🔗 Proxy API GET Request (via Kong):', url);
+    console.log('🔗 Proxy API GET Request (via Kong - simplified):', url);
 
-    // Headers para el backend
+    // Headers simplificados como overview
     const headers = {
       'Content-Type': 'application/json',
-      'X-Tenant-ID': 'marketplace-admin',
-      'X-Role': 'admin',
-      'Authorization': 'Bearer admin-test-token'
+      'X-Tenant-ID': 'global', // Mismo que overview
     };
 
     const response = await fetch(url, {
@@ -38,8 +37,9 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     
     console.log('✅ Proxy API GET Response:', { 
-      total: data.total || data.length, 
-      count: Array.isArray(data.products) ? data.products.length : data.length 
+      total: data.total_count || data.total || 0, 
+      items: Array.isArray(data.items) ? data.items.length : 0,
+      page: data.page || 1
     });
     
     return NextResponse.json(data);
@@ -57,17 +57,15 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    // Construir URL del backend a través de Kong
-    const url = `${API_GATEWAY_URL}/pim/api/v1/global-catalog/products`;
+    // Via Kong con headers simplificados
+    const url = `${API_BASE_URL}/pim/api/v1/global-catalog/products`;
 
-    console.log('🔗 Proxy API POST Request (via Kong):', url);
+    console.log('🔗 Proxy API POST Request (via Kong - simplified):', url);
 
-    // Headers para el backend
+    // Headers simplificados como overview
     const headers = {
       'Content-Type': 'application/json',
-      'X-Tenant-ID': 'marketplace-admin',
-      'X-Role': 'admin',
-      'Authorization': 'Bearer admin-test-token'
+      'X-Tenant-ID': 'global',
     };
 
     const response = await fetch(url, {

@@ -1,84 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthHeaders } from '@/lib/api/auth-helpers';
 
-// SIEMPRE usar Kong Gateway como punto de entrada único
+// SIEMPRE usar Kong Gateway como punto de entrada
 const API_GATEWAY_URL = process.env.API_GATEWAY_URL || 'http://localhost:8001';
 
 export async function GET(request: NextRequest) {
   try {
-    // Hacer la llamada al servicio de scraping a través de Kong
-    const response = await fetch(
-      `${API_GATEWAY_URL}/scraper/api/v1/scraping/sources`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: data.detail || 'Error al obtener fuentes' 
-        },
-        { status: response.status }
-      );
+    // Obtener headers de autenticación
+    const authResult = getAuthHeaders(request);
+    if ('error' in authResult) {
+      return authResult.error;
     }
 
-    return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error fetching sources:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Error al conectar con el servicio de scraping',
-        sources: []
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
+    const url = `${API_GATEWAY_URL}/scraper/api/v1/scraping/sources`;
+    console.log('[Sources Proxy] GET via Kong:', url);
     
-    // Hacer la llamada al servicio de scraping a través de Kong
-    const response = await fetch(
-      `${API_GATEWAY_URL}/scraper/api/v1/scraping/sources`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: authResult.headers
+    });
 
-    const data = await response.json();
-    
+    // Si falla, retornar array vacío en lugar de error
     if (!response.ok) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: data.detail || 'Error al crear fuente' 
-        },
-        { status: response.status }
-      );
+      console.warn('[Sources Proxy] MongoDB sources not available, using targets only');
+      return NextResponse.json({
+        sources: [],
+        total: 0,
+        note: 'MongoDB sources not available, using hardcoded targets'
+      });
     }
 
+    const data = await response.json();
     return NextResponse.json(data);
+    
   } catch (error) {
-    console.error('Error creating source:', error);
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Error al conectar con el servicio de scraping' 
-      },
-      { status: 500 }
-    );
+    console.warn('[Sources Proxy] Error getting sources, returning empty:', error);
+    // Retornar vacío para que funcione con targets
+    return NextResponse.json({
+      sources: [],
+      total: 0,
+      note: 'Sources service not available'
+    });
   }
 }

@@ -193,8 +193,6 @@ export default function BusinessTypeTemplatesPage() {
     setHeaderProps({
       title: 'Plantillas de Tipos de Negocio',
       subtitle: 'Configuración quickstart para onboarding de tenants',
-      backUrl: '/',
-      backLabel: 'Volver al Dashboard',
       icon: headerIcon
     });
 

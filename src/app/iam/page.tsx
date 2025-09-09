@@ -17,8 +17,6 @@ export default function IamPage() {
     setHeaderProps({
       title: "Identity & Access Management",
       subtitle: "Panel de control para gestión de identidades y accesos",
-      backUrl: "/",
-      backLabel: "Volver al Dashboard",
       icon: headerIcon
     });
 

@@ -104,5 +104,11 @@ export {
 // Export utilities
 export { cn } from './utils/cn'
 
+// New semantic components  
+export { StatsOverview, type StatsMetric } from './organisms/stats-overview'
+export { StatsSummary } from './molecules/stats-summary'
+export { FiltersOnlyBar, type FilterConfig } from './molecules/filters-only-bar'
+export { ActionsOnlyBar, type ActionConfig } from './molecules/actions-only-bar'
+
 // Export types
 // TODO: Fix type exports after build issues are resolved

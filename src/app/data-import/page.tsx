@@ -14,9 +14,7 @@ export default function DataImportPage() {
   useEffect(() => {
     setHeaderProps({
       title: 'Importación de Datos',
-      subtitle: 'Panel de control para importación de productos externos',
-      backUrl: '/',
-      backLabel: 'Volver al Dashboard',
+      subtitle: 'Panel de control para importación de productos externos'
     });
   }, [setHeaderProps]);
 

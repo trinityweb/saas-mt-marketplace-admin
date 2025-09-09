@@ -144,8 +144,6 @@ export default function BusinessTypesPage() {
     setHeaderProps({
       title: 'Tipos de Negocio',
       subtitle: 'Gestión de tipos de negocio para configuración quickstart',
-      backUrl: '/',
-      backLabel: 'Volver al Dashboard',
       icon: headerIcon
     });
 
