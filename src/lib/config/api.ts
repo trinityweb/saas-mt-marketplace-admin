@@ -44,7 +44,7 @@ export const API_ROUTES = {
     AUTH: {
       LOGIN: '/auth/login',
       LOGOUT: '/auth/logout',
-      REFRESH_TOKEN: '/auth/refresh-token',
+      REFRESH_TOKEN: '/auth/refresh',
       VERIFY_TOKEN: '/auth/verify-token',
     }
   },

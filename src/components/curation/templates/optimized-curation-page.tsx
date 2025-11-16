@@ -2,12 +2,8 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/shared-ui';
-import { SmartRefreshTabs, SmartTabConfig } from '@/components/curation/organisms/smart-refresh-tabs';
-import { CurationTable } from '@/components/curation/organisms/curation-table';
-import { CurationFilters } from '@/components/curation/organisms/curation-filters';
-import { CurationStats } from '@/components/curation/organisms/curation-stats';
-import { BulkActionBar } from '@/components/curation/molecules/bulk-action-bar';
-import { TabsContent } from '@/components/ui/tabs';
+import { CollapsibleStatsPanel } from '@/components/curation/organisms/collapsible-stats-panel';
+import { OptimizedCurationTabs, OptimizedTabConfig } from '@/components/curation/organisms/optimized-curation-tabs';
 import {
   Clock,
   RefreshCw,
@@ -17,24 +13,9 @@ import {
   Send,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { ScrapedProduct } from '@/types/curation';
 
 // Interfaces
-interface ScrapedProduct {
-  _id: string;
-  name: string;
-  price: number;
-  currency: string;
-  image_url?: string;
-  source_url: string;
-  source_name: string;
-  category?: string;
-  brand?: string;
-  description?: string;
-  curation_status: string;
-  ai_processing_status?: string;
-  created_at: string;
-  updated_at: string;
-}
 
 interface ProductCounts {
   total: number;
@@ -53,10 +34,44 @@ interface CurationMetrics {
   lastAIFailure?: string;
 }
 
+// Función para configurar autenticación de desarrollo (ADMIN - sin tenant-id)
+const setupDevelopmentAuth = async () => {
+  console.log('[CurationPage] Setting up ADMIN development authentication...');
+  
+  // Crear un JWT válido para ADMIN (sin tenant-id)
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const payload = {
+    user_id: 'marketplace-admin-001',
+    role_id: 'marketplace_admin',
+    role: 'marketplace_admin',
+    email: 'admin@marketplace.com',
+    scope: 'global_admin', // Admin global, no tenant específico
+    exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24), // Expira en 24 horas
+    iat: Math.floor(Date.now() / 1000),
+    iss: 'marketplace-admin-service'
+  };
+  
+  // Codificar el JWT (formato básico pero válido para desarrollo)
+  const base64Header = btoa(JSON.stringify(header));
+  const base64Payload = btoa(JSON.stringify(payload));
+  const mockAccessToken = `${base64Header}.${base64Payload}.admin-dev-signature`;
+  
+  const mockRefreshToken = 'admin-mock-refresh-token';
+
+  // Guardar en localStorage (ADMIN no necesita tenant_id)
+  localStorage.setItem('iam_access_token', mockAccessToken);
+  localStorage.setItem('iam_refresh_token', mockRefreshToken);
+  // NO guardar tenant_id para admin
+  localStorage.removeItem('tenant_id');
+  localStorage.removeItem('current_tenant_id');
+  
+  console.log('[CurationPage] ADMIN development auth configured successfully');
+};
+
 export default function OptimizedCurationPage() {
   // Estado principal
   const [products, setProducts] = useState<ScrapedProduct[]>([]);
-  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
@@ -66,7 +81,7 @@ export default function OptimizedCurationPage() {
   const pageSize = 20;
   
   // Tabs y filtros
-  const [activeTab, setActiveTab] = useState('pending');
+  const [activeTab, setActiveTab] = useState('all');
   const [globalFilters, setGlobalFilters] = useState({
     search: '',
     source: '',
@@ -91,6 +106,20 @@ export default function OptimizedCurationPage() {
     aiSuccesses: 0,
     aiFaillures: 0,
     simpleFallbacks: 0,
+  });
+
+  // Stats para el componente CurationStats
+  const [curationStats, setCurationStats] = useState({
+    total_products: 0,
+    pending: 0,
+    processing: 0,
+    curated: 0,
+    rejected: 0,
+    published: 0,
+    avg_confidence: 0,
+    today_curated: 0,
+    week_curated: 0,
+    month_curated: 0,
   });
 
   // Estado para auto-refresh inteligente
@@ -128,23 +157,62 @@ export default function OptimizedCurationPage() {
       const authToken = localStorage.getItem('iam_access_token');
       const tenantId = localStorage.getItem('tenant_id');
       
-      if (!authToken || !tenantId) return;
+      // ADMIN solo requiere token, NO tenant-id
+      if (!authToken) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[CurationPage] Development mode: setting up admin auto-auth for stats');
+          await setupDevelopmentAuth();
+          // Reintentar después de configurar auth
+          setTimeout(() => loadCountsAndMetrics(), 500);
+          return;
+        } else {
+          console.log('[CurationPage] No admin auth token, skipping stats load');
+          return;
+        }
+      }
 
-      const response = await fetch('/api/scraper/products/count', {
+      // Usar el endpoint de stats que retorna la estructura correcta
+      console.log('[CurationPage] Loading stats...');
+      // ADMIN headers - sin X-Tenant-ID
+      const response = await fetch('/api/scraper/products/stats', {
         headers: {
           'Authorization': `Bearer ${authToken}`,
-          'X-Tenant-ID': tenantId,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+          // NO incluir X-Tenant-ID para admin
         }
       });
 
+      console.log('[CurationPage] Stats response status:', response.status);
+
       if (response.ok) {
         const data = await response.json();
-        if (data.counts) {
-          setProductCounts(data.counts);
-        }
-        if (data.metrics) {
-          setMetrics(data.metrics);
-        }
+        console.log('[CurationPage] Stats data:', data);
+        
+        // Actualizar productCounts con la estructura esperada
+        const counts = {
+          total: data.total || 0,
+          pending: data.pending || 0,
+          processing: data.processing || 0,
+          curated: data.curated || 0,
+          rejected: data.rejected || 0,
+          sent_to_pim: data.published || 0,
+        };
+        setProductCounts(counts);
+        
+        // Actualizar curationStats para el componente CurationStats
+        setCurationStats({
+          total_products: data.total || 0,
+          pending: data.pending || 0,
+          processing: data.processing || 0,
+          curated: data.curated || 0,
+          rejected: data.rejected || 0,
+          published: data.published || 0,
+          avg_confidence: 75, // Valor por defecto
+          today_curated: 0, // Se puede calcular o obtener de metrics
+          week_curated: 0, // Se puede calcular o obtener de metrics
+          month_curated: 0, // Se puede calcular o obtener de metrics
+        });
       }
     } catch (error) {
       console.error('Error loading counts and metrics:', error);
@@ -159,9 +227,26 @@ export default function OptimizedCurationPage() {
       const authToken = localStorage.getItem('iam_access_token');
       const tenantId = localStorage.getItem('tenant_id');
       
-      if (!authToken || !tenantId) {
-        toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        return;
+      console.log('[CurationPage] Auth check:', { 
+        hasToken: !!authToken, 
+        hasTenant: !!tenantId,
+        tokenPrefix: authToken?.substring(0, 20) + '...'
+      });
+      
+      // ADMIN solo requiere token, NO tenant-id
+      if (!authToken) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[CurationPage] Development mode: setting up admin auto-auth');
+          // Configurar autenticación automática para desarrollo
+          await setupDevelopmentAuth();
+          // Reintentar después de configurar auth
+          setTimeout(() => loadProducts(resetPage), 500);
+          return;
+        } else {
+          console.error('[CurationPage] Missing admin auth token');
+          toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+          return;
+        }
       }
 
       const currentPage = resetPage ? 1 : page;
@@ -176,11 +261,11 @@ export default function OptimizedCurationPage() {
       // Filtro por tab activo
       if (activeTab !== 'all') {
         const statusMap: Record<string, string> = {
-          'pending': 'pending_curation',
+          'pending': 'pending',
           'processing': 'processing',
-          'curated': 'curated',
+          'curated': 'curated', // Los productos curados tienen estado 'curated'
           'rejected': 'rejected',
-          'sent_to_pim': 'sent_to_pim'
+          'sent_to_pim': 'published' // Los productos enviados a PIM tienen estado 'published'
         };
         params.set('curation_status', statusMap[activeTab] || activeTab);
       }
@@ -190,20 +275,49 @@ export default function OptimizedCurationPage() {
         if (value) params.set(key, value);
       });
 
-      const response = await fetch(`/api/scraper/products?${params}`, {
+      const apiUrl = `/api/scraper/products?${params}`;
+      console.log('[CurationPage] API call:', { 
+        url: apiUrl, 
+        activeTab,
+        params: Object.fromEntries(params.entries())
+      });
+      
+      // ADMIN headers - sin X-Tenant-ID
+      const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${authToken}`,
-          'X-Tenant-ID': tenantId,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+          // NO incluir X-Tenant-ID para admin
         }
       });
+      
+      console.log('[CurationPage] API response status:', response.status);
 
       if (response.ok) {
         const data = await response.json();
-        setProducts(Array.isArray(data.items) ? data.items : []);
-        setTotalProducts(data.total_count || 0);
+        console.log('[CurationPage] API Response:', data);
+        
+        // El endpoint retorna data.products, no data.items
+        const productsArray = data.products || data.items || [];
+        
+        // Mapear _id a id para compatibilidad con la interfaz ScrapedProduct
+        const mappedProducts = Array.isArray(productsArray) 
+          ? productsArray.map((product: any) => ({
+              ...product,
+              id: product._id || product.id,
+              images: product.images || (product.image_url ? [product.image_url] : [])
+            }))
+          : [];
+        
+        console.log('[CurationPage] Mapped products:', mappedProducts);
+        setProducts(mappedProducts);
+        setTotalProducts(data.total_count || data.total || 0);
         setLastDataChange(new Date());
       } else {
-        toast.error('Error al cargar productos');
+        const errorText = await response.text();
+        console.error('[CurationPage] Error response:', response.status, errorText);
+        toast.error(`Error al cargar productos: ${response.status}`);
         setProducts([]);
         setTotalProducts(0);
       }
@@ -229,14 +343,56 @@ export default function OptimizedCurationPage() {
     ]);
   }, [loadCountsAndMetrics, loadProducts, checkActiveJobs]);
 
-  // 📑 CONFIGURACIÓN DE TABS
-  const tabsConfig: SmartTabConfig[] = useMemo(() => [
-    { id: 'pending', label: 'Pendientes', icon: Clock, count: productCounts.pending, variant: 'warning' },
-    { id: 'processing', label: 'Procesando', icon: RefreshCw, count: productCounts.processing, variant: 'info' },
-    { id: 'curated', label: 'Curados', icon: Sparkles, count: productCounts.curated, variant: 'success' },
-    { id: 'all', label: 'Todos', icon: Package, count: productCounts.total, variant: 'default' },
-    { id: 'rejected', label: 'Rechazados', icon: XCircle, count: productCounts.rejected, variant: 'error' },
-    { id: 'sent_to_pim', label: 'Enviados a PIM', icon: Send, count: productCounts.sent_to_pim, variant: 'success' },
+  // 📑 CONFIGURACIÓN DE TABS OPTIMIZADA
+  const tabsConfig: OptimizedTabConfig[] = useMemo(() => [
+    { 
+      id: 'pending', 
+      label: 'Pendientes', 
+      icon: Clock, 
+      count: productCounts.pending, 
+      variant: 'warning',
+      description: 'Productos esperando curación manual o automática'
+    },
+    { 
+      id: 'processing', 
+      label: 'Procesando', 
+      icon: RefreshCw, 
+      count: productCounts.processing, 
+      variant: 'info',
+      description: 'Productos en proceso de curación por IA'
+    },
+    { 
+      id: 'curated', 
+      label: 'Curados', 
+      icon: Sparkles, 
+      count: productCounts.curated, 
+      variant: 'success',
+      description: 'Productos curados listos para revisión'
+    },
+    { 
+      id: 'all', 
+      label: 'Todos', 
+      icon: Package, 
+      count: productCounts.total, 
+      variant: 'default',
+      description: 'Vista completa de todos los productos scrapeados'
+    },
+    { 
+      id: 'rejected', 
+      label: 'Rechazados', 
+      icon: XCircle, 
+      count: productCounts.rejected, 
+      variant: 'error',
+      description: 'Productos rechazados que requieren atención'
+    },
+    { 
+      id: 'sent_to_pim', 
+      label: 'En PIM', 
+      icon: Send, 
+      count: productCounts.sent_to_pim, 
+      variant: 'success',
+      description: 'Productos enviados al catálogo global'
+    },
   ], [productCounts]);
 
   // EFFECTS
@@ -259,138 +415,209 @@ export default function OptimizedCurationPage() {
   // HANDLERS
   const handleTabChange = useCallback((tabId: string) => {
     setActiveTab(tabId);
-    setSelectedProducts(new Set());
+    setSelectedIds([]);
   }, []);
 
   const handleFiltersChange = useCallback((filters: typeof globalFilters) => {
     setGlobalFilters(filters);
-    setSelectedProducts(new Set());
+    setSelectedIds([]);
   }, []);
 
-  const handleSelectProduct = useCallback((productId: string, selected: boolean) => {
-    setSelectedProducts(prev => {
-      const newSet = new Set(prev);
-      if (selected) {
-        newSet.add(productId);
-      } else {
-        newSet.delete(productId);
-      }
-      return newSet;
-    });
+  const handleSelectionChange = useCallback((ids: string[]) => {
+    setSelectedIds(ids);
   }, []);
 
-  const handleSelectAll = useCallback((selected: boolean) => {
-    if (selected) {
-      setSelectedProducts(new Set(products.map(p => p._id)));
-    } else {
-      setSelectedProducts(new Set());
+  const handleBulkAction = useCallback(async (action: string, productIds: string[], data?: any) => {
+    console.log(`[BulkAction] ${action} for ${productIds.length} products`, { action, productIds, data });
+    
+    if (productIds.length === 0) {
+      toast.error('No hay productos seleccionados');
+      return;
     }
-  }, [products]);
+    
+    try {
+      const authToken = localStorage.getItem('iam_access_token');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+      
+      let response: Response;
+      let endpoint: string;
+      let requestBody: any = { product_ids: productIds };
+      
+      switch (action) {
+        case 'approve':
+          endpoint = '/api/scraper/products/bulk-approve';
+          requestBody.notes = 'Approved via bulk action';
+          toast.info(`Aprobando ${productIds.length} productos...`);
+          break;
+          
+        case 'reject':
+          endpoint = '/api/scraper/products/bulk-reject';
+          requestBody.notes = 'Rejected via bulk action';
+          toast.info(`Rechazando ${productIds.length} productos...`);
+          break;
+          
+        case 'send_to_ai':
+          endpoint = '/api/scraper/products/curate';
+          requestBody = { product_ids: productIds };
+          toast.info(`Iniciando curación de ${productIds.length} productos...`);
+          break;
+          
+        case 'delete':
+          endpoint = '/api/scraper/products/bulk-delete';
+          requestBody.confirm = true;
+          toast.info(`Eliminando ${productIds.length} productos...`);
+          break;
+          
+        case 'change_brand':
+        case 'change_category':
+          toast.info(`${action} - Funcionalidad en desarrollo`);
+          return;
+          
+        default:
+          toast.error(`Acción desconocida: ${action}`);
+          return;
+      }
+      
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestBody)
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        if (action === 'send_to_ai' && result.job_id) {
+          // Curación asíncrona - iniciar polling
+          toast.success(`Job ${result.job_id} iniciado. Procesando en segundo plano...`);
+          pollCurationJob(result.job_id);
+        } else {
+          // Otras acciones síncronas
+          const { results } = result;
+          if (results) {
+            toast.success(
+              `✅ ${results.successful_count}/${results.total_count} productos procesados correctamente`
+            );
+            if (results.failed_count > 0) {
+              toast.warning(`⚠️ ${results.failed_count} productos fallaron`);
+            }
+          } else {
+            toast.success(result.message || 'Acción completada exitosamente');
+          }
+        }
+      } else {
+        throw new Error(result.error || 'Error en la operación');
+      }
+      
+      // Limpiar selección después de la acción
+      setSelectedIds([]);
+      
+      // Recargar datos y estadísticas
+      await Promise.all([
+        loadProducts(),
+        loadCountsAndMetrics()
+      ]);
+      
+    } catch (error) {
+      console.error(`Error en acción masiva ${action}:`, error);
+      toast.error(`Error al ejecutar ${action}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }, [loadProducts, loadCountsAndMetrics, setSelectedIds]);
 
   const handleCurateProduct = useCallback(async (productId: string) => {
-    // Implementation for single product curation
-    toast.info('Curación individual - en desarrollo');
+    // Implementation for manual curation with AI assistance
+    toast.info('Curación manual con asistencia AI - en desarrollo');
+    // TODO: Abrir modal de curación manual con sugerencias de AI
   }, []);
 
-  const handleBulkAction = useCallback(async (action: string, productIds: string[]) => {
-    // Implementation for bulk actions
-    toast.info(`Acción masiva: ${action} - en desarrollo`);
+  const pollCurationJob = useCallback(async (jobId: string) => {
+    const interval = setInterval(async () => {
+      try {
+        const authToken = localStorage.getItem('iam_access_token');
+        const headers: HeadersInit = {};
+        
+        if (authToken) {
+          headers['Authorization'] = `Bearer ${authToken}`;
+        }
+        
+        const status = await fetch(`/api/scraper/products/curation-jobs/${jobId}`, {
+          headers
+        });
+        const data = await status.json();
+        
+        if (data.job.status === 'completed') {
+          clearInterval(interval);
+          toast.success('Curación completada!');
+          fetchProducts(); // Refrescar lista
+          fetchStats(); // Refrescar estadísticas
+        } else if (data.job.status === 'failed') {
+          clearInterval(interval);
+          toast.error('Curación falló: ' + data.job.error_message);
+        }
+      } catch (error) {
+        console.error('Error polling curation job:', error);
+        clearInterval(interval);
+        toast.error('Error al verificar estado de curación');
+      }
+    }, 3000); // Polling cada 3 segundos
+    
+    // Limpiar interval después de 5 minutos máximo
+    setTimeout(() => clearInterval(interval), 5 * 60 * 1000);
   }, []);
+
+  const handleSendToAI = useCallback(async (productId: string) => {
+    // Send single product to AI for automatic processing
+    await handleBulkAction('send_to_ai', [productId]);
+  }, [handleBulkAction]);
 
   const totalPages = Math.ceil(totalProducts / pageSize);
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
+    <div className="flex-1 space-y-6 p-8 pt-6">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Panel de Curación Optimizado</h2>
           <p className="text-muted-foreground">
-            Sistema inteligente con auto-refresh condicional y tabs semánticos
+            Sistema inteligente con estadísticas colapsables y gestión optimizada de espacio
           </p>
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <CurationStats 
-        counts={productCounts}
-        metrics={metrics}
-        hasActiveJobs={hasActiveJobs}
-        className="mb-6"
+      {/* Estadísticas Colapsables */}
+      <CollapsibleStatsPanel 
+        stats={curationStats}
+        className="transition-all duration-300"
       />
 
-      {/* Panel principal con tabs inteligentes */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Curación Inteligente de Productos</CardTitle>
-          <CardDescription>
-            Tabs con auto-refresh inteligente que solo se actualiza cuando hay actividad real
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          <SmartRefreshTabs
-            tabs={tabsConfig}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            onRefresh={handleRefresh}
-            loading={loading}
-            enableSmartRefresh={true}
-            hasActiveJobs={hasActiveJobs}
-            lastDataChange={lastDataChange}
-          >
-            {/* Filtros */}
-            <div className="mb-4">
-              <CurationFilters
-                filters={globalFilters}
-                onFiltersChange={handleFiltersChange}
-                onRefresh={handleRefresh}
-                loading={loading}
-                showStatusFilter={activeTab === 'all'}
-              />
-            </div>
-
-            {/* Content para cada tab */}
-            {tabsConfig.map((tab) => (
-              <TabsContent key={tab.id} value={tab.id}>
-                {selectedProducts.size > 0 && (
-                  <BulkActionBar
-                    selectedCount={selectedProducts.size}
-                    onBulkAction={(action) => handleBulkAction(action, Array.from(selectedProducts))}
-                    onClearSelection={() => setSelectedProducts(new Set())}
-                    className="mb-4"
-                  />
-                )}
-                
-                <CurationTable
-                  products={products}
-                  selectedProducts={selectedProducts}
-                  onSelectProduct={handleSelectProduct}
-                  onSelectAll={handleSelectAll}
-                  onCurateProduct={handleCurateProduct}
-                  loading={loading}
-                />
-              </TabsContent>
-            ))}
-          </SmartRefreshTabs>
-
-          {/* Paginación */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Mostrando {((page - 1) * pageSize) + 1} a {Math.min(page * pageSize, totalProducts)} de {totalProducts} productos
-              </p>
-              
-              <div className="flex gap-2">
-                {/* Pagination controls - simplified for now */}
-                <span className="text-sm text-muted-foreground">
-                  Página {page} de {totalPages}
-                </span>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Tabs Optimizados sin duplicados */}
+      <OptimizedCurationTabs
+        tabs={tabsConfig}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        onRefresh={handleRefresh}
+        loading={loading}
+        products={products}
+        selectedIds={selectedIds}
+        onSelectionChange={handleSelectionChange}
+        onProductUpdate={() => {}} // TODO: Implementar
+        onProductSave={() => {}} // TODO: Implementar
+        onCurateProduct={handleCurateProduct}
+        onSendToAI={handleSendToAI}
+        globalFilters={globalFilters}
+        onFiltersChange={handleFiltersChange}
+        onBulkAction={handleBulkAction}
+        totalProducts={totalProducts}
+        page={page}
+        pageSize={pageSize}
+        className="flex-1"
+      />
     </div>
   );
 }

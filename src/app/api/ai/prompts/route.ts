@@ -71,6 +71,11 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     
+    // Agregar created_by con UUID válido para desarrollo
+    if (!body.created_by) {
+      body.created_by = '00000000-0000-0000-0000-000000000001'; // UUID de desarrollo
+    }
+    
     // Determinar si es un prompt global basado en el agente
     const globalAgents = ['product_curator', 'template_generator', 'categorization'];
     const isGlobal = globalAgents.includes(body.agent_name);

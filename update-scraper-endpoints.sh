@@ -13,9 +13,9 @@ files=(
   "src/app/api/scraper/execute/route.ts"
   "src/app/api/scraper/sources/route.ts"
   "src/app/api/scraper/sources/[sourceId]/execute/route.ts"
-  "src/app/api/scraper/products/[productId]/curate/route.ts"
-  "src/app/api/scraper/products/[productId]/curation-status/route.ts"
-  "src/app/api/scraper/products/bulk-curate/route.ts"
+  "src/app/api/scraper/products/curate/route.ts"
+  "src/app/api/scraper/products/curation-jobs/route.ts"
+  "src/app/api/scraper/products/curation-jobs/[jobId]/route.ts"
 )
 
 # Contador

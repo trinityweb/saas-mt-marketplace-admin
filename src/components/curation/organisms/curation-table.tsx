@@ -42,6 +42,7 @@ interface CurationTableProps {
   onProductUpdate: (productId: string, updates: Partial<ScrapedProduct>) => void;
   onProductSave: (productId: string) => void;
   onProductCurate?: (productId: string) => void;
+  onProductSendToAI?: (productId: string) => void;
   onProductApprove?: (productId: string) => void;
   onProductReject?: (productId: string) => void;
   loading?: boolean;
@@ -65,6 +66,7 @@ export function CurationTable({
   onProductUpdate,
   onProductSave,
   onProductCurate,
+  onProductSendToAI,
   onProductApprove,
   onProductReject,
   loading = false,
@@ -207,8 +209,7 @@ export function CurationTable({
           <TableRow>
             <TableHead className="w-12">
               <Checkbox
-                checked={isAllSelected}
-                indeterminate={isIndeterminate ? true : undefined}
+                checked={isIndeterminate ? "indeterminate" : isAllSelected}
                 onCheckedChange={toggleSelectAll}
                 aria-label="Seleccionar todos"
               />
@@ -357,27 +358,40 @@ export function CurationTable({
                       </div>
                     ) : (
                       <div className="flex items-center justify-end gap-1">
-                        {/* Botón Curar con AI - Solo para productos pendientes */}
-                        {product.status === 'pending' && onProductCurate && (
+                        {/* Botón Enviar a AI - Para productos pending */}
+                        {product.status === 'pending' && onProductSendToAI && (
                           <Button
                             size="sm"
                             variant="ghost"
                             className="h-8 w-8 p-0 text-purple-600 hover:text-purple-700"
+                            onClick={() => onProductSendToAI(product.id)}
+                            title="Enviar a AI para curación automática"
+                          >
+                            <Send className="h-4 w-4" />
+                          </Button>
+                        )}
+                        
+                        {/* Botón Curar Manualmente - Para productos pending */}
+                        {product.status === 'pending' && onProductCurate && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
                             onClick={() => onProductCurate(product.id)}
-                            title="Curar con AI"
+                            title="Curar manualmente con asistencia AI"
                           >
                             <Sparkles className="h-4 w-4" />
                           </Button>
                         )}
                         
-                        {/* Botón Aprobar - Para productos curados */}
+                        {/* Botón Aprobar - Para productos curated o pending */}
                         {(product.status === 'curated' || product.status === 'pending') && onProductApprove && (
                           <Button
                             size="sm"
                             variant="ghost"
                             className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
                             onClick={() => onProductApprove(product.id)}
-                            title="Aprobar y enviar a PIM"
+                            title="Aprobar y marcar como listo"
                           >
                             <CheckCircle className="h-4 w-4" />
                           </Button>
@@ -390,7 +404,7 @@ export function CurationTable({
                             variant="ghost"
                             className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                             onClick={() => onProductReject(product.id)}
-                            title="Rechazar"
+                            title="Rechazar producto"
                           >
                             <XCircle className="h-4 w-4" />
                           </Button>

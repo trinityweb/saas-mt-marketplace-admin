@@ -6,7 +6,7 @@ const KONG_GATEWAY_URL = process.env.KONG_GATEWAY_URL || 'http://localhost:8001'
 // GET /api/ai/prompts/[promptId] - Obtener prompt específico
 export async function GET(
   request: NextRequest,
-  { params }: { params: { promptId: string } }
+  { params }: { params: Promise<{ promptId: string }> }
 ) {
   try {
     const authResult = getAuthHeaders(request);
@@ -21,7 +21,7 @@ export async function GET(
         }
       : authResult.headers;
 
-    const { promptId } = params;
+    const { promptId } = await params;
     
     // Obtener parámetros de query (para test_variables)
     const searchParams = request.nextUrl.searchParams;
@@ -57,7 +57,7 @@ export async function GET(
 // PUT /api/ai/prompts/[promptId] - Actualizar prompt
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { promptId: string } }
+  { params }: { params: Promise<{ promptId: string }> }
 ) {
   try {
     const authResult = getAuthHeaders(request);
@@ -72,8 +72,17 @@ export async function PUT(
         }
       : authResult.headers;
 
-    const { promptId } = params;
+    const { promptId } = await params;
     const body = await request.json();
+    
+    // Agregar updated_by con UUID válido para desarrollo
+    if (!body.updated_by) {
+      body.updated_by = '00000000-0000-0000-0000-000000000001'; // UUID de desarrollo
+    }
+    
+    // Simplificar: siempre activo, nunca versionar
+    body.is_active = true;
+    body.bump_version = false;
     
     // Verificar permisos para prompts globales
     const globalAgents = ['product_curator', 'template_generator', 'categorization'];
@@ -117,7 +126,7 @@ export async function PUT(
 // DELETE /api/ai/prompts/[promptId] - Eliminar prompt (soft delete)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { promptId: string } }
+  { params }: { params: Promise<{ promptId: string }> }
 ) {
   try {
     const authResult = getAuthHeaders(request);
@@ -132,7 +141,7 @@ export async function DELETE(
         }
       : authResult.headers;
 
-    const { promptId } = params;
+    const { promptId } = await params;
     
     // Primero obtener el prompt para verificar si es global
     const getResponse = await fetch(`${KONG_GATEWAY_URL}/ai/ai/prompts/${promptId}`, {

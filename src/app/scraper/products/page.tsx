@@ -182,10 +182,11 @@ export default function ScraperProductsPage() {
   // Curar producto al catálogo global
   const curateToGlobalCatalog = async (productId: string) => {
     try {
-      const response = await fetch(`/api/scraper/products/${productId}/curate`, {
+      const response = await fetch(`/api/scraper/products/curate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
+          product_ids: [productId],
           curation_notes: 'Producto curado desde el marketplace admin' 
         })
       });
@@ -193,9 +194,14 @@ export default function ScraperProductsPage() {
       const data = await response.json();
       
       if (response.ok && data.success) {
-        toast.success('Producto agregado al catálogo global');
-        fetchProducts(); // Recargar lista
-        fetchStats(); // Actualizar estadísticas
+        if (data.job_id) {
+          toast.success(`Job ${data.job_id} iniciado. Procesando en segundo plano...`);
+          pollCurationJob(data.job_id);
+        } else {
+          toast.success('Producto agregado al catálogo global');
+          fetchProducts(); // Recargar lista
+          fetchStats(); // Actualizar estadísticas
+        }
       } else {
         toast.error(data.error || 'Error al curar producto');
       }
@@ -203,6 +209,33 @@ export default function ScraperProductsPage() {
       console.error('Error:', error);
       toast.error('Error al curar producto al catálogo global');
     }
+  };
+
+  // Función de polling para jobs de curación
+  const pollCurationJob = async (jobId: string) => {
+    const interval = setInterval(async () => {
+      try {
+        const status = await fetch(`/api/scraper/products/curation-jobs/${jobId}`);
+        const data = await status.json();
+        
+        if (data.job.status === 'completed') {
+          clearInterval(interval);
+          toast.success('Curación completada!');
+          fetchProducts(); // Refrescar lista
+          fetchStats(); // Refrescar estadísticas
+        } else if (data.job.status === 'failed') {
+          clearInterval(interval);
+          toast.error('Curación falló: ' + data.job.error_message);
+        }
+      } catch (error) {
+        console.error('Error polling curation job:', error);
+        clearInterval(interval);
+        toast.error('Error al verificar estado de curación');
+      }
+    }, 3000); // Polling cada 3 segundos
+    
+    // Limpiar interval después de 5 minutos máximo
+    setTimeout(() => clearInterval(interval), 5 * 60 * 1000);
   };
 
   // Curación masiva al catálogo global
@@ -220,7 +253,7 @@ export default function ScraperProductsPage() {
     }
 
     try {
-      const response = await fetch('/api/scraper/products/bulk-curate', {
+      const response = await fetch('/api/scraper/products/curate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -230,13 +263,18 @@ export default function ScraperProductsPage() {
 
       const data = await response.json();
       
-      if (response.ok) {
-        toast.success(`${data.successful} productos curados exitosamente`);
-        if (data.failed > 0) {
-          toast.warning(`${data.failed} productos fallaron`);
+      if (response.ok && data.success) {
+        if (data.job_id) {
+          toast.success(`Job ${data.job_id} iniciado. Procesando ${pendingProducts.length} productos en segundo plano...`);
+          pollCurationJob(data.job_id);
+        } else {
+          toast.success(`${data.successful || pendingProducts.length} productos curados exitosamente`);
+          if (data.failed > 0) {
+            toast.warning(`${data.failed} productos fallaron`);
+          }
+          fetchProducts(); // Recargar lista
+          fetchStats(); // Actualizar estadísticas
         }
-        fetchProducts(); // Recargar lista
-        fetchStats(); // Actualizar estadísticas
       } else {
         toast.error(data.error || 'Error en curación masiva');
       }

@@ -1,0 +1,936 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e5]:
+        - link "Marketplace" [ref=e6] [cursor=pointer]:
+          - /url: /
+          - img [ref=e8] [cursor=pointer]
+          - generic [ref=e11] [cursor=pointer]: Marketplace
+        - button [ref=e12] [cursor=pointer]:
+          - img [ref=e13] [cursor=pointer]
+      - navigation [ref=e15]:
+        - link "Dashboard" [ref=e16] [cursor=pointer]:
+          - /url: /
+          - img [ref=e17] [cursor=pointer]
+          - generic [ref=e20] [cursor=pointer]: Dashboard
+        - button "Identity & Access" [ref=e22] [cursor=pointer]:
+          - generic [ref=e23] [cursor=pointer]:
+            - img [ref=e24] [cursor=pointer]
+            - generic [ref=e26] [cursor=pointer]: Identity & Access
+          - img [ref=e27] [cursor=pointer]
+        - button "Marketplace PIM" [ref=e30] [cursor=pointer]:
+          - generic [ref=e31] [cursor=pointer]:
+            - img [ref=e32] [cursor=pointer]
+            - generic [ref=e36] [cursor=pointer]: Marketplace PIM
+          - img [ref=e37] [cursor=pointer]
+        - button "Sistema de Scraping" [ref=e40] [cursor=pointer]:
+          - generic [ref=e41] [cursor=pointer]:
+            - img [ref=e42] [cursor=pointer]
+            - generic [ref=e46] [cursor=pointer]: Sistema de Scraping
+          - img [ref=e47] [cursor=pointer]
+        - button "Quickstart Dinámico" [ref=e50] [cursor=pointer]:
+          - generic [ref=e51] [cursor=pointer]:
+            - img [ref=e52] [cursor=pointer]
+            - generic [ref=e55] [cursor=pointer]: Quickstart Dinámico
+          - img [ref=e56] [cursor=pointer]
+        - button "Gestión de AI" [ref=e59] [cursor=pointer]:
+          - generic [ref=e60] [cursor=pointer]:
+            - img [ref=e61] [cursor=pointer]
+            - generic [ref=e71] [cursor=pointer]: Gestión de AI
+          - img [ref=e72] [cursor=pointer]
+        - button "Configuración" [ref=e75] [cursor=pointer]:
+          - generic [ref=e76] [cursor=pointer]:
+            - img [ref=e77] [cursor=pointer]
+            - generic [ref=e80] [cursor=pointer]: Configuración
+          - img [ref=e81] [cursor=pointer]
+    - generic [ref=e83]:
+      - banner [ref=e84]:
+        - generic [ref=e85]:
+          - generic [ref=e87]:
+            - img [ref=e89]
+            - generic [ref=e92]:
+              - heading "Marketplace Admin" [level=1] [ref=e93]
+              - paragraph [ref=e94]: Panel de administración marketplace multi-tenant
+          - generic [ref=e96]:
+            - img [ref=e97]
+            - switch [ref=e103] [cursor=pointer]
+            - img
+      - main [ref=e104]:
+        - generic [ref=e105]:
+          - generic [ref=e107]:
+            - heading "Panel de Curación Optimizado" [level=2] [ref=e108]
+            - paragraph [ref=e109]: Sistema inteligente con estadísticas colapsables y gestión optimizada de espacio
+          - generic [ref=e110]:
+            - generic [ref=e112]:
+              - generic [ref=e113]:
+                - img [ref=e114]
+                - heading "Estadísticas de Curación" [level=3] [ref=e116]
+              - generic [ref=e117]:
+                - button "Colapsar Cards" [ref=e118] [cursor=pointer]
+                - button [ref=e119] [cursor=pointer]:
+                  - img [ref=e120] [cursor=pointer]
+            - generic [ref=e122]:
+              - generic [ref=e123]:
+                - generic [ref=e124]:
+                  - generic [ref=e125]:
+                    - heading "Total Productos" [level=3] [ref=e126]
+                    - generic [ref=e127]:
+                      - img [ref=e129]
+                      - button [ref=e133] [cursor=pointer]:
+                        - img [ref=e134] [cursor=pointer]
+                  - generic [ref=e137]: 10,120
+                - generic [ref=e138]:
+                  - generic [ref=e139]:
+                    - heading "Pendientes" [level=3] [ref=e140]
+                    - generic [ref=e141]:
+                      - img [ref=e143]
+                      - button [ref=e146] [cursor=pointer]:
+                        - img [ref=e147] [cursor=pointer]
+                  - generic [ref=e149]:
+                    - generic [ref=e150]: 10,087
+                    - generic [ref=e152]: Requiere atención
+                - generic [ref=e153]:
+                  - generic [ref=e154]:
+                    - heading "En Proceso" [level=3] [ref=e155]
+                    - generic [ref=e156]:
+                      - img [ref=e158]
+                      - button [ref=e160] [cursor=pointer]:
+                        - img [ref=e161] [cursor=pointer]
+                  - generic [ref=e164]: "0"
+                - generic [ref=e165]:
+                  - generic [ref=e166]:
+                    - heading "Curados" [level=3] [ref=e167]
+                    - generic [ref=e168]:
+                      - img [ref=e170]
+                      - button [ref=e173] [cursor=pointer]:
+                        - img [ref=e174] [cursor=pointer]
+                  - generic [ref=e177]: "23"
+                - generic [ref=e178]:
+                  - generic [ref=e179]:
+                    - heading "Publicados" [level=3] [ref=e180]
+                    - generic [ref=e181]:
+                      - img [ref=e183]
+                      - button [ref=e186] [cursor=pointer]:
+                        - img [ref=e187] [cursor=pointer]
+                  - generic [ref=e190]: "5"
+                - generic [ref=e191]:
+                  - generic [ref=e192]:
+                    - heading "Rechazados" [level=3] [ref=e193]
+                    - generic [ref=e194]:
+                      - img [ref=e196]
+                      - button [ref=e200] [cursor=pointer]:
+                        - img [ref=e201] [cursor=pointer]
+                  - generic [ref=e204]: "5"
+              - generic [ref=e205]:
+                - generic [ref=e206]:
+                  - heading "Tasa de Completado" [level=3] [ref=e208]
+                  - generic [ref=e209]:
+                    - generic [ref=e210]:
+                      - generic [ref=e211]: 0.3%
+                      - img [ref=e212]
+                    - progressbar [ref=e215]
+                    - paragraph [ref=e217]: 28 de 10120 productos
+                - generic [ref=e218]:
+                  - heading "Confianza Promedio" [level=3] [ref=e220]
+                  - generic [ref=e221]:
+                    - generic [ref=e222]:
+                      - generic [ref=e223]: 75%
+                      - img [ref=e224]
+                    - progressbar [ref=e226]
+                    - paragraph [ref=e228]: Buena
+                - generic [ref=e229]:
+                  - heading "Actividad Reciente" [level=3] [ref=e231]
+                  - generic [ref=e233]:
+                    - generic [ref=e234]:
+                      - generic [ref=e235]: Hoy
+                      - generic [ref=e236]: "0"
+                    - generic [ref=e237]:
+                      - generic [ref=e238]: Esta semana
+                      - generic [ref=e239]: "0"
+                    - generic [ref=e240]:
+                      - generic [ref=e241]: Este mes
+                      - generic [ref=e242]: "0"
+          - generic [ref=e245]:
+            - generic [ref=e246]:
+              - tablist [ref=e247]:
+                - tab "Pendientes 10,087" [ref=e248] [cursor=pointer]:
+                  - img
+                  - generic [ref=e251] [cursor=pointer]: Pendientes
+                  - generic [ref=e252] [cursor=pointer]: 10,087
+                - tab "Procesando 0" [ref=e253] [cursor=pointer]:
+                  - img
+                  - generic [ref=e258] [cursor=pointer]: Procesando
+                  - generic [ref=e259] [cursor=pointer]: "0"
+                - tab "Curados 23" [ref=e260] [cursor=pointer]:
+                  - img
+                  - generic [ref=e262] [cursor=pointer]: Curados
+                  - generic [ref=e263] [cursor=pointer]: "23"
+                - tab "Todos 10,120" [selected] [ref=e264] [cursor=pointer]:
+                  - img
+                  - generic [ref=e268] [cursor=pointer]: Todos
+                  - generic [ref=e269] [cursor=pointer]: 10,120
+                - tab "Rechazados 5" [ref=e270] [cursor=pointer]:
+                  - img
+                  - generic [ref=e274] [cursor=pointer]: Rechazados
+                  - generic [ref=e275] [cursor=pointer]: "5"
+                - tab "En PIM 5" [ref=e276] [cursor=pointer]:
+                  - img
+                  - generic [ref=e279] [cursor=pointer]: En PIM
+                  - generic [ref=e280] [cursor=pointer]: "5"
+              - generic [ref=e281]:
+                - generic [ref=e282]:
+                  - text: Mostrando 1 a 20 de
+                  - generic [ref=e283]: 10,120
+                  - text: productos
+                - button "Actualizar" [ref=e284] [cursor=pointer]:
+                  - img [ref=e285] [cursor=pointer]
+                  - text: Actualizar
+            - generic [ref=e289]:
+              - generic [ref=e290]:
+                - generic [ref=e292]:
+                  - img [ref=e293]
+                  - textbox "Buscar productos por nombre, SKU..." [ref=e296]
+                - combobox [ref=e297] [cursor=pointer]:
+                  - generic: Todas las fuentes
+                  - img [ref=e298] [cursor=pointer]
+                - combobox [ref=e300] [cursor=pointer]:
+                  - generic: Todas las marcas
+                  - img [ref=e301] [cursor=pointer]
+                - combobox [ref=e303] [cursor=pointer]:
+                  - generic: Todas las categorías
+                  - img [ref=e304] [cursor=pointer]
+                - button [ref=e306] [cursor=pointer]:
+                  - img [ref=e307] [cursor=pointer]
+                - button [ref=e309] [cursor=pointer]:
+                  - img [ref=e310] [cursor=pointer]
+                - button "Limpiar filtros" [ref=e315] [cursor=pointer]
+              - generic [ref=e317]: "Filtros activos:"
+            - tabpanel "Todos 10,120" [ref=e318]:
+              - generic [ref=e319]:
+                - table [ref=e323]:
+                  - rowgroup [ref=e324]:
+                    - row "Seleccionar todos Estado Producto Marca Categoría Precio Confianza Fuente Acciones" [ref=e325]:
+                      - cell "Seleccionar todos" [ref=e326]:
+                        - checkbox "Seleccionar todos" [ref=e327] [cursor=pointer]
+                      - cell "Estado" [ref=e328]
+                      - cell "Producto" [ref=e329]
+                      - cell "Marca" [ref=e330]
+                      - cell "Categoría" [ref=e331]
+                      - cell "Precio" [ref=e332]
+                      - cell "Confianza" [ref=e333]
+                      - cell "Fuente" [ref=e334]
+                      - cell "Acciones" [ref=e335]
+                  - rowgroup [ref=e336]:
+                    - row "Seleccionar Zapallo Anco Organico Rechazado Zapallo Anco Organico 1 imagen VERDULERIA PROPIA organicos ARS 1.10 50% Disco" [ref=e337]:
+                      - cell "Seleccionar Zapallo Anco Organico" [ref=e338]:
+                        - checkbox "Seleccionar Zapallo Anco Organico" [ref=e339] [cursor=pointer]
+                      - cell "Rechazado" [ref=e340]:
+                        - generic [ref=e341]:
+                          - img [ref=e342]
+                          - text: Rechazado
+                      - cell "Zapallo Anco Organico 1 imagen" [ref=e346]:
+                        - generic [ref=e347]:
+                          - generic [ref=e348]: Zapallo Anco Organico
+                          - generic [ref=e349]:
+                            - img [ref=e350]
+                            - text: 1 imagen
+                      - cell "VERDULERIA PROPIA" [ref=e354]:
+                        - generic "Marca no validada" [ref=e355]:
+                          - img [ref=e356]
+                          - text: VERDULERIA PROPIA
+                      - cell "organicos" [ref=e360]:
+                        - generic [ref=e361]: organicos
+                      - cell "ARS 1.10" [ref=e362]:
+                        - generic [ref=e364]: ARS 1.10
+                      - cell "50%" [ref=e365]:
+                        - 'generic "Confianza: 50%" [ref=e366]': 50%
+                      - cell "Disco" [ref=e367]:
+                        - generic [ref=e368]:
+                          - generic [ref=e369]: Disco
+                          - button [ref=e370] [cursor=pointer]:
+                            - img [ref=e371] [cursor=pointer]
+                      - cell [ref=e375]:
+                        - button "Editar manualmente" [ref=e377] [cursor=pointer]:
+                          - img [ref=e378] [cursor=pointer]
+                    - row "Seleccionar Vino Artesano Cabernet Franc Organico 750cc Rechazado Vino Artesano Cabernet Franc Organico 750cc 1 imagen ARTESANO organicos ARS 11.30 50% Disco" [ref=e380]:
+                      - cell "Seleccionar Vino Artesano Cabernet Franc Organico 750cc" [ref=e381]:
+                        - checkbox "Seleccionar Vino Artesano Cabernet Franc Organico 750cc" [ref=e382] [cursor=pointer]
+                      - cell "Rechazado" [ref=e383]:
+                        - generic [ref=e384]:
+                          - img [ref=e385]
+                          - text: Rechazado
+                      - cell "Vino Artesano Cabernet Franc Organico 750cc 1 imagen" [ref=e389]:
+                        - generic [ref=e390]:
+                          - generic [ref=e391]: Vino Artesano Cabernet Franc Organico 750cc
+                          - generic [ref=e392]:
+                            - img [ref=e393]
+                            - text: 1 imagen
+                      - cell "ARTESANO" [ref=e397]:
+                        - generic "Marca no validada" [ref=e398]:
+                          - img [ref=e399]
+                          - text: ARTESANO
+                      - cell "organicos" [ref=e403]:
+                        - generic [ref=e404]: organicos
+                      - cell "ARS 11.30" [ref=e405]:
+                        - generic [ref=e407]: ARS 11.30
+                      - cell "50%" [ref=e408]:
+                        - 'generic "Confianza: 50%" [ref=e409]': 50%
+                      - cell "Disco" [ref=e410]:
+                        - generic [ref=e411]:
+                          - generic [ref=e412]: Disco
+                          - button [ref=e413] [cursor=pointer]:
+                            - img [ref=e414] [cursor=pointer]
+                      - cell [ref=e418]:
+                        - button "Editar manualmente" [ref=e420] [cursor=pointer]:
+                          - img [ref=e421] [cursor=pointer]
+                    - row "Seleccionar Vino Famiglia Bianchi Organico Malbec 750 Curado Vino Famiglia Bianchi Organico Malbec 750 1 imagen FAMIGLIA BIANCHI organicos ARS 10.50 50% Disco" [ref=e423]:
+                      - cell "Seleccionar Vino Famiglia Bianchi Organico Malbec 750" [ref=e424]:
+                        - checkbox "Seleccionar Vino Famiglia Bianchi Organico Malbec 750" [ref=e425] [cursor=pointer]
+                      - cell "Curado" [ref=e426]:
+                        - generic [ref=e427]:
+                          - img [ref=e428]
+                          - text: Curado
+                      - cell "Vino Famiglia Bianchi Organico Malbec 750 1 imagen" [ref=e431]:
+                        - generic [ref=e432]:
+                          - generic [ref=e433]: Vino Famiglia Bianchi Organico Malbec 750
+                          - generic [ref=e434]:
+                            - img [ref=e435]
+                            - text: 1 imagen
+                      - cell "FAMIGLIA BIANCHI" [ref=e439]:
+                        - generic "Marca no validada" [ref=e440]:
+                          - img [ref=e441]
+                          - text: FAMIGLIA BIANCHI
+                      - cell "organicos" [ref=e445]:
+                        - generic [ref=e446]: organicos
+                      - cell "ARS 10.50" [ref=e447]:
+                        - generic [ref=e449]: ARS 10.50
+                      - cell "50%" [ref=e450]:
+                        - 'generic "Confianza: 50%" [ref=e451]': 50%
+                      - cell "Disco" [ref=e452]:
+                        - generic [ref=e453]:
+                          - generic [ref=e454]: Disco
+                          - button [ref=e455] [cursor=pointer]:
+                            - img [ref=e456] [cursor=pointer]
+                      - cell [ref=e460]:
+                        - generic [ref=e461]:
+                          - button "Aprobar y marcar como listo" [ref=e462] [cursor=pointer]:
+                            - img [ref=e463] [cursor=pointer]
+                          - button "Rechazar producto" [ref=e466] [cursor=pointer]:
+                            - img [ref=e467] [cursor=pointer]
+                          - button "Editar manualmente" [ref=e471] [cursor=pointer]:
+                            - img [ref=e472] [cursor=pointer]
+                    - row "Seleccionar Vino Artesano Organico Malbec 750cc Publicado Vino Artesano Organico Malbec 750cc 1 imagen ARTESANO organicos ARS 11.30 50% Disco" [ref=e474]:
+                      - cell "Seleccionar Vino Artesano Organico Malbec 750cc" [ref=e475]:
+                        - checkbox "Seleccionar Vino Artesano Organico Malbec 750cc" [ref=e476] [cursor=pointer]
+                      - cell "Publicado" [ref=e477]:
+                        - generic [ref=e478]:
+                          - img [ref=e479]
+                          - text: Publicado
+                      - cell "Vino Artesano Organico Malbec 750cc 1 imagen" [ref=e482]:
+                        - generic [ref=e483]:
+                          - generic [ref=e484]: Vino Artesano Organico Malbec 750cc
+                          - generic [ref=e485]:
+                            - img [ref=e486]
+                            - text: 1 imagen
+                      - cell "ARTESANO" [ref=e490]:
+                        - generic "Marca no validada" [ref=e491]:
+                          - img [ref=e492]
+                          - text: ARTESANO
+                      - cell "organicos" [ref=e496]:
+                        - generic [ref=e497]: organicos
+                      - cell "ARS 11.30" [ref=e498]:
+                        - generic [ref=e500]: ARS 11.30
+                      - cell "50%" [ref=e501]:
+                        - 'generic "Confianza: 50%" [ref=e502]': 50%
+                      - cell "Disco" [ref=e503]:
+                        - generic [ref=e504]:
+                          - generic [ref=e505]: Disco
+                          - button [ref=e506] [cursor=pointer]:
+                            - img [ref=e507] [cursor=pointer]
+                      - cell [ref=e511]:
+                        - button "Editar manualmente" [ref=e513] [cursor=pointer]:
+                          - img [ref=e514] [cursor=pointer]
+                    - row "Seleccionar Shampoo Aloe Organico 420 Ml Capilatis Publicado Shampoo Aloe Organico 420 Ml Capilatis 1 imagen CAPILATIS organicos ARS 9.85 50% Disco" [ref=e516]:
+                      - cell "Seleccionar Shampoo Aloe Organico 420 Ml Capilatis" [ref=e517]:
+                        - checkbox "Seleccionar Shampoo Aloe Organico 420 Ml Capilatis" [ref=e518] [cursor=pointer]
+                      - cell "Publicado" [ref=e519]:
+                        - generic [ref=e520]:
+                          - img [ref=e521]
+                          - text: Publicado
+                      - cell "Shampoo Aloe Organico 420 Ml Capilatis 1 imagen" [ref=e524]:
+                        - generic [ref=e525]:
+                          - generic [ref=e526]: Shampoo Aloe Organico 420 Ml Capilatis
+                          - generic [ref=e527]:
+                            - img [ref=e528]
+                            - text: 1 imagen
+                      - cell "CAPILATIS" [ref=e532]:
+                        - generic "Marca no validada" [ref=e533]:
+                          - img [ref=e534]
+                          - text: CAPILATIS
+                      - cell "organicos" [ref=e538]:
+                        - generic [ref=e539]: organicos
+                      - cell "ARS 9.85" [ref=e540]:
+                        - generic [ref=e542]: ARS 9.85
+                      - cell "50%" [ref=e543]:
+                        - 'generic "Confianza: 50%" [ref=e544]': 50%
+                      - cell "Disco" [ref=e545]:
+                        - generic [ref=e546]:
+                          - generic [ref=e547]: Disco
+                          - button [ref=e548] [cursor=pointer]:
+                            - img [ref=e549] [cursor=pointer]
+                      - cell [ref=e553]:
+                        - button "Editar manualmente" [ref=e555] [cursor=pointer]:
+                          - img [ref=e556] [cursor=pointer]
+                    - row "Seleccionar Sahumerio Organico Variedad De Fragancias X 6 U Aromanza Rechazado Sahumerio Organico Variedad De Fragancias X 6 U Aromanza 1 imagen AROMANZA organicos ARS 1.96 50% Disco" [ref=e558]:
+                      - cell "Seleccionar Sahumerio Organico Variedad De Fragancias X 6 U Aromanza" [ref=e559]:
+                        - checkbox "Seleccionar Sahumerio Organico Variedad De Fragancias X 6 U Aromanza" [ref=e560] [cursor=pointer]
+                      - cell "Rechazado" [ref=e561]:
+                        - generic [ref=e562]:
+                          - img [ref=e563]
+                          - text: Rechazado
+                      - cell "Sahumerio Organico Variedad De Fragancias X 6 U Aromanza 1 imagen" [ref=e567]:
+                        - generic [ref=e568]:
+                          - generic [ref=e569]: Sahumerio Organico Variedad De Fragancias X 6 U Aromanza
+                          - generic [ref=e570]:
+                            - img [ref=e571]
+                            - text: 1 imagen
+                      - cell "AROMANZA" [ref=e575]:
+                        - generic "Marca no validada" [ref=e576]:
+                          - img [ref=e577]
+                          - text: AROMANZA
+                      - cell "organicos" [ref=e581]:
+                        - generic [ref=e582]: organicos
+                      - cell "ARS 1.96" [ref=e583]:
+                        - generic [ref=e585]: ARS 1.96
+                      - cell "50%" [ref=e586]:
+                        - 'generic "Confianza: 50%" [ref=e587]': 50%
+                      - cell "Disco" [ref=e588]:
+                        - generic [ref=e589]:
+                          - generic [ref=e590]: Disco
+                          - button [ref=e591] [cursor=pointer]:
+                            - img [ref=e592] [cursor=pointer]
+                      - cell [ref=e596]:
+                        - button "Editar manualmente" [ref=e598] [cursor=pointer]:
+                          - img [ref=e599] [cursor=pointer]
+                    - row "Seleccionar Vino Argento Estate Reserve Malbec Organico 750cc Curado Vino Argento Estate Reserve Malbec Organico 750cc 1 imagen ARGENTO organicos ARS 10.95 50% Disco" [ref=e601]:
+                      - cell "Seleccionar Vino Argento Estate Reserve Malbec Organico 750cc" [ref=e602]:
+                        - checkbox "Seleccionar Vino Argento Estate Reserve Malbec Organico 750cc" [ref=e603] [cursor=pointer]
+                      - cell "Curado" [ref=e604]:
+                        - generic [ref=e605]:
+                          - img [ref=e606]
+                          - text: Curado
+                      - cell "Vino Argento Estate Reserve Malbec Organico 750cc 1 imagen" [ref=e609]:
+                        - generic [ref=e610]:
+                          - generic [ref=e611]: Vino Argento Estate Reserve Malbec Organico 750cc
+                          - generic [ref=e612]:
+                            - img [ref=e613]
+                            - text: 1 imagen
+                      - cell "ARGENTO" [ref=e617]:
+                        - generic "Marca no validada" [ref=e618]:
+                          - img [ref=e619]
+                          - text: ARGENTO
+                      - cell "organicos" [ref=e623]:
+                        - generic [ref=e624]: organicos
+                      - cell "ARS 10.95" [ref=e625]:
+                        - generic [ref=e627]: ARS 10.95
+                      - cell "50%" [ref=e628]:
+                        - 'generic "Confianza: 50%" [ref=e629]': 50%
+                      - cell "Disco" [ref=e630]:
+                        - generic [ref=e631]:
+                          - generic [ref=e632]: Disco
+                          - button [ref=e633] [cursor=pointer]:
+                            - img [ref=e634] [cursor=pointer]
+                      - cell [ref=e638]:
+                        - generic [ref=e639]:
+                          - button "Aprobar y marcar como listo" [ref=e640] [cursor=pointer]:
+                            - img [ref=e641] [cursor=pointer]
+                          - button "Rechazar producto" [ref=e644] [cursor=pointer]:
+                            - img [ref=e645] [cursor=pointer]
+                          - button "Editar manualmente" [ref=e649] [cursor=pointer]:
+                            - img [ref=e650] [cursor=pointer]
+                    - row "Seleccionar Vino Argento Estate Malbec Organico 750cc Curado Vino Argento Estate Malbec Organico 750cc 1 imagen ARGENTO organicos ARS 15.85 50% Disco" [ref=e652]:
+                      - cell "Seleccionar Vino Argento Estate Malbec Organico 750cc" [ref=e653]:
+                        - checkbox "Seleccionar Vino Argento Estate Malbec Organico 750cc" [ref=e654] [cursor=pointer]
+                      - cell "Curado" [ref=e655]:
+                        - generic [ref=e656]:
+                          - img [ref=e657]
+                          - text: Curado
+                      - cell "Vino Argento Estate Malbec Organico 750cc 1 imagen" [ref=e660]:
+                        - generic [ref=e661]:
+                          - generic [ref=e662]: Vino Argento Estate Malbec Organico 750cc
+                          - generic [ref=e663]:
+                            - img [ref=e664]
+                            - text: 1 imagen
+                      - cell "ARGENTO" [ref=e668]:
+                        - generic "Marca no validada" [ref=e669]:
+                          - img [ref=e670]
+                          - text: ARGENTO
+                      - cell "organicos" [ref=e674]:
+                        - generic [ref=e675]: organicos
+                      - cell "ARS 15.85" [ref=e676]:
+                        - generic [ref=e678]: ARS 15.85
+                      - cell "50%" [ref=e679]:
+                        - 'generic "Confianza: 50%" [ref=e680]': 50%
+                      - cell "Disco" [ref=e681]:
+                        - generic [ref=e682]:
+                          - generic [ref=e683]: Disco
+                          - button [ref=e684] [cursor=pointer]:
+                            - img [ref=e685] [cursor=pointer]
+                      - cell [ref=e689]:
+                        - generic [ref=e690]:
+                          - button "Aprobar y marcar como listo" [ref=e691] [cursor=pointer]:
+                            - img [ref=e692] [cursor=pointer]
+                          - button "Rechazar producto" [ref=e695] [cursor=pointer]:
+                            - img [ref=e696] [cursor=pointer]
+                          - button "Editar manualmente" [ref=e700] [cursor=pointer]:
+                            - img [ref=e701] [cursor=pointer]
+                    - row "Seleccionar Aderezo Caesar Organico 250 Ml Pampa Gourmet Curado Aderezo Caesar Organico 250 Ml Pampa Gourmet 1 imagen Pampa Gourmet organicos ARS 7.95 50% Disco" [ref=e703]:
+                      - cell "Seleccionar Aderezo Caesar Organico 250 Ml Pampa Gourmet" [ref=e704]:
+                        - checkbox "Seleccionar Aderezo Caesar Organico 250 Ml Pampa Gourmet" [ref=e705] [cursor=pointer]
+                      - cell "Curado" [ref=e706]:
+                        - generic [ref=e707]:
+                          - img [ref=e708]
+                          - text: Curado
+                      - cell "Aderezo Caesar Organico 250 Ml Pampa Gourmet 1 imagen" [ref=e711]:
+                        - generic [ref=e712]:
+                          - generic [ref=e713]: Aderezo Caesar Organico 250 Ml Pampa Gourmet
+                          - generic [ref=e714]:
+                            - img [ref=e715]
+                            - text: 1 imagen
+                      - cell "Pampa Gourmet" [ref=e719]:
+                        - generic "Marca no validada" [ref=e720]:
+                          - img [ref=e721]
+                          - text: Pampa Gourmet
+                      - cell "organicos" [ref=e725]:
+                        - generic [ref=e726]: organicos
+                      - cell "ARS 7.95" [ref=e727]:
+                        - generic [ref=e729]: ARS 7.95
+                      - cell "50%" [ref=e730]:
+                        - 'generic "Confianza: 50%" [ref=e731]': 50%
+                      - cell "Disco" [ref=e732]:
+                        - generic [ref=e733]:
+                          - generic [ref=e734]: Disco
+                          - button [ref=e735] [cursor=pointer]:
+                            - img [ref=e736] [cursor=pointer]
+                      - cell [ref=e740]:
+                        - generic [ref=e741]:
+                          - button "Aprobar y marcar como listo" [ref=e742] [cursor=pointer]:
+                            - img [ref=e743] [cursor=pointer]
+                          - button "Rechazar producto" [ref=e746] [cursor=pointer]:
+                            - img [ref=e747] [cursor=pointer]
+                          - button "Editar manualmente" [ref=e751] [cursor=pointer]:
+                            - img [ref=e752] [cursor=pointer]
+                    - row "Seleccionar Sahumerio Organico Naranja Y Pimienta X 6 U Aromanza Curado Sahumerio Organico Naranja Y Pimienta X 6 U Aromanza 1 imagen AROMANZA organicos ARS 1.96 50% Disco" [ref=e754]:
+                      - cell "Seleccionar Sahumerio Organico Naranja Y Pimienta X 6 U Aromanza" [ref=e755]:
+                        - checkbox "Seleccionar Sahumerio Organico Naranja Y Pimienta X 6 U Aromanza" [ref=e756] [cursor=pointer]
+                      - cell "Curado" [ref=e757]:
+                        - generic [ref=e758]:
+                          - img [ref=e759]
+                          - text: Curado
+                      - cell "Sahumerio Organico Naranja Y Pimienta X 6 U Aromanza 1 imagen" [ref=e762]:
+                        - generic [ref=e763]:
+                          - generic [ref=e764]: Sahumerio Organico Naranja Y Pimienta X 6 U Aromanza
+                          - generic [ref=e765]:
+                            - img [ref=e766]
+                            - text: 1 imagen
+                      - cell "AROMANZA" [ref=e770]:
+                        - generic "Marca no validada" [ref=e771]:
+                          - img [ref=e772]
+                          - text: AROMANZA
+                      - cell "organicos" [ref=e776]:
+                        - generic [ref=e777]: organicos
+                      - cell "ARS 1.96" [ref=e778]:
+                        - generic [ref=e780]: ARS 1.96
+                      - cell "50%" [ref=e781]:
+                        - 'generic "Confianza: 50%" [ref=e782]': 50%
+                      - cell "Disco" [ref=e783]:
+                        - generic [ref=e784]:
+                          - generic [ref=e785]: Disco
+                          - button [ref=e786] [cursor=pointer]:
+                            - img [ref=e787] [cursor=pointer]
+                      - cell [ref=e791]:
+                        - generic [ref=e792]:
+                          - button "Aprobar y marcar como listo" [ref=e793] [cursor=pointer]:
+                            - img [ref=e794] [cursor=pointer]
+                          - button "Rechazar producto" [ref=e797] [cursor=pointer]:
+                            - img [ref=e798] [cursor=pointer]
+                          - button "Editar manualmente" [ref=e802] [cursor=pointer]:
+                            - img [ref=e803] [cursor=pointer]
+                    - row "Seleccionar Sahumerio Organico Petalos De Rosas X 6 U Aromanza Publicado Sahumerio Organico Petalos De Rosas X 6 U Aromanza 1 imagen AROMANZA organicos ARS 1.96 50% Disco" [ref=e805]:
+                      - cell "Seleccionar Sahumerio Organico Petalos De Rosas X 6 U Aromanza" [ref=e806]:
+                        - checkbox "Seleccionar Sahumerio Organico Petalos De Rosas X 6 U Aromanza" [ref=e807] [cursor=pointer]
+                      - cell "Publicado" [ref=e808]:
+                        - generic [ref=e809]:
+                          - img [ref=e810]
+                          - text: Publicado
+                      - cell "Sahumerio Organico Petalos De Rosas X 6 U Aromanza 1 imagen" [ref=e813]:
+                        - generic [ref=e814]:
+                          - generic [ref=e815]: Sahumerio Organico Petalos De Rosas X 6 U Aromanza
+                          - generic [ref=e816]:
+                            - img [ref=e817]
+                            - text: 1 imagen
+                      - cell "AROMANZA" [ref=e821]:
+                        - generic "Marca no validada" [ref=e822]:
+                          - img [ref=e823]
+                          - text: AROMANZA
+                      - cell "organicos" [ref=e827]:
+                        - generic [ref=e828]: organicos
+                      - cell "ARS 1.96" [ref=e829]:
+                        - generic [ref=e831]: ARS 1.96
+                      - cell "50%" [ref=e832]:
+                        - 'generic "Confianza: 50%" [ref=e833]': 50%
+                      - cell "Disco" [ref=e834]:
+                        - generic [ref=e835]:
+                          - generic [ref=e836]: Disco
+                          - button [ref=e837] [cursor=pointer]:
+                            - img [ref=e838] [cursor=pointer]
+                      - cell [ref=e842]:
+                        - button "Editar manualmente" [ref=e844] [cursor=pointer]:
+                          - img [ref=e845] [cursor=pointer]
+                    - row "Seleccionar Jugo Organico Las Brisas Multifruta Botella 500 Ml Curado Jugo Organico Las Brisas Multifruta Botella 500 Ml 1 imagen LAS BRISAS organicos ARS 3.40 50% Disco" [ref=e847]:
+                      - cell "Seleccionar Jugo Organico Las Brisas Multifruta Botella 500 Ml" [ref=e848]:
+                        - checkbox "Seleccionar Jugo Organico Las Brisas Multifruta Botella 500 Ml" [ref=e849] [cursor=pointer]
+                      - cell "Curado" [ref=e850]:
+                        - generic [ref=e851]:
+                          - img [ref=e852]
+                          - text: Curado
+                      - cell "Jugo Organico Las Brisas Multifruta Botella 500 Ml 1 imagen" [ref=e855]:
+                        - generic [ref=e856]:
+                          - generic [ref=e857]: Jugo Organico Las Brisas Multifruta Botella 500 Ml
+                          - generic [ref=e858]:
+                            - img [ref=e859]
+                            - text: 1 imagen
+                      - cell "LAS BRISAS" [ref=e863]:
+                        - generic "Marca no validada" [ref=e864]:
+                          - img [ref=e865]
+                          - text: LAS BRISAS
+                      - cell "organicos" [ref=e869]:
+                        - generic [ref=e870]: organicos
+                      - cell "ARS 3.40" [ref=e871]:
+                        - generic [ref=e873]: ARS 3.40
+                      - cell "50%" [ref=e874]:
+                        - 'generic "Confianza: 50%" [ref=e875]': 50%
+                      - cell "Disco" [ref=e876]:
+                        - generic [ref=e877]:
+                          - generic [ref=e878]: Disco
+                          - button [ref=e879] [cursor=pointer]:
+                            - img [ref=e880] [cursor=pointer]
+                      - cell [ref=e884]:
+                        - generic [ref=e885]:
+                          - button "Aprobar y marcar como listo" [ref=e886] [cursor=pointer]:
+                            - img [ref=e887] [cursor=pointer]
+                          - button "Rechazar producto" [ref=e890] [cursor=pointer]:
+                            - img [ref=e891] [cursor=pointer]
+                          - button "Editar manualmente" [ref=e895] [cursor=pointer]:
+                            - img [ref=e896] [cursor=pointer]
+                    - row "Seleccionar Vino Argento Estate Organico Pinot Grigio 750cc Curado Vino Argento Estate Organico Pinot Grigio 750cc 1 imagen ARGENTO organicos ARS 7.95 50% Disco" [ref=e898]:
+                      - cell "Seleccionar Vino Argento Estate Organico Pinot Grigio 750cc" [ref=e899]:
+                        - checkbox "Seleccionar Vino Argento Estate Organico Pinot Grigio 750cc" [ref=e900] [cursor=pointer]
+                      - cell "Curado" [ref=e901]:
+                        - generic [ref=e902]:
+                          - img [ref=e903]
+                          - text: Curado
+                      - cell "Vino Argento Estate Organico Pinot Grigio 750cc 1 imagen" [ref=e906]:
+                        - generic [ref=e907]:
+                          - generic [ref=e908]: Vino Argento Estate Organico Pinot Grigio 750cc
+                          - generic [ref=e909]:
+                            - img [ref=e910]
+                            - text: 1 imagen
+                      - cell "ARGENTO" [ref=e914]:
+                        - generic "Marca no validada" [ref=e915]:
+                          - img [ref=e916]
+                          - text: ARGENTO
+                      - cell "organicos" [ref=e920]:
+                        - generic [ref=e921]: organicos
+                      - cell "ARS 7.95" [ref=e922]:
+                        - generic [ref=e924]: ARS 7.95
+                      - cell "50%" [ref=e925]:
+                        - 'generic "Confianza: 50%" [ref=e926]': 50%
+                      - cell "Disco" [ref=e927]:
+                        - generic [ref=e928]:
+                          - generic [ref=e929]: Disco
+                          - button [ref=e930] [cursor=pointer]:
+                            - img [ref=e931] [cursor=pointer]
+                      - cell [ref=e935]:
+                        - generic [ref=e936]:
+                          - button "Aprobar y marcar como listo" [ref=e937] [cursor=pointer]:
+                            - img [ref=e938] [cursor=pointer]
+                          - button "Rechazar producto" [ref=e941] [cursor=pointer]:
+                            - img [ref=e942] [cursor=pointer]
+                          - button "Editar manualmente" [ref=e946] [cursor=pointer]:
+                            - img [ref=e947] [cursor=pointer]
+                    - row "Seleccionar Jugo Organico Las Brisas Naranja 500 Ml Curado Jugo Organico Las Brisas Naranja 500 Ml 1 imagen LAS BRISAS organicos ARS 3.40 50% Disco" [ref=e949]:
+                      - cell "Seleccionar Jugo Organico Las Brisas Naranja 500 Ml" [ref=e950]:
+                        - checkbox "Seleccionar Jugo Organico Las Brisas Naranja 500 Ml" [ref=e951] [cursor=pointer]
+                      - cell "Curado" [ref=e952]:
+                        - generic [ref=e953]:
+                          - img [ref=e954]
+                          - text: Curado
+                      - cell "Jugo Organico Las Brisas Naranja 500 Ml 1 imagen" [ref=e957]:
+                        - generic [ref=e958]:
+                          - generic [ref=e959]: Jugo Organico Las Brisas Naranja 500 Ml
+                          - generic [ref=e960]:
+                            - img [ref=e961]
+                            - text: 1 imagen
+                      - cell "LAS BRISAS" [ref=e965]:
+                        - generic "Marca no validada" [ref=e966]:
+                          - img [ref=e967]
+                          - text: LAS BRISAS
+                      - cell "organicos" [ref=e971]:
+                        - generic [ref=e972]: organicos
+                      - cell "ARS 3.40" [ref=e973]:
+                        - generic [ref=e975]: ARS 3.40
+                      - cell "50%" [ref=e976]:
+                        - 'generic "Confianza: 50%" [ref=e977]': 50%
+                      - cell "Disco" [ref=e978]:
+                        - generic [ref=e979]:
+                          - generic [ref=e980]: Disco
+                          - button [ref=e981] [cursor=pointer]:
+                            - img [ref=e982] [cursor=pointer]
+                      - cell [ref=e986]:
+                        - generic [ref=e987]:
+                          - button "Aprobar y marcar como listo" [ref=e988] [cursor=pointer]:
+                            - img [ref=e989] [cursor=pointer]
+                          - button "Rechazar producto" [ref=e992] [cursor=pointer]:
+                            - img [ref=e993] [cursor=pointer]
+                          - button "Editar manualmente" [ref=e997] [cursor=pointer]:
+                            - img [ref=e998] [cursor=pointer]
+                    - row "Seleccionar Brocoli Organico Curado Brocoli Organico 1 imagen VERDULERIA PROPIA organicos ARS 10.05 50% Disco" [ref=e1000]:
+                      - cell "Seleccionar Brocoli Organico" [ref=e1001]:
+                        - checkbox "Seleccionar Brocoli Organico" [ref=e1002] [cursor=pointer]
+                      - cell "Curado" [ref=e1003]:
+                        - generic [ref=e1004]:
+                          - img [ref=e1005]
+                          - text: Curado
+                      - cell "Brocoli Organico 1 imagen" [ref=e1008]:
+                        - generic [ref=e1009]:
+                          - generic [ref=e1010]: Brocoli Organico
+                          - generic [ref=e1011]:
+                            - img [ref=e1012]
+                            - text: 1 imagen
+                      - cell "VERDULERIA PROPIA" [ref=e1016]:
+                        - generic "Marca no validada" [ref=e1017]:
+                          - img [ref=e1018]
+                          - text: VERDULERIA PROPIA
+                      - cell "organicos" [ref=e1022]:
+                        - generic [ref=e1023]: organicos
+                      - cell "ARS 10.05" [ref=e1024]:
+                        - generic [ref=e1026]: ARS 10.05
+                      - cell "50%" [ref=e1027]:
+                        - 'generic "Confianza: 50%" [ref=e1028]': 50%
+                      - cell "Disco" [ref=e1029]:
+                        - generic [ref=e1030]:
+                          - generic [ref=e1031]: Disco
+                          - button [ref=e1032] [cursor=pointer]:
+                            - img [ref=e1033] [cursor=pointer]
+                      - cell [ref=e1037]:
+                        - generic [ref=e1038]:
+                          - button "Aprobar y marcar como listo" [ref=e1039] [cursor=pointer]:
+                            - img [ref=e1040] [cursor=pointer]
+                          - button "Rechazar producto" [ref=e1043] [cursor=pointer]:
+                            - img [ref=e1044] [cursor=pointer]
+                          - button "Editar manualmente" [ref=e1048] [cursor=pointer]:
+                            - img [ref=e1049] [cursor=pointer]
+                    - row "Seleccionar Jugo Organico Las Brisas - Limon Y Jengibre X 500cc Curado Jugo Organico Las Brisas - Limon Y Jengibre X 500cc 1 imagen LAS BRISAS organicos ARS 3.40 50% Disco" [ref=e1051]:
+                      - cell "Seleccionar Jugo Organico Las Brisas - Limon Y Jengibre X 500cc" [ref=e1052]:
+                        - checkbox "Seleccionar Jugo Organico Las Brisas - Limon Y Jengibre X 500cc" [ref=e1053] [cursor=pointer]
+                      - cell "Curado" [ref=e1054]:
+                        - generic [ref=e1055]:
+                          - img [ref=e1056]
+                          - text: Curado
+                      - cell "Jugo Organico Las Brisas - Limon Y Jengibre X 500cc 1 imagen" [ref=e1059]:
+                        - generic [ref=e1060]:
+                          - generic [ref=e1061]: Jugo Organico Las Brisas - Limon Y Jengibre X 500cc
+                          - generic [ref=e1062]:
+                            - img [ref=e1063]
+                            - text: 1 imagen
+                      - cell "LAS BRISAS" [ref=e1067]:
+                        - generic "Marca no validada" [ref=e1068]:
+                          - img [ref=e1069]
+                          - text: LAS BRISAS
+                      - cell "organicos" [ref=e1073]:
+                        - generic [ref=e1074]: organicos
+                      - cell "ARS 3.40" [ref=e1075]:
+                        - generic [ref=e1077]: ARS 3.40
+                      - cell "50%" [ref=e1078]:
+                        - 'generic "Confianza: 50%" [ref=e1079]': 50%
+                      - cell "Disco" [ref=e1080]:
+                        - generic [ref=e1081]:
+                          - generic [ref=e1082]: Disco
+                          - button [ref=e1083] [cursor=pointer]:
+                            - img [ref=e1084] [cursor=pointer]
+                      - cell [ref=e1088]:
+                        - generic [ref=e1089]:
+                          - button "Aprobar y marcar como listo" [ref=e1090] [cursor=pointer]:
+                            - img [ref=e1091] [cursor=pointer]
+                          - button "Rechazar producto" [ref=e1094] [cursor=pointer]:
+                            - img [ref=e1095] [cursor=pointer]
+                          - button "Editar manualmente" [ref=e1099] [cursor=pointer]:
+                            - img [ref=e1100] [cursor=pointer]
+                    - row "Seleccionar Coleslaw Santa Mar Curado Coleslaw Santa Mar 1 imagen SANTA MARIA organicos ARS 2.80 50% Disco" [ref=e1102]:
+                      - cell "Seleccionar Coleslaw Santa Mar" [ref=e1103]:
+                        - checkbox "Seleccionar Coleslaw Santa Mar" [ref=e1104] [cursor=pointer]
+                      - cell "Curado" [ref=e1105]:
+                        - generic [ref=e1106]:
+                          - img [ref=e1107]
+                          - text: Curado
+                      - cell "Coleslaw Santa Mar 1 imagen" [ref=e1110]:
+                        - generic [ref=e1111]:
+                          - generic [ref=e1112]: Coleslaw Santa Mar
+                          - generic [ref=e1113]:
+                            - img [ref=e1114]
+                            - text: 1 imagen
+                      - cell "SANTA MARIA" [ref=e1118]:
+                        - generic "Marca no validada" [ref=e1119]:
+                          - img [ref=e1120]
+                          - text: SANTA MARIA
+                      - cell "organicos" [ref=e1124]:
+                        - generic [ref=e1125]: organicos
+                      - cell "ARS 2.80" [ref=e1126]:
+                        - generic [ref=e1128]: ARS 2.80
+                      - cell "50%" [ref=e1129]:
+                        - 'generic "Confianza: 50%" [ref=e1130]': 50%
+                      - cell "Disco" [ref=e1131]:
+                        - generic [ref=e1132]:
+                          - generic [ref=e1133]: Disco
+                          - button [ref=e1134] [cursor=pointer]:
+                            - img [ref=e1135] [cursor=pointer]
+                      - cell [ref=e1139]:
+                        - generic [ref=e1140]:
+                          - button "Aprobar y marcar como listo" [ref=e1141] [cursor=pointer]:
+                            - img [ref=e1142] [cursor=pointer]
+                          - button "Rechazar producto" [ref=e1145] [cursor=pointer]:
+                            - img [ref=e1146] [cursor=pointer]
+                          - button "Editar manualmente" [ref=e1150] [cursor=pointer]:
+                            - img [ref=e1151] [cursor=pointer]
+                    - row "Seleccionar Ajo Coloso Por Unidad Curado Ajo Coloso Por Unidad 1 imagen VERDULERIA PROPIA organicos ARS 1.50 50% Disco" [ref=e1153]:
+                      - cell "Seleccionar Ajo Coloso Por Unidad" [ref=e1154]:
+                        - checkbox "Seleccionar Ajo Coloso Por Unidad" [ref=e1155] [cursor=pointer]
+                      - cell "Curado" [ref=e1156]:
+                        - generic [ref=e1157]:
+                          - img [ref=e1158]
+                          - text: Curado
+                      - cell "Ajo Coloso Por Unidad 1 imagen" [ref=e1161]:
+                        - generic [ref=e1162]:
+                          - generic [ref=e1163]: Ajo Coloso Por Unidad
+                          - generic [ref=e1164]:
+                            - img [ref=e1165]
+                            - text: 1 imagen
+                      - cell "VERDULERIA PROPIA" [ref=e1169]:
+                        - generic "Marca no validada" [ref=e1170]:
+                          - img [ref=e1171]
+                          - text: VERDULERIA PROPIA
+                      - cell "organicos" [ref=e1175]:
+                        - generic [ref=e1176]: organicos
+                      - cell "ARS 1.50" [ref=e1177]:
+                        - generic [ref=e1179]: ARS 1.50
+                      - cell "50%" [ref=e1180]:
+                        - 'generic "Confianza: 50%" [ref=e1181]': 50%
+                      - cell "Disco" [ref=e1182]:
+                        - generic [ref=e1183]:
+                          - generic [ref=e1184]: Disco
+                          - button [ref=e1185] [cursor=pointer]:
+                            - img [ref=e1186] [cursor=pointer]
+                      - cell [ref=e1190]:
+                        - generic [ref=e1191]:
+                          - button "Aprobar y marcar como listo" [ref=e1192] [cursor=pointer]:
+                            - img [ref=e1193] [cursor=pointer]
+                          - button "Rechazar producto" [ref=e1196] [cursor=pointer]:
+                            - img [ref=e1197] [cursor=pointer]
+                          - button "Editar manualmente" [ref=e1201] [cursor=pointer]:
+                            - img [ref=e1202] [cursor=pointer]
+                    - row "Seleccionar Seleccioná el método de entrega Rechazado Seleccioná el método de entrega Sin marca marcas-propias ARS 0.00 50% Disco" [ref=e1204]:
+                      - cell "Seleccionar Seleccioná el método de entrega" [ref=e1205]:
+                        - checkbox "Seleccionar Seleccioná el método de entrega" [ref=e1206] [cursor=pointer]
+                      - cell "Rechazado" [ref=e1207]:
+                        - generic [ref=e1208]:
+                          - img [ref=e1209]
+                          - text: Rechazado
+                      - cell "Seleccioná el método de entrega" [ref=e1213]:
+                        - generic [ref=e1215]: Seleccioná el método de entrega
+                      - cell "Sin marca" [ref=e1216]:
+                        - generic [ref=e1217]:
+                          - img [ref=e1218]
+                          - text: Sin marca
+                      - cell "marcas-propias" [ref=e1220]:
+                        - generic [ref=e1221]: marcas-propias
+                      - cell "ARS 0.00" [ref=e1222]:
+                        - generic [ref=e1224]: ARS 0.00
+                      - cell "50%" [ref=e1225]:
+                        - 'generic "Confianza: 50%" [ref=e1226]': 50%
+                      - cell "Disco" [ref=e1227]:
+                        - generic [ref=e1228]:
+                          - generic [ref=e1229]: Disco
+                          - button [ref=e1230] [cursor=pointer]:
+                            - img [ref=e1231] [cursor=pointer]
+                      - cell [ref=e1235]:
+                        - button "Editar manualmente" [ref=e1237] [cursor=pointer]:
+                          - img [ref=e1238] [cursor=pointer]
+                    - row "Seleccionar marcas-propias Rechazado marcas-propias 1 imagen Sin marca marcas-propias ARS 0.00 50% Disco" [ref=e1240]:
+                      - cell "Seleccionar marcas-propias" [ref=e1241]:
+                        - checkbox "Seleccionar marcas-propias" [ref=e1242] [cursor=pointer]
+                      - cell "Rechazado" [ref=e1243]:
+                        - generic [ref=e1244]:
+                          - img [ref=e1245]
+                          - text: Rechazado
+                      - cell "marcas-propias 1 imagen" [ref=e1249]:
+                        - generic [ref=e1250]:
+                          - generic [ref=e1251]: marcas-propias
+                          - generic [ref=e1252]:
+                            - img [ref=e1253]
+                            - text: 1 imagen
+                      - cell "Sin marca" [ref=e1257]:
+                        - generic [ref=e1258]:
+                          - img [ref=e1259]
+                          - text: Sin marca
+                      - cell "marcas-propias" [ref=e1261]:
+                        - generic [ref=e1262]: marcas-propias
+                      - cell "ARS 0.00" [ref=e1263]:
+                        - generic [ref=e1265]: ARS 0.00
+                      - cell "50%" [ref=e1266]:
+                        - 'generic "Confianza: 50%" [ref=e1267]': 50%
+                      - cell "Disco" [ref=e1268]:
+                        - generic [ref=e1269]:
+                          - generic [ref=e1270]: Disco
+                          - button [ref=e1271] [cursor=pointer]:
+                            - img [ref=e1272] [cursor=pointer]
+                      - cell [ref=e1276]:
+                        - button "Editar manualmente" [ref=e1278] [cursor=pointer]:
+                          - img [ref=e1279] [cursor=pointer]
+                - generic [ref=e1282]:
+                  - button "Anterior" [disabled]
+                  - generic [ref=e1283]: Página 1 de 506
+                  - button "Siguiente" [ref=e1284] [cursor=pointer]
+    - generic [ref=e1286]:
+      - generic [ref=e1287]:
+        - img [ref=e1288]
+        - heading "Estado de Servicios" [level=3] [ref=e1290]
+      - generic [ref=e1291]:
+        - heading "Servicios Backend" [level=3] [ref=e1293]
+        - generic [ref=e1294]:
+          - generic [ref=e1295]:
+            - generic [ref=e1296]: IAM Service
+            - generic [ref=e1297]: Online
+          - generic [ref=e1298]:
+            - generic [ref=e1299]: PIM Service
+            - generic [ref=e1300]: Online
+          - generic [ref=e1301]:
+            - generic [ref=e1302]: Stock Service
+            - generic [ref=e1303]: Online
+          - generic [ref=e1304]:
+            - generic [ref=e1305]: API Gateway
+            - generic [ref=e1306]: Online
+      - generic [ref=e1307]: "Última actualización: Ahora"
+  - region "Notifications alt+T"
+  - status [ref=e1308]:
+    - generic [ref=e1309]:
+      - img [ref=e1311]
+      - generic [ref=e1313]:
+        - text: Static route
+        - button "Hide static indicator" [ref=e1314] [cursor=pointer]:
+          - img [ref=e1315] [cursor=pointer]
+  - alert [ref=e1318]
+```
